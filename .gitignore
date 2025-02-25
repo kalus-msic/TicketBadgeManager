@@ -179,6 +179,7 @@ __pycache__/
 *.pyo
 *.log
 *.tmp
+.DS_Store
 
 # Konfigurace a klíče
 *.sqlite3
@@ -191,3 +192,5 @@ tickets_scanner/image/*
 
 # dočasné soubory
 temp/*
+!temp/.gitkeep
+
