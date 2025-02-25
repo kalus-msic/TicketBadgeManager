@@ -4,10 +4,12 @@
 
 Aplikace umožňuje importovat CSV se vstupenkami, provádět check-in pomocí QR kódů a tisknout štítek se jménem,příjmením a názvem společnosti.
 Testováno na tiskárně TSC TDP-225.
+Funguje zatím jen na Windows - využívá win32print 
 
-## Před samotnou instalací
-
-
+## Před samotným spuštěním aplikace
+Nainstalovaný python3 a více
+Nainstalovaný git a nebo provést stažení repo v zipu.
+Nainstalované tiskárny - správný název podle "Instalace a nastavení tiskáren - TSC TDP-225"
 
 ## Jak spustit aplikaci
 
@@ -65,7 +67,7 @@ skener 2 = TDP-2252
 ## Plánované funkce - todo
 
 - [ ] Schéma zapojení: Přidat schéma zapojení 
-- [ ] dopsat readme.md - chybí informace o https - potřeba pro 
+- [ ] dopsat readme.md - chybí informace o https
 - [ ] Přidat info o možnosti využít ngrok - odpadá potřeba vlastní lokální sítě - pomalejší odezva, ale možnost napojit rovnou aplikace prodejců vstupenek - ti.to
 - [ ] Napojení na eventee - při vytvoření manuálním vytvoření vstupenkyv TBM přidat i do Eventee
 - [ ] Dvoujazyčná podpora
