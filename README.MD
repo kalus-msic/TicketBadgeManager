@@ -2,14 +2,14 @@
 
 **TicketBadgeManager** je Django aplikace určená pro odbavování vstupenek a tisk visaček pro networkingové eventy. 
 
-Aplikace umožňuje importovat CSV se vstupenkami, provádět check-in pomocí QR kódů a tisknout štítek se jménem,příjmením a názvem společnosti.
-Testováno na tiskárně TSC TDP-225.
-Funguje zatím jen na Windows - využívá win32print 
+- Aplikace umožňuje importovat CSV se vstupenkami, provádět check-in pomocí QR kódů a tisknout štítek se jménem,příjmením a názvem společnosti.
+- Testováno na tiskárně TSC TDP-225.
+- Funguje zatím jen na Windows - využívá win32print 
 
 ## Před samotným spuštěním aplikace
-Nainstalovaný python3 a více
-Nainstalovaný git a nebo provést stažení repo v zipu.
-Nainstalované tiskárny - správný název podle "Instalace a nastavení tiskáren - TSC TDP-225"
+- Nainstalovaný Python3 (nebo vyšší)  
+- Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP  
+- Nainstalované tiskárny – správný název podle "Instalace a nastavení tiskáren - TSC TDP-225"
 
 ## Jak spustit aplikaci
 
