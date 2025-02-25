@@ -17,6 +17,7 @@ Funguje zatím jen na Windows - využívá win32print
 - Nainstalovaný Python3 (nebo vyšší)  
 - Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP  
 - Nainstalované tiskárny – správný název podle ["Instalace a nastavení tiskáren - TSC TDP-225"](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225)
+- Správně nastavený firewall - na pc kde běží aplikace musí být otevřen port na kterém běží aplikace - výchozí 8000
 
 ## Jak spustit aplikaci
 
@@ -47,13 +48,26 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 5. Spusťte server
+### 5. Upravte soubor settings.py - SECRET_KEY A ALLOWED_HOST
+**Důležité:** Před spuštěním aplikace si změňte hodnotu `SECRET_KEY` v souboru `ticket_badge_manager/settings.py` na unikátní a bezpečnou hodnotu.  
+Například můžete vygenerovat nový secret key pomocí následujícího příkazu:
 
 ```bash
-python manage.py runserver
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+SECRET_KEY = 'nahodny_klic'
+
+Dále do allowed_hostst přidejte IP vašeho počítače, na kterém běží aplikace a jsou v něm připojeny tiskárny.  
+ALLOWED_HOSTS = ['127.0.0.1','192.x.x.x']
+
+
+### 6. Spusťte server
+
+```bash
+python manage.py runserver 0.0.0.0:8000
 ```
 
-### 6. Otevřete prohlížeč - pokud není specifikováno 
+### 7. Otevřete prohlížeč - pokud není specifikováno 
 ```bash
 http://127.0.0.1:8000/
 ```
@@ -83,7 +97,7 @@ Skener 2: TDP-2252
 ## Plánované funkce - todo
 
 - [ ] Schéma zapojení: Přidat schéma zapojení 
-- [ ] dopsat readme.md - chybí informace o https
+- [ ] dopsat readme.md - chybí informace o https - je potřeba pro správnou funkci skeneru z ostatních stanic
 - [ ] Přidat info o možnosti využít ngrok - odpadá potřeba vlastní lokální sítě - pomalejší odezva, ale možnost napojit rovnou aplikace prodejců vstupenek - ti.to
 - [ ] Napojení na eventee - při vytvoření manuálním vytvoření vstupenkyv TBM přidat i do Eventee
 - [ ] Dvoujazyčná podpora
