@@ -1,9 +1,15 @@
 # TicketBadgeManager
 
-**TicketBadgeManager** je Django aplikace určená pro odbavování vstupenek a tisk visaček pro networkingové eventy.  
-Aplikace umožňuje importovat CSV se vstupenkami, provádět check-in pomocí QR kódů a tisknout jména, příjmení a název společnosti na termo tiskárnách.
+**TicketBadgeManager** je Django aplikace určená pro odbavování vstupenek a tisk visaček pro networkingové eventy. 
 
-## 🚀 Jak spustit aplikaci
+Aplikace umožňuje importovat CSV se vstupenkami, provádět check-in pomocí QR kódů a tisknout štítek se jménem,příjmením a názvem společnosti.
+Testováno na tiskárně TSC TDP-225.
+
+## Před samotnou instalací
+
+
+
+## Jak spustit aplikaci
 
 ### 1.️Naklonujte repozitář
 
@@ -42,3 +48,24 @@ python manage.py runserver
 ```bash
 http://127.0.0.1:8000/
 ```
+
+## Instalace a nastavení tiskáren - TSC TDP-225
+Akutálně je aplikace připravena pro tisk až na dvou tiskárnách.
+Na některých PC byl problém s automatickou instalací tiskárny, případně z instalátoru ze stránek výrobce.
+Na testovacích stanicích jsem prováděl manuální přidání tiskárny s následným výběrem driveru TSC.inf - případně doplním do README.MD
+
+Během testování bylo zjištěno, že pro funkčnost je nejlepší provádět výběr tiskárny na základě jejich názvů, proto je potřeba mít před tiskem správně nastavené názvy tiskáren. 
+Windows 10 - Ovládací panely - Hardware a zvuk - Zařízení a tiskárny - pravým kliknete na TSC TDP-225 - Vlastnosti tiskárny - Obecné - změníte název na TDP-2251
+Windows 11 - Start - Tiskárny a skenery - pravým kliknete na TSC TDP-225 - Vlastnosti tiskárny - Obecné - změníte název na TDP-2251
+výchozí tiskárna = TDP-2251
+skener 1 = TDP-2251
+skener 2 = TDP-2252
+
+
+## Plánované funkce - todo
+
+- [ ] Schéma zapojení: Přidat schéma zapojení 
+- [ ] dopsat readme.md - chybí informace o https - potřeba pro 
+- [ ] Přidat info o možnosti využít ngrok - odpadá potřeba vlastní lokální sítě - pomalejší odezva, ale možnost napojit rovnou aplikace prodejců vstupenek - ti.to
+- [ ] Napojení na eventee - při vytvoření manuálním vytvoření vstupenkyv TBM přidat i do Eventee
+- [ ] Dvoujazyčná podpora
