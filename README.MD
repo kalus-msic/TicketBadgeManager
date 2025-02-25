@@ -11,7 +11,8 @@ Funguje zatím jen na Windows - využívá win32print
 ## Před samotným spuštěním aplikace
 - Nainstalovaný Python3 (nebo vyšší)  
 - Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP  
-- Nainstalované tiskárny – správný název podle "Instalace a nastavení tiskáren - TSC TDP-225"
+- Nainstalované tiskárny – správný název podle [Nainstalované tiskárny – správný název podle "Instalace a nastavení tiskáren - TSC TDP-225"](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225)
+
 
 ## Jak spustit aplikaci
 
@@ -54,7 +55,6 @@ http://127.0.0.1:8000/
 ```
 
 ## Instalace a nastavení tiskáren - TSC TDP-225
-## Instalace a nastavení tiskáren - TSC TDP-225
 
 Akutálně je aplikace připravena pro tisk až na dvou tiskárnách.  
 Na některých PC byl problém s automatickou instalací tiskárny, případně z instalátoru ze stránek výrobce.  
@@ -68,7 +68,7 @@ Během testování bylo zjištěno, že pro funkčnost je nejlepší provádět 
 
 **Windows 11**  
 - Start → Tiskárny a skenery  
-- Pravým klikem na TSC TDP-225 → Vlastnosti tiskárny → Obecné → změňte název na TDP-2251 (nebo TDP-2252)
+- Otevřít tiskárnu TSC TDP-225 → Vlastnosti tiskárny → Obecné → změňte název na TDP-2251 (nebo TDP-2252)
 
 Výchozí tiskárna: TDP-2251  
 Skener 1: TDP-2251  
