@@ -69,7 +69,7 @@ python manage.py runsslserver 0.0.0.0:8000
 
 ### 7. Otevřete prohlížeč - pokud není specifikováno 
 ```bash
-http://127.0.0.1:8000/
+https://127.0.0.1:8000/
 ```
 
 ## Instalace a nastavení tiskáren - TSC TDP-225
@@ -97,7 +97,7 @@ Skener 2: TDP-2252
 ## Plánované funkce - todo
 
 - [ ] Schéma zapojení: Přidat schéma zapojení 
-- [ ] dopsat readme.md - chybí informace o https - je potřeba pro správnou funkci skeneru z ostatních stanic
+- [x ] dopsat readme.md - chybí informace o https - je potřeba pro správnou funkci skeneru z ostatních stanic
 - [ ] Přidat info o možnosti využít ngrok - odpadá potřeba vlastní lokální sítě - pomalejší odezva, ale možnost napojit rovnou aplikace prodejců vstupenek - ti.to
 - [ ] Napojení na eventee - při vytvoření manuálním vytvoření vstupenkyv TBM přidat i do Eventee
 - [ ] Dvoujazyčná podpora
