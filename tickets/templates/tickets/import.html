@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Import Tickets</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Current Data Stats -->
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading">Current Data</h5>
+                        <p class="mb-0">There are currently {{ current_ticket_count }} tickets in the database.</p>
+                    </div>
+
+                    <!-- CSV Format Info -->
+                    <div class="mt-4">
+                        <h5>Supported CSV Format:</h5>
+                        <ul class="mb-0">
+                            <li>Files can use either comma (,) or semicolon (;) as delimiter: Better to use the semicolon (;)</li>
+                            <li>Required columns: Ticket number, First Name, Last Name </li>
+                            <li>Optional: Company name</li>
+                            <br>
+                        </ul>
+                    </div>
+
+                    <!-- Delete and Replace -->
+                    <div class="card border-danger mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger">Delete All and Import New Data</h5>
+                            <p class="card-text">This will delete all existing tickets and their check-in data before importing new data.</p>
+                            
+                            <form method="post" action="{% url 'tickets:import_replace_tickets' %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Select CSV File</label>
+                                    <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                                </div>
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure? This will delete ALL existing data.')">
+                                    Delete All and Import New Data
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Add New Tickets -->
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Add New Tickets</h5>
+                            <p class="card-text">This will add new tickets while keeping existing ones. Duplicate QR codes will be skipped.</p>
+                            
+                            <form method="post" action="{% url 'tickets:import_add_tickets' %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Select CSV File</label>
+                                    <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    Add New Tickets
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GoOut Import Section -->
+<div class="container mt-4 mb-5"> <!-- Added mb-5 for extra bottom spacing -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">GoOut Import file</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <p>Since GoOut does not provide an export containing all the required columns (QR code/Ticket number, First Name, Last Name, and Company Name), you can merge two separate files and link them by Order Number.</p>
+                    <p>Please use the following exports from the GoOut administration:<br><strong>"Přehled prodeje – transakce položkové.xlsx"</strong><br><strong>"Event name – odbavení - Odbavení.csv"</strong></p>
+                    <p>Click on <strong>"Merge Files"</strong> to combine the documents (right join). Once merged, the file will download automatically. We recommend reviewing the merged file before importing.</p>
+                    <form action="{% url 'tickets:merge_import' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="file1" class="form-label">Select First Excel File: </label>
+                            <input type="file" name="file1" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="file2" class="form-label">Select Second Excel File:</label>
+                            <input type="file" name="file2" class="form-control" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Merge Files</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

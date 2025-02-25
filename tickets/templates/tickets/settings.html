@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Settings</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Current Data</h5>
+                                    <p class="card-text">Tickets: {{ ticket_count }}</p>
+                                    <p class="card-text">Check-ins: {{ checkin_count }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <h5 class="card-title text-danger">Delete All Data</h5>
+                                    <p class="card-text">This will delete all tickets and their check-in data. This action cannot be undone.</p>
+                                    <form method="post" action="{% url 'tickets:delete_all_data' %}">
+                                        {% csrf_token %}
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                                            Delete All Data
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title text-warning">Delete Check-ins</h5>
+                                    <p class="card-text">This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system.</p>
+                                    <form method="post" action="{% url 'tickets:delete_checkins' %}">
+                                        {% csrf_token %}
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#deleteCheckinsModal">
+                                            Delete Check-ins
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete All Modal -->
+<div class="modal fade" id="deleteAllModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Confirm Delete All Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete all tickets and check-in data? This action cannot be undone.</p>
+                <p><strong>This will delete:</strong></p>
+                <ul>
+                    <li>{{ ticket_count }} tickets</li>
+                    <li>{{ checkin_count }} check-ins</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'tickets:delete_all_data' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete All Data</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Check-ins Modal -->
+<div class="modal fade" id="deleteCheckinsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">Confirm Delete Check-ins</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete all check-in data? This action cannot be undone.</p>
+                <p>This will:</p>
+                <ul>
+                    <li>Delete {{ checkin_count }} check-ins</li>
+                    <li>Reset all tickets to VALID status</li>
+                    <li>Keep all ticket data intact</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'tickets:delete_checkins' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Delete Check-ins</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Scan Ticket</h2>
+                    <!-- Přidaná informace o čísle skeneru -->
+                    <p class="mb-0 mt-2 text-muted">Active Scanner: #{{ printer_queue }}</p>
+                </div>
+                <div class="card-body">
+                    <!-- Skrytý input pro printer_queue -->
+                    <input type="hidden" id="printer_queue" value="{{ printer_queue }}">
+                    <!-- Výsledky se zobrazí zde -->
+                    <div id="result"></div>
+                    <!-- Skener se zobrazí jen pokud není QR kód v URL parametrech -->
+                    <div id="reader" class="mb-4" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+let currentQrCode = null;
+
+function updateGDPR(choice) {
+    fetch('{% url "tickets:verify_ticket" %}', {
+        method: 'POST',
+        body: new URLSearchParams({
+            'qr_code': currentQrCode,
+            'gdpr_action': choice,
+            'printer_queue': document.getElementById('printer_queue').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const gdprButtons = document.getElementById('gdpr-buttons');
+        if (gdprButtons) {
+            gdprButtons.innerHTML = `<div class="alert alert-success">GDPR preference updated: ${data.gdpr_status}</div>`;
+        }
+    });
+}
+
+function verifyTicket(qrCode) {
+    currentQrCode = qrCode;
+
+    fetch('{% url "tickets:verify_ticket" %}', {
+        method: 'POST',
+        body: new URLSearchParams({
+            'qr_code': qrCode,
+            'printer_queue': document.getElementById('printer_queue').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('result');
+        if (data.valid) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h4 class="alert-heading">${data.message}</h4>
+                    <p class="mb-0">Ticket number: ${data.qr_code}</p>
+                    <p class="mb-0">Name: ${data.name}</p>
+                    <p class="mb-0">Company: ${data.company}</p>
+                </div>
+            `;
+            
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">${data.message}</h4>
+                    <p class="mb-0">Ticket number: ${data.qr_code}</p>
+                    <p class="mb-0">Name: ${data.name}</p>
+                </div>
+            `;
+        }
+        
+        // Přidání tlačítek pro navigaci
+        resultDiv.innerHTML += `
+            <div class="d-grid gap-2">
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a href="{% url 'tickets:index' %}" class="btn btn-secondary w-100">
+                            Back to Home
+                        </a>
+                    </div>
+                    <div class="col-6">
+                         <a href="{% url 'tickets:ticket_detail_by_qr' %}?qr_code=${encodeURIComponent(data.qr_code)}" class="btn btn-primary w-100">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+let html5QrcodeScanner; // Globální proměnná pro skener
+let scannedCodes = new Set(); // Sada pro ukládání již naskenovaných QR kódů
+
+// Zbytek vašeho původního JavaScript kódu zůstává stejný...
+function getOptimalQrboxSize() {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const minDimension = Math.min(viewportWidth, viewportHeight);
+    return Math.floor(minDimension * 0.5);
+}
+
+function checkForQrCodeInUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrCodeFromUrl = urlParams.get('qr_code');
+    // Získáme printer_queue z URL nebo použijeme hodnotu z hidden inputu
+    const printerQueue = urlParams.get('printer_queue') || document.getElementById('printer_queue').value;
+
+    // Pokud je v URL QR kód, nastavíme hodnotu printer_queue do hidden inputu
+    if (qrCodeFromUrl) {
+        document.getElementById('printer_queue').value = printerQueue;
+        verifyTicket(qrCodeFromUrl);
+    } else {
+        initializeScanner();
+    }
+}
+
+function initializeScanner() {
+    const readerElement = document.getElementById('reader');
+    readerElement.style.display = 'block';
+
+    const optimalQrboxSize = getOptimalQrboxSize();
+
+    html5QrcodeScanner = new Html5Qrcode("reader");
+    html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: optimalQrboxSize },
+        onScanSuccess,
+        onScanError
+    ).catch(err => {
+        console.error("Error starting scanner:", err);
+    });
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    console.log("QR Code detected:", decodedText);
+
+    if (scannedCodes.has(decodedText)) {
+        console.log("Duplicate QR code ignored.");
+        return;
+    }
+
+    scannedCodes.add(decodedText);
+    verifyTicket(decodedText);
+
+    html5QrcodeScanner.pause();
+    setTimeout(() => {
+        html5QrcodeScanner.resume();
+    }, 2000);
+}
+
+function onScanError(errorMessage) {
+    console.error("QR Code scan error:", errorMessage);
+}
+
+checkForQrCodeInUrl();
+</script>
+{% endblock %}

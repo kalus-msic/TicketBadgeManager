@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Ticket Management Dashboard</h1>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Tickets</h5>
+                    <h2 class="card-text">{{ total_tickets }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Valid Tickets</h5>
+                    <h2 class="card-text">{{ valid_tickets }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Used Tickets</h5>
+                    <h2 class="card-text">{{ used_tickets }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <!-- View All Tickets -->
+                        <a href="{% url 'tickets:ticket_list' %}" class="btn btn-primary">
+                            <i class="bi bi-list-ul"></i> View All Tickets
+                        </a>
+                        
+                        <!-- Create New Ticket -->
+                        <a href="{% url 'tickets:ticket_create' %}" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Create New Ticket
+                        </a>
+                        
+                        <!-- Import Tickets -->
+                        <a href="{% url 'tickets:import_page' %}" class="btn btn-info">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Import Tickets
+                        </a>
+                        
+                        <!-- Scan Tickets -->
+                        <a href="{% url 'tickets:scanner' %}" class="btn btn-secondary">
+                            <i class="bi bi-qr-code-scan"></i> Scan Tickets
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <!-- Recent Tickets -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Tickets</h5>
+                    <a href="{% url 'tickets:ticket_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_tickets %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>QR Code</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in recent_tickets %}
+                                <tr>
+                                    <td>{{ ticket.qr_code }}</td>
+                                    <td>{{ ticket.name }}</td>
+                                    <td>
+                                        <span class="badge {% if ticket.status == 'VALID' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ ticket.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center mb-0">No tickets found</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Check-ins -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Check-ins</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_checkins %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Name</th>
+                                    <th>Ticket</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for checkin in recent_checkins %}
+                                <tr>
+                                    <td>{{ checkin.check_in_time|date:"H:i:s" }}</td>
+                                    <td>{{ checkin.ticket.name }}</td>
+                                    <td>
+                                        <a href="{% url 'tickets:ticket_detail' checkin.ticket.pk %}">
+                                            {{ checkin.ticket.qr_code }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center mb-0">No recent check-ins</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
