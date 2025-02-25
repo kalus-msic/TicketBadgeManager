@@ -54,16 +54,26 @@ http://127.0.0.1:8000/
 ```
 
 ## Instalace a nastavení tiskáren - TSC TDP-225
-Akutálně je aplikace připravena pro tisk až na dvou tiskárnách.
-Na některých PC byl problém s automatickou instalací tiskárny, případně z instalátoru ze stránek výrobce.
-Na testovacích stanicích jsem prováděl manuální přidání tiskárny s následným výběrem driveru TSC.inf - případně doplním do README.MD
+## Instalace a nastavení tiskáren - TSC TDP-225
 
-Během testování bylo zjištěno, že pro funkčnost je nejlepší provádět výběr tiskárny na základě jejich názvů, proto je potřeba mít před tiskem správně nastavené názvy tiskáren. 
-Windows 10 - Ovládací panely - Hardware a zvuk - Zařízení a tiskárny - pravým kliknete na TSC TDP-225 - Vlastnosti tiskárny - Obecné - změníte název na TDP-2251
-Windows 11 - Start - Tiskárny a skenery - pravým kliknete na TSC TDP-225 - Vlastnosti tiskárny - Obecné - změníte název na TDP-2251
-výchozí tiskárna = TDP-2251
-skener 1 = TDP-2251
-skener 2 = TDP-2252
+Akutálně je aplikace připravena pro tisk až na dvou tiskárnách.  
+Na některých PC byl problém s automatickou instalací tiskárny, případně z instalátoru ze stránek výrobce.  
+Na testovacích stanicích jsem prováděl manuální přidání tiskárny s následným výběrem driveru TSC.inf - případně doplním do README.MD.
+
+Během testování bylo zjištěno, že pro funkčnost je nejlepší provádět výběr tiskárny na základě jejich názvů, proto je potřeba mít před tiskem správně nastavené názvy tiskáren.  
+
+**Windows 10**  
+- Ovládací panely → Hardware a zvuk → Zařízení a tiskárny  
+- Pravým klikem na TSC TDP-225 → Vlastnosti tiskárny → Obecné → změňte název na TDP-2251 (nebo TDP-2252)
+
+**Windows 11**  
+- Start → Tiskárny a skenery  
+- Pravým klikem na TSC TDP-225 → Vlastnosti tiskárny → Obecné → změňte název na TDP-2251 (nebo TDP-2252)
+
+Výchozí tiskárna: TDP-2251  
+Skener 1: TDP-2251  
+Skener 2: TDP-2252
+
 
 
 ## Plánované funkce - todo
