@@ -14,7 +14,7 @@ Funguje zatím jen na Windows - využívá win32print
 
 
 ## Před samotným spuštěním aplikace
-- Nainstalovaný Python3 (nebo vyšší)  
+- Nainstalovaný Python3.11 - otestováno na 3.11 - s verzí 3.12 byl problém s některými moduly
 - Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP  
 - Nainstalované tiskárny – správný název podle ["Instalace a nastavení tiskáren - TSC TDP-225"](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225)
 - Správně nastavený firewall - na pc kde běží aplikace musí být otevřen port na kterém běží aplikace - výchozí 8000
@@ -64,7 +64,7 @@ ALLOWED_HOSTS = ['127.0.0.1','192.x.x.x']
 ### 6. Spusťte server
 
 ```bash
-python manage.py runserver 0.0.0.0:8000
+python manage.py runsslserver 0.0.0.0:8000
 ```
 
 ### 7. Otevřete prohlížeč - pokud není specifikováno 
