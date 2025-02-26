@@ -3,4 +3,4 @@ pillow==10.4.0
 pandas==2.2.3
 numpy==2.1.1
 pywin32>=306  
-django-sslserver==1.1.0
+django-sslserver==0.22
