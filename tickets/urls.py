@@ -30,4 +30,6 @@ urlpatterns = [
     path('tickets/export/', views.export_tickets_csv, name='export_tickets_csv'),
     path('scanner1/', views.scanner_page1, name='scanner1'),
     path('scanner2/', views.scanner_page2, name='scanner2'),
+    path('logs/', views.ticket_log_list, name='ticket_log_list'),
+
 ]
