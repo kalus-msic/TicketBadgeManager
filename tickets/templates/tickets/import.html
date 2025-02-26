@@ -29,10 +29,25 @@
                     <div class="mt-4">
                         <h5>Supported CSV Format:</h5>
                         <ul class="mb-0">
-                            <li>Files can use either comma (,) or semicolon (;) as delimiter: Better to use the semicolon (;)</li>
-                            <li>Required columns: Ticket number, First Name, Last Name </li>
-                            <li>Optional: Company name</li>
-                            <br>
+                            <li>Tested with ti.to export in UTF-8 and goout files.</li>
+                            <li>The file can use either a comma (,) or semicolon (;) as a delimiter. We recommend using the semicolon (;).</li>
+                            <li>
+                                Required columns (if any required field is missing in a row, that row will be skipped during import; you must include at least one of the following variants):
+                                <ul>
+                                    <li><strong>Ticket Number:</strong> "Číslo vstupenky", "Ticket Number", or "Ticket Reference"</li>
+                                    <li><strong>First Name:</strong> "Jméno", "Jméno_x", or "Ticket First Name"</li>
+                                    <li><strong>Last Name:</strong> "Příjmení", "Příjmení_x", or "Ticket Last Name"</li>
+                                </ul>
+                            </li>
+                            <li>
+                                Optional columns (you can include one of the following variants, if applicable):
+                                <ul>
+                                    <li><strong>Company Name:</strong> "Firma", "Field1", or "Ticket Company Name"</li>
+                                    <li><strong>Event Name:</strong> "Akce", "Akce_x", or "Event"</li>
+                                    <li><strong>Email:</strong> "Email", "E-mail", or "Ticket Email"</li>
+                                    <br>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
 

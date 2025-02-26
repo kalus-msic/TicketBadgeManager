@@ -126,29 +126,34 @@ def import_replace_tickets(request):
                         try:
                             qr_code = (
                                 row.get('Číslo vstupenky') or 
+                                row.get('Ticket Number') or
                                 row.get('Ticket Reference')
                             )
                             
                             first_name = (
                                 row.get('Jméno') or
-                                row.get('Jméno_x')
+                                row.get('Jméno_x') or 
+                                row.get('Ticket First Name')
                             )
                             last_name = (
                                 row.get('Příjmení') or
-                                row.get('Příjmení_x')
+                                row.get('Příjmení_x') or
+                                row.get('Ticket Last Name')
                             )
                             company_name = (
                                 row.get('Firma') or 
-                                row.get('Field 1')
+                                row.get('Field1') or
+                                row.get('Ticket Company Name')
                             )
-                            
                             event_name = (
                                 row.get('Akce_x') or 
-                                row.get('Akce') 
+                                row.get('Akce') or
+                                row.get('Event') 
                             )
                             email = (
                                 row.get('Email') or 
-                                row.get('E-mail') 
+                                row.get('E-mail') or
+                                row.get('Ticket Email') 
                             )
                             if not all([qr_code, first_name, last_name]):
                                 print(f"Skipping row due to missing required fields: {row}")
@@ -213,31 +218,37 @@ def import_add_tickets(request):
                         try:
                             qr_code = (
                                 row.get('Číslo vstupenky') or 
+                                row.get('Ticket Number') or
                                 row.get('Ticket Reference')
                             )
                             
                             first_name = (
                                 row.get('Jméno') or
-                                row.get('Jméno_x')
+                                row.get('Jméno_x') or 
+                                row.get('Ticket First Name')
                             )
                             last_name = (
                                 row.get('Příjmení') or
-                                row.get('Příjmení_x')
+                                row.get('Příjmení_x') or
+                                row.get('Ticket Last Name')
                             )
                             company_name = (
                                 row.get('Firma') or 
-                                row.get('Field1')
+                                row.get('Field1') or
+                                row.get('Ticket Company Name')
                             )
                             event_name = (
                                 row.get('Akce_x') or 
-                                row.get('Akce') 
+                                row.get('Akce') or
+                                row.get('Event') 
                             )
                             email = (
                                 row.get('Email') or 
-                                row.get('E-mail') 
+                                row.get('E-mail') or
+                                row.get('Ticket Email') 
                             )
                             
-                            if not all([qr_code]):
+                            if not all([qr_code, first_name, last_name]):
                                 print(f"Skipping row due to missing required fields: {row}")
                                 error_count += 1
                                 continue
