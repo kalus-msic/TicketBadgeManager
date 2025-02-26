@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Ticket Log</h2>
+    
+    <!-- Filtrační formulář -->
+    <form method="get" class="row g-3 mb-4">
+        <!-- (Formulář zůstává stejný) -->
+    </form>
+    
+    <!-- Výpis logů -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date/Time</th>
+                    <th>Ticket</th>
+                    <th>Event Type</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                    <td>
+                        {% if log.ticket %}
+                            <a href="{% url 'tickets:ticket_detail' log.ticket.pk %}">
+                                {{ log.ticket.qr_code }} ({{ log.ticket.name }})
+                            </a>
+                        {% else %}
+                            Deleted Ticket (QR: {{ log.ticket_qr }})
+                        {% endif %}
+                    </td>
+                    <td>{{ log.get_event_type_display }}</td>
+                    <td>{{ log.message }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No log entries found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Stránkování -->
+    {% if logs.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if logs.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ logs.previous_page_number }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">Previous</a>
+            </li>
+            {% endif %}
+            
+            {% for num in logs.paginator.page_range %}
+                {% if logs.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if logs.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ logs.next_page_number }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ logs.paginator.num_pages }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
