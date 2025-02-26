@@ -14,8 +14,8 @@ Funguje zatím jen na Windows - využívá win32print
 
 
 ## Před samotným spuštěním aplikace
-- Nainstalovaný Python3.11 - otestováno na 3.11 - s verzí 3.12 byl problém s některými moduly
-- Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP  
+- Nainstalovaný Python3.11 - otestováno na 3.11 - s verzí 3.12 byl problém s některými moduly - ["Python 3.11.9 "](https://www.python.org/downloads/release/python-3119/) - při instalaci nezapomeňtě zaškrtnout add python to PATH
+- Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP  - ["Git"](https://git-scm.com/downloads/win)
 - Nainstalované tiskárny – správný název podle ["Instalace a nastavení tiskáren - TSC TDP-225"](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225)
 - Správně nastavený firewall - na pc kde běží aplikace musí být otevřen port na kterém běží aplikace - výchozí 8000
 
@@ -32,7 +32,7 @@ cd TicketBadgeManager
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Na Windows: venv\Scripts\activate
+venv\Scripts\activate  
 ```
 
 ### 3. Nainstalujte e požadované balíčky
