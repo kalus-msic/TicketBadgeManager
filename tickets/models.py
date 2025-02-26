@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+
 class Ticket(models.Model):
     STATUS_CHOICES = [
         ('VALID', 'Valid'),
@@ -32,3 +33,26 @@ class CheckIn(models.Model):
     
     def __str__(self):
         return f"{self.ticket.name} checked in at {self.check_in_time}"
+    
+
+class TicketLog(models.Model):
+    EVENT_CHOICES = [
+        ('CHECKIN', 'Check-In'),
+        ('UPDATE', 'Update'),
+        ('OTHER', 'Other'),
+    ]
+    ticket = models.ForeignKey(
+        Ticket,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='logs'
+    )
+    ticket_qr = models.CharField(max_length=100, null=True, blank=True)
+    event_type = models.CharField(max_length=20, choices=EVENT_CHOICES)
+    message = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now)
+    
+    def __str__(self):
+        ticket_info = self.ticket_qr if self.ticket_qr else (self.ticket.qr_code if self.ticket else "Deleted Ticket")
+        return f"{ticket_info} - {self.event_type} at {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
