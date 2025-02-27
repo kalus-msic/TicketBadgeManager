@@ -1,5 +1,4 @@
 import csv
-from io import TextIOWrapper
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, Http404
@@ -12,12 +11,10 @@ from django.utils import timezone
 import pandas as pd
 import os
 import datetime
-import random
 import ctypes
 import platform
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
-import numpy as np
 
 # Import modelů a formulářů
 from .models import Ticket, CheckIn, Log
@@ -361,7 +358,6 @@ def settings(request):
     }
     return render(request, 'tickets/settings.html', context)
 
-
 def delete_all_data(request):
     if request.method == 'POST':
         try:
@@ -639,17 +635,12 @@ def export_tickets_csv(request):
 # Label printing configuration a funkce
 PWIDTH    = 40
 PHEIGHT   = 80
-PGAP      = 2
 DPI       = 200
-SPEED     = 3
 DENSITY   = 15
-SENSOR    = 0
-OFFSET    = 0
 DOT       = DPI // 100 * 4
 CONTRAST  = 128
 
 printerName = "TDP-225"
-printerDefault = "1"
 
 def get_text_size(text, font):
     lines = text.split('\n')
@@ -805,7 +796,6 @@ def scanner_page1(request):
 def scanner_page2(request):
     return render(request, 'tickets/scanner.html', {'printer_queue': '2'})
 
-from django.db.models import Q
 from django.core.paginator import Paginator
 
 def ticket_log_list(request):

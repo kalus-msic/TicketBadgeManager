@@ -122,6 +122,21 @@ Výchozí tiskárna: TDP-2251
 Skener 1: TDP-2251  
 Skener 2: TDP-2252
 
+## Konfigurace tisku
+**Poznámka:** Tisk je připraven pro štítky o velikosti 40x80 mm. Výchozí nastavení předpokládá, že se štítky tisknou vertikálně, přičemž celý obrázek štítku je vygenerován a poté otočen o 90 stupňů (viz funkce `create_label_image`), aby byl výsledný tisk správně orientován.
+
+Tiskové parametry (např. šířka, výška štítku, DPI, density, contrast, název tiskárny, velikost fontu a cesty k fontům) jsou v současné verzi aplikace definovány přímo v souboru `views.py` (sekce věnovaná tiskárenským funkcím). Pokud si znalý uživatel přeje změnit výchozí nastavení tisku, musí ručně upravit následující proměnné:
+
+- **PWIDTH** – šířka štítku (výchozí: `40`)
+- **PHEIGHT** – výška štítku (výchozí: `80`)
+- **DPI** – hustota tiskového rozlišení (výchozí: `200`)
+- **DENSITY** – hustota tisku (výchozí: `15`)
+- **CONTRAST** – prahová hodnota kontrastu (výchozí: `128`)
+- **printerName** – výchozí název tiskárny (výchozí: `"TDP-225"`)
+- **font_size** – počáteční velikost fontu při tisku (výchozí: `250`)
+- **Cesty k fontům** – cesty k souborům fontů (`fonts/MontserratBold700.ttf` a `fonts/MontserratSemiBold600.ttf`)
+
+
 ## Plánované funkce - todo
 
 - [ ] Schéma zapojení: Přidat schéma zapojení.
@@ -130,5 +145,5 @@ Skener 2: TDP-2252
 - [ ] Přidat info o možnosti využití ngrok – odpadá potřeba vlastní lokální sítě; pomalejší odezva, ale možnost napojit aplikace prodejců vstupenek (ti.to).
 - [ ] Napojení na Eventee – při manuálním vytvoření vstupenky v TBM přidat i do Eventee.
 - [ ] Dvoujazyčná podpora.
-- [ ] Ošetřit některé chyby.
-- [ ] Zlepšit výpis stavů – místo využití příkazu print zobrazovat informace přímo v aplikaci.
+- [x] Ošetřit některé chyby.
+- [x] Zlepšit výpis stavů – místo využití příkazu print zobrazovat informace přímo v aplikaci.
