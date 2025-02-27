@@ -19,14 +19,32 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import numpy as np
 
-# Import models and forms
-from .models import Ticket, CheckIn, TicketLog
+# Import modelů a formulářů
+from .models import Ticket, CheckIn, Log
 from .forms import CsvImportForm, TicketForm
 
 if platform.system() == "Windows":
-    import win32print
+    try:
+        import win32print
+    except ImportError as e:
+        print("Chyba při načítání win32print:", e)
+        Log.objects.create(ticket=None, event_type='ERROR', message=f"Chyba při načítání win32print: {e}")
+    # Načtení TSCLIB.dll s kontrolou existence souboru
+    tsclib_path = os.path.join(os.path.dirname(__file__), "libs", "TSCLIB.dll")
+    if os.path.exists(tsclib_path):
+        try:
+            tsclibrary = ctypes.WinDLL(tsclib_path)
+        except Exception as e:
+            print("Chyba při načítání TSCLIB.dll:", e)
+            Log.objects.create(ticket=None, event_type='ERROR', message=f"Chyba při načítání TSCLIB.dll: {e}")
+            tsclibrary = None
+    else:
+        print(f"TSCLIB.dll nebyl nalezen na {tsclib_path}")
+        Log.objects.create(ticket=None, event_type='SYSTEM', message=f"TSCLIB.dll nebyl nalezen na {tsclib_path}")
+        tsclibrary = None
 else:
     print("win32print is not available on this platform.")
+    tsclibrary = None
 
 def index(request):
     total_tickets = Ticket.objects.count()
@@ -141,6 +159,7 @@ def import_replace_tickets(request):
                             
                             if not all([qr_code, first_name, last_name]):
                                 print(f"Skipping row due to missing required fields: {row}")
+                                Log.objects.create(ticket=None, event_type='SYSTEM', message=f"Skipping row, missing required fields: {row}")
                                 error_count += 1
                                 continue
                             
@@ -160,6 +179,7 @@ def import_replace_tickets(request):
                             
                         except Exception as e:
                             print(f"Error processing row: {row}. Error: {str(e)}")
+                            Log.objects.create(ticket=None, event_type='ERROR', message=f"Error processing row {row}: {e}")
                             error_count += 1
                             continue
                 
@@ -172,6 +192,7 @@ def import_replace_tickets(request):
             except Exception as e:
                 messages.error(request, f'Import failed: {str(e)}')
                 print("Import error:", str(e))
+                Log.objects.create(ticket=None, event_type='ERROR', message=f"Import failed: {e}")
                 
     return redirect('tickets:import_page')
 
@@ -229,6 +250,7 @@ def import_add_tickets(request):
                             
                             if not all([qr_code, first_name, last_name]):
                                 print(f"Skipping row due to missing required fields: {row}")
+                                Log.objects.create(ticket=None, event_type='SYSTEM', message=f"Skipping row, missing required fields: {row}")
                                 error_count += 1
                                 continue
                             
@@ -238,6 +260,7 @@ def import_add_tickets(request):
                             
                             if qr_code in existing_qr_codes:
                                 print(f"Duplicate QR code found: {qr_code}")
+                                Log.objects.create(ticket=None, event_type='SYSTEM', message=f"Duplicate QR code found: {qr_code}")
                                 duplicate_count += 1
                                 continue
                             
@@ -254,6 +277,7 @@ def import_add_tickets(request):
                             
                         except Exception as e:
                             print(f"Error processing row: {row}. Error: {str(e)}")
+                            Log.objects.create(ticket=None, event_type='ERROR', message=f"Error processing row {row}: {e}")
                             error_count += 1
                             continue
                 
@@ -268,6 +292,7 @@ def import_add_tickets(request):
             except Exception as e:
                 messages.error(request, f'Import failed: {str(e)}')
                 print("Import error:", str(e))
+                Log.objects.create(ticket=None, event_type='ERROR', message=f"Import failed: {e}")
                 
     return redirect('tickets:import_page')
 
@@ -288,11 +313,7 @@ def verify_ticket(request):
                 ticket.status = 'USED'
                 ticket.save()
                 
-                TicketLog.objects.create(
-                    ticket=ticket,
-                    event_type='CHECKIN',
-                    message='Ticket checked in'
-                )
+                Log.objects.create(ticket=ticket, event_type='CHECKIN', message='Ticket checked in')
                 
                 response = JsonResponse({
                     'valid': True,
@@ -303,7 +324,11 @@ def verify_ticket(request):
                     'event_name': ticket.event_name,
                 })
                 
-                create_label_image(ticket.name, ticket.company_name, ticket.qr_code, printer_queue)
+                try:
+                    # Předáváme aktuální ticket jako ticket_obj pro logování případných chyb
+                    create_label_image(ticket.name, ticket.company_name, ticket.qr_code, printer_queue, ticket)
+                except Exception as e:
+                    Log.objects.create(ticket=ticket, event_type='ERROR', message=f"Chyba při tisku štítku: {e}")
                 
                 return response
             else:
@@ -328,12 +353,14 @@ def verify_ticket(request):
 def settings(request):
     ticket_count = Ticket.objects.count()
     checkin_count = CheckIn.objects.count()
-    
+    logs_count = Log.objects.count()  # Přidáno pro zobrazení počtu logů
     context = {
         'ticket_count': ticket_count,
         'checkin_count': checkin_count,
+        'logs_count': logs_count,
     }
     return render(request, 'tickets/settings.html', context)
+
 
 def delete_all_data(request):
     if request.method == 'POST':
@@ -347,6 +374,7 @@ def delete_all_data(request):
             )
         except Exception as e:
             messages.error(request, f'Error deleting data: {str(e)}')
+            Log.objects.create(ticket=None, event_type='ERROR', message=f"Error deleting all data: {e}")
     return redirect('tickets:settings')
 
 def delete_checkins(request):
@@ -358,6 +386,7 @@ def delete_checkins(request):
             messages.success(request, f'Successfully deleted {checkins_count} check-ins. All tickets reset to VALID status.')
         except Exception as e:
             messages.error(request, f'Error deleting check-ins: {str(e)}')
+            Log.objects.create(ticket=None, event_type='ERROR', message=f"Error deleting check-ins: {e}")
     return redirect('tickets:settings')
 
 def merge_import(request):
@@ -451,11 +480,7 @@ def ticket_create(request):
             ticket = form.save(commit=False)
             ticket.qr_code = generate_sequential_qr_code()
             ticket.save()
-            TicketLog.objects.create(
-                ticket=ticket,
-                event_type='OTHER',
-                message='Ticket created'
-            )
+            Log.objects.create(ticket=ticket, event_type='OTHER', message='Ticket created')
             messages.success(request, 'Ticket created successfully.')
             return redirect('tickets:ticket_detail', pk=ticket.pk)
     else:
@@ -493,11 +518,7 @@ def ticket_edit(request, pk):
                 changes.append(f"Status changed from '{old_status}' to '{ticket.status}'")
             
             if changes:
-                TicketLog.objects.create(
-                    ticket=ticket,
-                    event_type='UPDATE',
-                    message="; ".join(changes)
-                )
+                Log.objects.create(ticket=ticket, event_type='UPDATE', message="; ".join(changes))
                 
             messages.success(request, 'Ticket updated successfully.')
             return redirect('tickets:ticket_detail', pk=ticket.pk)
@@ -511,15 +532,13 @@ def ticket_edit(request, pk):
         'button_text': 'Update Ticket'
     })
 
-
 def ticket_delete(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
     
     if request.method == 'POST':
         log_message = f"Ticket {ticket.qr_code} ({ticket.name}) deleted."
-        # Vytvoříme log, kde uložíme i QR kód
-        TicketLog.objects.create(
-            ticket=ticket,  # Po smazání se toto pole nastaví na NULL díky SET_NULL
+        Log.objects.create(
+            ticket=ticket,
             ticket_qr=ticket.qr_code,
             event_type='OTHER',
             message=log_message
@@ -531,7 +550,6 @@ def ticket_delete(request, pk):
     return render(request, 'tickets/ticket_confirm_delete.html', {
         'ticket': ticket
     })
-
 
 @require_POST
 def reset_ticket_status(request):
@@ -552,11 +570,7 @@ def reset_ticket_status(request):
                 ticket.status = 'VALID'
                 ticket.gdpr = 'NFO'
                 ticket.save()
-                TicketLog.objects.create(
-                    ticket=ticket,
-                    event_type='UPDATE',
-                    message=f"Status reset from {previous_status} to VALID. Check-ins deleted."
-                )
+                Log.objects.create(ticket=ticket, event_type='UPDATE', message=f"Status reset from {previous_status} to VALID. Check-ins deleted.")
             
             messages.success(
                 request, 
@@ -567,6 +581,7 @@ def reset_ticket_status(request):
             
     except Exception as e:
         messages.error(request, f'Error resetting tickets: {str(e)}')
+        Log.objects.create(ticket=None, event_type='ERROR', message=f"Error resetting tickets: {e}")
     
     return redirect(request.META.get('HTTP_REFERER', 'tickets:ticket_management'))
 
@@ -583,11 +598,7 @@ def delete_tickets(request):
         
         if ticket_count > 0:
             for ticket in tickets:
-                TicketLog.objects.create(
-                    ticket=ticket,
-                    event_type='OTHER',
-                    message='Ticket deleted via bulk action'
-                )
+                Log.objects.create(ticket=ticket, event_type='OTHER', message='Ticket deleted via bulk action')
             tickets.delete()
             messages.success(
                 request, 
@@ -598,6 +609,7 @@ def delete_tickets(request):
             
     except Exception as e:
         messages.error(request, f'Error deleting tickets: {str(e)}')
+        Log.objects.create(ticket=None, event_type='ERROR', message=f"Error deleting tickets: {e}")
     
     return redirect(request.META.get('HTTP_REFERER', 'tickets:ticket_management'))
 
@@ -624,7 +636,7 @@ def export_tickets_csv(request):
 
     return response
 
-# Label printing configuration and functions
+# Label printing configuration a funkce
 PWIDTH    = 40
 PHEIGHT   = 80
 PGAP      = 2
@@ -639,25 +651,36 @@ CONTRAST  = 128
 printerName = "TDP-225"
 printerDefault = "1"
 
-if platform.system() == "Windows":
-    tsclibrary = ctypes.WinDLL("tickets/libs/TSCLIB.dll")
-
 def get_text_size(text, font):
     lines = text.split('\n')
     widths = [font.getlength(line) for line in lines]
     heights = [font.getmetrics()[0] + font.getmetrics()[1] for line in lines]
     return max(widths), sum(heights)
 
-def create_label_image(name, company_name=None, QR=None, printer_queue="1"):
+def create_label_image(name, company_name=None, QR=None, printer_queue="1", ticket_obj=None):
     base_dir = os.path.dirname(__file__)
     font_name_path = os.path.join(base_dir, 'fonts', 'MontserratBold700.ttf')
     font_company_path = os.path.join(base_dir, 'fonts', 'MontserratSemiBold600.ttf')
 
+    # Ověříme existenci fontů
+    if not os.path.exists(font_name_path) or (company_name and not os.path.exists(font_company_path)):
+        err_msg = f"Chybí fonty. Očekávány cesty: {font_name_path} a {font_company_path}"
+        print(err_msg)
+        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
+        return
+
+    font_size = 250
+    try:
+        font_name = ImageFont.truetype(font_name_path, font_size)
+        font_company = ImageFont.truetype(font_company_path, int(font_size * 0.70))
+    except Exception as e:
+        err_msg = f"Chyba při načítání fontů: {e}"
+        print(err_msg)
+        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
+        return
+
     img = Image.new('L', (946, 572), color='white')
     d = ImageDraw.Draw(img)
-    font_size = 250
-    font_name = ImageFont.truetype(font_name_path, font_size)
-    font_company = ImageFont.truetype(font_company_path, int(font_size * 0.70))
     wrapped_name = textwrap.wrap(name, width=18)
     wrapped_company_name = textwrap.wrap(company_name, width=20) if company_name else []
     name_width, name_height = get_text_size('\n'.join(wrapped_name), font_name)
@@ -665,8 +688,14 @@ def create_label_image(name, company_name=None, QR=None, printer_queue="1"):
     margin = 30
     while name_width > img.width - 2 * margin or company_width > img.width - 2 * margin or name_height + company_height > img.height - 2 * margin:
         font_size -= 1
-        font_name = ImageFont.truetype(font_name_path, font_size)
-        font_company = ImageFont.truetype(font_company_path, int(font_size * 0.70))
+        try:
+            font_name = ImageFont.truetype(font_name_path, font_size)
+            font_company = ImageFont.truetype(font_company_path, int(font_size * 0.70))
+        except Exception as e:
+            err_msg = f"Chyba při úpravě velikosti fontu: {e}"
+            print(err_msg)
+            Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
+            return
         name_width, name_height = get_text_size('\n'.join(wrapped_name), font_name)
         company_width, company_height = get_text_size('\n'.join(wrapped_company_name), font_company) if company_name else (0, 0)
     if company_name:
@@ -686,27 +715,55 @@ def create_label_image(name, company_name=None, QR=None, printer_queue="1"):
             d.text((x, company_y), line, fill="black", font=font_company)
             company_y += font_company.getmetrics()[0] + font_company.getmetrics()[1]
     img = img.rotate(90, expand=True)
-    img.save(f"tickets/image/{name}-{QR}.png")
-    printWin_TSC(f"tickets/image/{name}-{QR}.png", printer_queue)
+    try:
+        output_dir = os.path.join(base_dir, "image")
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        image_file = os.path.join(output_dir, f"{name}-{QR}.png")
+        img.save(image_file)
+        # Předáváme také ticket_obj dál pro logování chyb v tiskové funkci
+        printWin_TSC(image_file, printer_queue, ticket_obj)
+    except Exception as e:
+        err_msg = f"Chyba při ukládání obrázku nebo odesílání na tiskárnu: {e}"
+        print(err_msg)
+        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
+        return
 
-def printWin_TSC(name, queueName):
-    actualPrinter = printerName + queueName
-    printers = [printer[2] for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL)]
-    if actualPrinter in printers:
-        print(f"Printer {actualPrinter} exists")
-        tsclibrary.openportW(actualPrinter)
-        tsclibrary.sendcommandW("DENSITY " + str(DENSITY))
-        tsclibrary.sendcommandW("SIZE " + str(PWIDTH) + " mm, " + str(PHEIGHT) + " mm")
-        tsclibrary.clearbuffer()
-        tsclibrary.sendcommandW("CLS")
-        left = 0
-        printOnTop(name, left)
-        print("Image " + name + " sent to printer")
-        tsclibrary.printlabelW("1", "1")
-        tsclibrary.closeport()
-        print('printWin_TSC function completed')
-    else:
-        print(f"Printer {actualPrinter} does not exist")
+def printWin_TSC(name, queueName, ticket_obj=None):
+    if platform.system() != "Windows":
+        err_msg = "Tisk pomocí TSC tiskárny není podporován mimo Windows."
+        print(err_msg)
+        Log.objects.create(ticket=ticket_obj, event_type='SYSTEM', message=err_msg)
+        return
+    if tsclibrary is None:
+        err_msg = "TSC knihovna není dostupná."
+        print(err_msg)
+        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
+        return
+    try:
+        actualPrinter = printerName + queueName
+        printers = [printer[2] for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL)]
+        if actualPrinter in printers:
+            print(f"Printer {actualPrinter} exists")
+            tsclibrary.openportW(actualPrinter)
+            tsclibrary.sendcommandW("DENSITY " + str(DENSITY))
+            tsclibrary.sendcommandW("SIZE " + str(PWIDTH) + " mm, " + str(PHEIGHT) + " mm")
+            tsclibrary.clearbuffer()
+            tsclibrary.sendcommandW("CLS")
+            left = 0
+            printOnTop(name, left)
+            print("Image " + name + " sent to printer")
+            tsclibrary.printlabelW("1", "1")
+            tsclibrary.closeport()
+            print('printWin_TSC function completed')
+        else:
+            err_msg = f"Printer {actualPrinter} does not exist"
+            print(err_msg)
+            Log.objects.create(ticket=ticket_obj, event_type='SYSTEM', message=err_msg)
+    except Exception as e:
+        err_msg = f"Chyba při komunikaci s tiskárnou: {e}"
+        print(err_msg)
+        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
 
 def printPic(imName, x, y, mode):
     print("PRINTING ", imName)
@@ -753,12 +810,12 @@ from django.core.paginator import Paginator
 
 def ticket_log_list(request):
     """
-    View to list TicketLog entries with filtering options:
+    View to list Logs entries with filtering options:
     - ticket: filtruje podle ID nebo částečného shody s QR kódem
-    - event_type: filtruje podle typu události (např. CHECKIN, UPDATE, OTHER)
+    - event_type: filtruje podle typu události (např. CHECKIN, UPDATE, OTHER, ERROR, SYSTEM)
     - search: vyhledávání ve zprávě
     """
-    logs = TicketLog.objects.select_related('ticket').all().order_by('-timestamp')
+    logs = Log.objects.select_related('ticket').all().order_by('-timestamp')
     
     # Filtrace podle vstupenky (ID nebo částečná shoda s QR kódem)
     ticket_filter = request.GET.get('ticket')
@@ -785,6 +842,16 @@ def ticket_log_list(request):
         'ticket_filter': ticket_filter or '',
         'event_type': event_type or '',
         'search': search or '',
-        'event_choices': TicketLog.EVENT_CHOICES,
+        'event_choices': Log.EVENT_CHOICES,
     }
     return render(request, 'tickets/log.html', context)
+
+@require_POST
+def delete_logs(request):
+    try:
+        logs_count = Log.objects.count()
+        Log.objects.all().delete()
+        messages.success(request, f"Successfully deleted {logs_count} log entries.")
+    except Exception as e:
+        messages.error(request, f"Error deleting logs: {e}")
+    return redirect('tickets:settings')
