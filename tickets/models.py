@@ -27,19 +27,22 @@ class Ticket(models.Model):
     def __str__(self):
         return f"{self.name} - {self.company_name}"
 
+
 class CheckIn(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
     check_in_time = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return f"{self.ticket.name} checked in at {self.check_in_time}"
-    
 
-class TicketLog(models.Model):
+
+class Log(models.Model):
     EVENT_CHOICES = [
         ('CHECKIN', 'Check-In'),
         ('UPDATE', 'Update'),
         ('OTHER', 'Other'),
+        ('ERROR', 'Error'),
+        ('SYSTEM', 'System'),
     ]
     ticket = models.ForeignKey(
         Ticket,

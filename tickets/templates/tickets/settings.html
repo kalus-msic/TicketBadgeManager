@@ -32,6 +32,7 @@
                     </div>
 
                     <div class="row">
+                        <!-- Delete All Data -->
                         <div class="col-md-6 mb-3">
                             <div class="card border-danger">
                                 <div class="card-body">
@@ -47,6 +48,7 @@
                             </div>
                         </div>
                         
+                        <!-- Delete Check-ins -->
                         <div class="col-md-6 mb-3">
                             <div class="card border-warning">
                                 <div class="card-body">
@@ -62,6 +64,25 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Delete Logs -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title text-info">Delete Logs</h5>
+                                    <p class="card-text">This will delete all log entries. This action cannot be undone.</p>
+                                    <form method="post" action="{% url 'tickets:delete_logs' %}">
+                                        {% csrf_token %}
+                                        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#deleteLogsModal">
+                                            Delete Logs
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -122,4 +143,32 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Logs Modal -->
+<div class="modal fade" id="deleteLogsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Confirm Delete Logs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete all log entries? This action cannot be undone.</p>
+                <p><strong>Total log entries: {{ logs_count }}</strong></p>
+                <p><strong>This will delete:</strong></p>
+                <ul>
+                    <li>All log entries ({{ logs_count }} in total)</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'tickets:delete_logs' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-info">Delete Logs</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

@@ -2,11 +2,31 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Ticket Log</h2>
+    <h2>Logs</h2>
     
     <!-- Filtrační formulář -->
     <form method="get" class="row g-3 mb-4">
-        <!-- (Formulář zůstává stejný) -->
+        <div class="col-md-4">
+            <label for="ticket" class="form-label">Ticket ID / QR Code</label>
+            <input type="text" id="ticket" name="ticket" class="form-control" value="{{ ticket_filter }}">
+        </div>
+        <div class="col-md-4">
+            <label for="event_type" class="form-label">Event Type</label>
+            <select id="event_type" name="event_type" class="form-select">
+                <option value="">All</option>
+                {% for code, display in event_choices %}
+                    <option value="{{ code }}" {% if event_type == code %}selected{% endif %}>{{ display }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="search" class="form-label">Message Search</label>
+            <input type="text" id="search" name="search" class="form-control" value="{{ search }}">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{% url 'tickets:ticket_log_list' %}" class="btn btn-secondary">Reset</a>
+        </div>
     </form>
     
     <!-- Výpis logů -->
@@ -27,7 +47,7 @@
                     <td>
                         {% if log.ticket %}
                             <a href="{% url 'tickets:ticket_detail' log.ticket.pk %}">
-                                {{ log.ticket.qr_code }} ({{ log.ticket.name }})
+                                {{ log.ticket.qr_code }}
                             </a>
                         {% else %}
                             Deleted Ticket (QR: {{ log.ticket_qr }})
@@ -44,6 +64,7 @@
             </tbody>
         </table>
     </div>
+    
 
     <!-- Stránkování -->
     {% if logs.has_other_pages %}
