@@ -21,7 +21,7 @@
                     <i class="bi bi-qr-code-scan"></i> Scan Tickets - Printer 2 
                 </a>
                 <a href="{% url 'tickets:ticket_create' %}" class="btn btn-success btn-lg">
-                    <i class="bi bi-plus-circle"></i> Create new ticket
+                    <i class="bi bi-plus-circle"></i> Create New Ticket
                 </a>
             </div>
         </div>
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <!-- Recent Activity -->
+    <!-- Recent Activity (Sjednocená tabulka bez sloupce Status) -->
     <div class="row">
         <div class="col-md-12">
             <div class="card">
@@ -76,19 +76,25 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Time</th>
+                                    <th>Actions</th>
+                                    <th>Ticket Number</th>
                                     <th>Name</th>
                                     <th>Company</th>
-                                    <th>Ticket number</th>
+                                    <th>Checked-in</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for checkin in recent_checkins %}
                                 <tr>
-                                    <td>{{ checkin.check_in_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        <a href="{% url 'tickets:ticket_detail' checkin.ticket.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                    <td>{{ checkin.ticket.qr_code }}</td>
                                     <td>{{ checkin.ticket.name }}</td>
                                     <td>{{ checkin.ticket.company_name }}</td>
-                                    <td>{{ checkin.ticket.qr_code }}</td>
+                                    <td>{{ checkin.check_in_time|date:"Y-m-d H:i" }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
