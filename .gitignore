@@ -188,7 +188,7 @@ __pycache__/
 temp_label.png
 
 # vytvořené obrázky
-tickets_scanner/image/*
+tickets/image/*
 
 # dočasné soubory
 temp/*
