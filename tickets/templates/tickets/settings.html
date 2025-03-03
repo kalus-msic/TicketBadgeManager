@@ -4,7 +4,8 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
+            <!-- Ostatní nastavení -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="mb-0">Settings</h2>
                 </div>
@@ -31,6 +32,26 @@
                         </div>
                     </div>
 
+                    <!-- Sekce pro zadání Eventee API tokenu -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title">Eventee API Token</h5>
+                                    <form method="post" action="{% url 'tickets:update_eventee_token' %}">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <label for="api_token" class="form-label">API Token</label>
+                                            <input type="text" class="form-control" id="api_token" name="api_token" value="{{ eventee_token }}">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Save API Token</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ostatní části nastavení, např. Delete All Data, Delete Check-ins, Delete Logs -->
                     <div class="row">
                         <!-- Delete All Data -->
                         <div class="col-md-6 mb-3">
@@ -89,6 +110,7 @@
     </div>
 </div>
 
+<!-- Modální okna pro smazání (Delete All, Delete Check-ins, Delete Logs) zůstávají beze změny -->
 <!-- Delete All Modal -->
 <div class="modal fade" id="deleteAllModal" tabindex="-1">
     <div class="modal-dialog">

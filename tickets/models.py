@@ -24,6 +24,9 @@ class Ticket(models.Model):
     event_name = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     
+    # Invited to Eventee via API
+    invited = models.BooleanField(default=False)
+    
     def __str__(self):
         return f"{self.name} - {self.company_name}"
 
@@ -59,3 +62,9 @@ class Log(models.Model):
     def __str__(self):
         ticket_info = self.ticket_qr if self.ticket_qr else (self.ticket.qr_code if self.ticket else "Deleted Ticket")
         return f"{ticket_info} - {self.event_type} at {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+
+class EventeeSettings(models.Model):
+    api_token = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return "Eventee Settings"
