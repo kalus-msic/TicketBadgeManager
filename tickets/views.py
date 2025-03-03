@@ -15,9 +15,11 @@ import ctypes
 import platform
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
+import requests
+
 
 # Import modelů a formulářů
-from .models import Ticket, CheckIn, Log
+from .models import Ticket, CheckIn, Log, EventeeSettings
 from .forms import CsvImportForm, TicketForm
 
 if platform.system() == "Windows":
@@ -350,13 +352,16 @@ def verify_ticket(request):
 def settings(request):
     ticket_count = Ticket.objects.count()
     checkin_count = CheckIn.objects.count()
-    logs_count = Log.objects.count()  # Přidáno pro zobrazení počtu logů
+    logs_count = Log.objects.count()
+    eventee_setting = EventeeSettings.objects.first()
     context = {
         'ticket_count': ticket_count,
         'checkin_count': checkin_count,
         'logs_count': logs_count,
+        'eventee_token': eventee_setting.api_token if eventee_setting else "",
     }
     return render(request, 'tickets/settings.html', context)
+
 
 def delete_all_data(request):
     if request.method == 'POST':
@@ -469,6 +474,7 @@ def generate_sequential_qr_code():
     qr_code = f"{date_prefix}-{ticket_number_suffix}"
     return qr_code
 
+
 def ticket_create(request):
     if request.method == 'POST':
         form = TicketForm(request.POST)
@@ -477,6 +483,59 @@ def ticket_create(request):
             ticket.qr_code = generate_sequential_qr_code()
             ticket.save()
             Log.objects.create(ticket=ticket, event_type='OTHER', message='Ticket created')
+            
+            # Pokud byl checkbox "Invite to Eventee" zaškrtnutý a ticket ještě nebyl pozván
+            if request.POST.get("invite_to_eventee") and not ticket.invited:
+                # Rozdělení jména na křestní a příjmení
+                name_parts = ticket.name.split(" ", 1)
+                first_name = name_parts[0]
+                last_name = name_parts[1] if len(name_parts) > 1 else ''
+                
+                # Upravený payload s klíčem "users"
+                payload = {
+                    "users": [
+                        {
+                            "firstName": first_name,
+                            "lastName": last_name,
+                            "email": ticket.email,
+                        }
+                    ]
+                }
+                
+                try:
+                    # Načtení API tokenu z EventeeSettings
+                    eventee_setting = EventeeSettings.objects.first()
+                    token = eventee_setting.api_token if eventee_setting and eventee_setting.api_token else ""
+                    
+                    headers = {
+                        "Accept": "application/json",
+                        "Authorization": f"Bearer {token}"
+                    }
+                    
+                    api_url = "https://api.eventee.co/public/v1/attendee/invite"
+                    response = requests.put(api_url, json=payload, headers=headers)
+                    
+                    if response.ok:
+                        Log.objects.create(
+                            ticket=ticket,
+                            event_type='OTHER',
+                            message=f"Eventee invitation sent successfully: {response.text}"
+                        )
+                        ticket.invited = True
+                        ticket.save()
+                    else:
+                        Log.objects.create(
+                            ticket=ticket,
+                            event_type='ERROR',
+                            message=f"Failed to send Eventee invitation: {response.status_code}, {response.text}"
+                        )
+                except Exception as e:
+                    Log.objects.create(
+                        ticket=ticket,
+                        event_type='ERROR',
+                        message=f"Error calling Eventee API: {e}"
+                    )
+            
             messages.success(request, 'Ticket created successfully.')
             return redirect('tickets:ticket_detail', pk=ticket.pk)
     else:
@@ -492,17 +551,15 @@ def ticket_create(request):
 
 def ticket_edit(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
-    # Uložení původních hodnot před úpravou
     old_name = ticket.name
     old_company_name = ticket.company_name
     old_email = ticket.email
-    old_status = ticket.status  # Přidáno pro sledování změny statusu
+    old_status = ticket.status
 
     if request.method == 'POST':
         form = TicketForm(request.POST, instance=ticket)
         if form.is_valid():
-            ticket = form.save()
-            
+            ticket = form.save(commit=False)
             changes = []
             if old_name != ticket.name:
                 changes.append(f"Name changed from '{old_name}' to '{ticket.name}'")
@@ -513,6 +570,57 @@ def ticket_edit(request, pk):
             if old_status != ticket.status:
                 changes.append(f"Status changed from '{old_status}' to '{ticket.status}'")
             
+            # Pokud checkbox "Invite to Eventee" je zaškrtnutý a ticket ještě nebyl pozván
+            if form.cleaned_data.get("invite_to_eventee") and not ticket.invited:
+                name_parts = ticket.name.split(" ", 1)
+                first_name = name_parts[0]
+                last_name = name_parts[1] if len(name_parts) > 1 else ''
+                
+                # Upravený payload s klíčem "users"
+                payload = {
+                    "users": [
+                        {
+                            "firstName": first_name,
+                            "lastName": last_name,
+                            "email": ticket.email,
+                        }
+                    ]
+                }
+                
+                try:
+                    eventee_setting = EventeeSettings.objects.first()
+                    token = eventee_setting.api_token if eventee_setting and eventee_setting.api_token else ""
+                    
+                    headers = {
+                        "Accept": "application/json",
+                        "Authorization": f"Bearer {token}"
+                    }
+                    
+                    api_url = "https://api.eventee.co/public/v1/attendee/invite"
+                    response = requests.put(api_url, json=payload, headers=headers)
+                    
+                    if response.ok:
+                        Log.objects.create(
+                            ticket=ticket,
+                            event_type='OTHER',
+                            message=f"Eventee invitation sent successfully on update: {response.text}"
+                        )
+                        ticket.invited = True
+                        changes.append("Invitation sent")
+                    else:
+                        Log.objects.create(
+                            ticket=ticket,
+                            event_type='ERROR',
+                            message=f"Failed to send Eventee invitation on update: {response.status_code}, {response.text}"
+                        )
+                except Exception as e:
+                    Log.objects.create(
+                        ticket=ticket,
+                        event_type='ERROR',
+                        message=f"Error calling Eventee API on update: {e}"
+                    )
+            
+            ticket.save()
             if changes:
                 Log.objects.create(ticket=ticket, event_type='UPDATE', message="; ".join(changes))
                 
@@ -844,4 +952,12 @@ def delete_logs(request):
         messages.success(request, f"Successfully deleted {logs_count} log entries.")
     except Exception as e:
         messages.error(request, f"Error deleting logs: {e}")
+    return redirect('tickets:settings')
+
+def update_eventee_token(request):
+    token = request.POST.get('api_token', '').strip()
+    setting, created = EventeeSettings.objects.get_or_create(id=1)
+    setting.api_token = token
+    setting.save()
+    messages.success(request, "Eventee API token updated.")
     return redirect('tickets:settings')

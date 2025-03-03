@@ -12,6 +12,8 @@ urlpatterns = [
     path('settings/', views.settings, name='settings'),
     path('settings/delete-all/', views.delete_all_data, name='delete_all_data'),
     path('settings/delete-checkins/', views.delete_checkins, name='delete_checkins'),
+    path('settings/update-token/', views.update_eventee_token, name='update_eventee_token'),
+
     path('import/', views.import_page, name='import_page'),
     path('import/replace/', views.import_replace_tickets, name='import_replace_tickets'),
     path('import/add/', views.import_add_tickets, name='import_add_tickets'),

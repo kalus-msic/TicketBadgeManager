@@ -4,3 +4,4 @@ pandas==2.2.3
 numpy==2.1.1
 pywin32>=306  
 django-sslserver==0.22
+requests==2.32.3

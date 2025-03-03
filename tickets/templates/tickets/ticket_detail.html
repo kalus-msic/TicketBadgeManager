@@ -33,6 +33,17 @@
                         <div class="col-md-4 fw-bold">Email:</div>
                         <div class="col-md-8">{{ ticket.email }}</div>
                     </div>
+                    <!-- Nový řádek pro zobrazení hodnoty invited -->
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Invited:</div>
+                        <div class="col-md-8">
+                            {% if ticket.invited %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </div>
+                    </div>
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Status:</div>
                         <div class="col-md-8">
