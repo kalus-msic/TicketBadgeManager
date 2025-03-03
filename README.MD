@@ -143,7 +143,7 @@ Tiskové parametry (např. šířka, výška štítku, DPI, density, contrast, n
 - [x] Dopsat README.md – chybí informace o HTTPS; je potřeba pro správnou funkci skeneru z ostatních stanic.
 - [x] Lepší logování změn
 - [ ] Přidat info o možnosti využití ngrok – odpadá potřeba vlastní lokální sítě; pomalejší odezva, ale možnost napojit aplikace prodejců vstupenek (ti.to).
-- [ ] Napojení na Eventee – při manuálním vytvoření vstupenky v TBM přidat i do Eventee.
+- [x] Napojení na Eventee – při manuálním vytvoření vstupenky v TBM přidat i do Eventee.
 - [ ] Dvoujazyčná podpora.
 - [x] Ošetřit některé chyby.
 - [x] Zlepšit výpis stavů – místo využití příkazu print zobrazovat informace přímo v aplikaci.
