@@ -920,16 +920,21 @@ from django.core.paginator import Paginator
 def ticket_log_list(request):
     """
     View to list Logs entries with filtering options:
-    - ticket: filtruje podle ID nebo částečného shody s QR kódem
+    - ticket: filtruje podle ID (pokud je zadáno číslo) nebo částečné shody s QR kódem
     - event_type: filtruje podle typu události (např. CHECKIN, UPDATE, OTHER, ERROR, SYSTEM)
     - search: vyhledávání ve zprávě
     """
     logs = Log.objects.select_related('ticket').all().order_by('-timestamp')
     
-    # Filtrace podle vstupenky (ID nebo částečná shoda s QR kódem)
+    # Filtrace podle vstupenky
     ticket_filter = request.GET.get('ticket')
     if ticket_filter:
-        logs = logs.filter(Q(ticket__id=ticket_filter) | Q(ticket__qr_code__icontains=ticket_filter))
+        if ticket_filter.isdigit():
+            # Pokud je vstup číslo, můžeme filtrovat podle ID nebo QR kódu
+            logs = logs.filter(Q(ticket__id=ticket_filter) | Q(ticket__qr_code__icontains=ticket_filter))
+        else:
+            # Jinak filtrovat pouze podle QR kódu
+            logs = logs.filter(ticket__qr_code__icontains=ticket_filter)
     
     # Filtrace podle event typu
     event_type = request.GET.get('event_type')
