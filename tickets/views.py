@@ -16,6 +16,7 @@ import platform
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import requests
+import unicodedata
 
 
 # Import modelů a formulářů
@@ -65,33 +66,43 @@ def index(request):
 def ticket_list(request):
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
-    
-    tickets = Ticket.objects.all().order_by('-created_at')
-    
+
+    # Načteme všechny tickety (pro malé množství dat)
+    tickets = list(Ticket.objects.all().order_by('-created_at'))
+
+    # Filtrace podle vyhledávacího dotazu (bez diakritiky)
     if search_query:
-        tickets = tickets.filter(
-            Q(name__icontains=search_query) |
-            Q(company_name__icontains=search_query) |
-            Q(qr_code__icontains=search_query)
-        )
-    
+        normalized_query = normalize_text(search_query)
+        tickets = [
+            ticket for ticket in tickets
+            if normalized_query in normalize_text(ticket.name)
+            or normalized_query in normalize_text(ticket.company_name)
+            or normalized_query in normalize_text(ticket.qr_code)
+        ]
+
+    # Filtrace podle stavu
     if status_filter and status_filter != 'ALL':
-        tickets = tickets.filter(status=status_filter)
-    
+        tickets = [ticket for ticket in tickets if ticket.status == status_filter]
+
     paginator = Paginator(tickets, 25)
     page = request.GET.get('page')
     tickets_page = paginator.get_page(page)
-    
+
     context = {
         'tickets': tickets_page,
         'search_query': search_query,
         'status_filter': status_filter,
         'total_count': Ticket.objects.count(),
-        'valid_count': Ticket.objects.filter(status='VALID').count(),
-        'used_count': Ticket.objects.filter(status='USED').count(),
+        'valid_count': len([t for t in Ticket.objects.all() if t.status == 'VALID']),
+        'used_count': len([t for t in Ticket.objects.all() if t.status == 'USED']),
     }
-    return render(request, 'tickets/ticket_list.html', context)
 
+    # Pokud je požadavek AJAX (pro dynamické vyhledávání), vrátíme pouze fragment s tabulkou
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'tickets/_ticket_table.html', context)
+    else:
+        return render(request, 'tickets/ticket_list.html', context)
+    
 def detect_delimiter(file_content):
     first_line = file_content.splitlines()[0]
     if ';' in first_line:
@@ -961,3 +972,12 @@ def update_eventee_token(request):
     setting.save()
     messages.success(request, "Eventee API token updated.")
     return redirect('tickets:settings')
+
+def normalize_text(text):
+    """Odstraní diakritiku a převede text na malá písmena."""
+    if not text:
+        return ""
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', text)
+        if unicodedata.category(c) != 'Mn'
+    ).lower()
