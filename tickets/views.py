@@ -323,7 +323,7 @@ def verify_ticket(request):
                 ticket.status = 'USED'
                 ticket.save()
                 
-                Log.objects.create(ticket=ticket, event_type='CHECKIN', message='Ticket checked in')
+                Log.objects.create(ticket=ticket, event_type='CHECKIN', message=f"Ticket checked-in via scanner {printer_queue}")
                 
                 response = JsonResponse({
                     'valid': True,
