@@ -28,27 +28,64 @@ cd TicketBadgeManager
 ```
 **Poznámka:** Pokud váš systém používá příkaz `python3` místo `python`, nahraďte příkazy odpovídajícím způsobem.
 
-### 2. Vytvořte a aktivujte virtuální prostředí (doporučeno)
+### 2. Vytvoření virtuálního prostředí (pouze jednou)  
+Při prvním spuštění si vytvořte virtuální prostředí:  
 
 ```bash
-python -m venv venv
-venv\Scripts\activate  
+python -m venv venvTBM
 ```
 
-### 3. Nainstalujte požadované balíčky
+---
+
+### 3. Aktivace virtuálního prostředí (při každém spuštění projektu)  
+Před spuštěním aplikace aktivujte virtuální prostředí podle svého systému:  
+
+- **Windows (CMD):**  
+  ```cmd
+  venvTBM\Scripts\activate
+  ```
+
+- **Windows (PowerShell):**  
+  Pokud dostanete chybu `"running scripts is disabled"`, povolte skripty dočasně pro toto okno:  
+  ```powershell
+  Set-ExecutionPolicy Unrestricted -Scope Process
+  ```
+  Poté aktivujte prostředí:  
+  ```powershell
+  venvTBM\Scripts\Activate.ps1
+  ```
+
+### 4. Deaktivace virtuálního prostředí  
+Pokud chcete prostředí vypnout, stačí použít:  
+```bash
+deactivate
+```
+
+### 5. Nainstalujte požadované balíčky  
+
+Než spustíte tento příkaz, **ujistěte se, že máte aktivované virtuální prostředí** (viz informace výše).  
+Poznáte to podle toho, že na začátku příkazového řádku vidíte název virtuálního prostředí v závorkách, například:  
+
+```
+(venvTBM) $
+```
+
+Pokud virtuální prostředí není aktivní, **nejprve ho aktivujte** (viz krok 2).  
+
+Jakmile je aktivní, nainstalujte požadované balíčky:  
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Proveďte databázové migrace
+### 6. Proveďte databázové migrace
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 5. Upravte soubor settings.py – SECRET_KEY a ALLOWED_HOSTS
+### 7. Upravte soubor settings.py – SECRET_KEY a ALLOWED_HOSTS
 **Důležité:** Před spuštěním aplikace si změňte hodnotu `SECRET_KEY` v souboru `ticket_badge_manager/settings.py` na unikátní a bezpečnou hodnotu.  
 Například můžete vygenerovat nový secret key pomocí příkazu:
 
@@ -63,13 +100,13 @@ Dále do ALLOWED_HOSTS přidejte IP vašeho počítače, na kterém běží apli
 ALLOWED_HOSTS = ['127.0.0.1', '192.x.x.x']
 ```
 
-### 6. Spusťte server
+### 8. Spusťte server
 
 ```bash
 python manage.py runsslserver 0.0.0.0:8000
 ```
 
-### 7. Otevřete prohlížeč – pokud není specifikováno
+### 9. Otevřete prohlížeč – pokud není specifikováno
 ```bash
 https://127.0.0.1:8000/
 ```
