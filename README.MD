@@ -106,6 +106,21 @@ ALLOWED_HOSTS = ['127.0.0.1', '192.x.x.x']
 python manage.py runsslserver 0.0.0.0:8000
 ```
 
+Pokud při spuštění serveru narazíte na chybu, zkontrolujte, zda používáte správnou verzi Pythonu, na které byla aplikace testována (v našem případě **3.11.9**). Verzi Pythonu si můžete ověřit příkazem:
+
+```bash
+python --version
+```
+
+Pokud je nainstalovaná jiná verze, stáhněte si správnou verzi z odkazu výše. Následně musíte vytvořit virtuální prostředí se správnou verzí, například:
+
+```bash
+py -3.11 -m venv venvTBM311
+venvTBM311\Scripts\activate
+```
+
+A pokračujte od bodu 5. 
+
 ### 9. Otevřete prohlížeč – pokud není specifikováno
 ```bash
 https://127.0.0.1:8000/
