@@ -17,6 +17,11 @@ Funguje zatím jen na Windows – využívá win32print.
 - Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP – [Git](https://git-scm.com/downloads/win).
 - Nainstalované tiskárny – správný název podle [Instalace a nastavení tiskáren - TSC TDP-225](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225).
 - Správně nastavený firewall – na PC, kde běží aplikace, musí být otevřen port, na kterém aplikace běží (výchozí 8000).
+- **Windows (CMD run as administrator):** 
+
+```bash
+netsh advfirewall firewall add rule name="Django Web Server" protocol=TCP dir=in localport=8000 action=allow profile=private,domain
+```
 
 ## Jak spustit aplikaci
 
