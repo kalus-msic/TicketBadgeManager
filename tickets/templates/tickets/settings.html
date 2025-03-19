@@ -217,7 +217,7 @@
                     statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace je přístupná v síti na adrese: <strong>https://${data.local_ip}:${data.port}</strong></p>`;
                 } else {
                     statusDiv.innerHTML += "<p class='text-warning'>⚠️ Aplikace není přístupná z jiných zařízení!</p>";
-                    statusDiv.innerHTML += "<p class='text-info'>ℹ️ Zkontrolujte firewall nebo síťová pravidla.</p>";
+                    statusDiv.innerHTML += "<p class='text-info'>ℹ️ Zkontrolujte firewall případně settings.py (allowed hosts).</p>";
                 }
             })
             .catch(error => {
