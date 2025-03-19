@@ -17,6 +17,8 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import requests
 import unicodedata
+import socket
+
 
 
 # Import modelů a formulářů
@@ -360,16 +362,69 @@ def verify_ticket(request):
 
     return JsonResponse({'error': 'Invalid request method'})
 
+def get_local_ip():
+    """ Získá skutečnou lokální IP adresu (např. 192.168.x.x nebo 10.x.x.x) """
+    try:
+        # Vytvoří socket a připojí se na externí adresu (ale neodesílá data)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]  # Získá IP adresu síťového rozhraní
+        s.close()
+    except Exception:
+        local_ip = "Unknown"
+    return local_ip
+
+def check_server_status(request):
+    """ Ověří, zda server běží na daném portu a je přístupný v síti """
+    
+    local_ip = get_local_ip()  # Funkce na zjištění lokální IP
+    port = request.get_port()  # Získání portu z requestu
+
+    # Testujeme, zda server naslouchá na portu
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(1)
+    try:
+        s.connect((local_ip, int(port)))
+        s.close()
+        port_open = True
+    except (socket.timeout, ConnectionRefusedError):
+        port_open = False
+
+    # Testujeme dostupnost přes HTTP/HTTPS
+    accessible = False
+    if port_open:
+        try:
+            url = f"https://{local_ip}:{port}"
+            response = requests.get(url, timeout=2, verify=False)
+            accessible = response.status_code == 200
+        except requests.exceptions.RequestException:
+            accessible = False
+
+    return JsonResponse({
+        "port_open": port_open,
+        "port": port,
+        "accessible": accessible,
+        "local_ip": local_ip,
+    })
+
 def settings(request):
+    from .models import Ticket, CheckIn, Log, EventeeSettings
+
     ticket_count = Ticket.objects.count()
     checkin_count = CheckIn.objects.count()
     logs_count = Log.objects.count()
     eventee_setting = EventeeSettings.objects.first()
+
+    local_ip = get_local_ip()
+    port = request.get_port()
+
     context = {
         'ticket_count': ticket_count,
         'checkin_count': checkin_count,
         'logs_count': logs_count,
         'eventee_token': eventee_setting.api_token if eventee_setting else "",
+        'local_ip': local_ip, 
+        'port': port,
     }
     return render(request, 'tickets/settings.html', context)
 
