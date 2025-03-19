@@ -12,9 +12,9 @@ if "%LOCAL%"=="%REMOTE%" (
 ) else (
     echo Nalezena nová verze repozitáře.
     choice /m "Chcete stáhnout aktualizace z Gitu? (Y/N)"
-    REM Pokud uživatel stiskne N, errorlevel bude 2
     if errorlevel 2 (
         echo Aktualizace nebyla provedena.
+        goto :end
     ) else (
         echo Provádím aktualizaci...
         git pull
@@ -32,4 +32,5 @@ echo Spoustim migrate...
 python manage.py migrate
 
 echo Hotovo.
+:end
 pause
