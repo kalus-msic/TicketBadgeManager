@@ -9,4 +9,4 @@ REM Počká 5 sekund
 timeout /t 5 /nobreak > nul
 
 REM Otevře výchozí prohlížeč s danou URL
-start https://127.0.0.0:8000
+start https://127.0.0.1:8000
