@@ -20,8 +20,8 @@ class Ticket(models.Model):
     company_name = models.CharField(max_length=200)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='VALID')
     gdpr = models.CharField(max_length=3, choices=GDPR_CHOICES, default='NFO')
-    email = models.CharField(max_length=200)
-    event_name = models.CharField(max_length=200)
+    email = models.CharField(max_length=200, null=True, blank=True)
+    event_name = models.CharField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     # Invited to Eventee via API
