@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+
 app_name = 'tickets'
 urlpatterns = [
     # Existující cesty...
@@ -34,5 +35,7 @@ urlpatterns = [
     path('scanner2/', views.scanner_page2, name='scanner2'),
     path('logs/', views.ticket_log_list, name='ticket_log_list'),
     path('delete_logs/', views.delete_logs, name='delete_logs'),
+    path('check-server/', views.check_server_status, name='check_server_status'),
+
 
 ]
