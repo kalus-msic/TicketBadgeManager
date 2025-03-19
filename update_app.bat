@@ -9,6 +9,7 @@ for /f "tokens=*" %%i in ('git rev-parse @{u}') do set REMOTE=%%i
 
 if "%LOCAL%"=="%REMOTE%" (
     echo Repozitar je aktualni.
+    goto :end
 ) else (
     echo Nalezena nová verze repozitare.
     choice /m "Chcete stáhnout aktualizace z Gitu? (Y/N)"
