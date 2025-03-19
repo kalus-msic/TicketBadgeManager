@@ -1,5 +1,29 @@
 # TicketBadgeManager
 
+## Obsah
+
+- [TicketBadgeManager](#ticketbadgemanager)
+- [Screenshot aplikace](#screenshot-aplikace)
+- [Před samotným spuštěním aplikace](#před-samotným-spuštěním-aplikace)
+- [Spuštění aplikace pomocí .bat souborů](#spuštění-aplikace-pomocí-bat-souborů)
+  - [install_app.bat](#install_appbat)
+  - [start_server.bat](#start_serverbat)
+  - [update_app.bat](#update_appbat)
+- [Jak spustit aplikaci manuálně](#jak-spustit-aplikaci-manuálně)
+  - [1. Naklonujte repozitář](#1-naklonujte-repozitář)
+  - [2. Vytvoření virtuálního prostředí](#2-vytvoření-virtuálního-prostředí)
+  - [3. Aktivace virtuálního prostředí](#3-aktivace-virtuálního-prostředí)
+  - [4. Deaktivace virtuálního prostředí](#4-deaktivace-virtuálního-prostředí)
+  - [5. Nainstalujte požadované balíčky](#5-nainstalujte-požadované-balíčky)
+  - [6. Proveďte databázové migrace](#6-proveďte-databázové-migrace)
+  - [7. Upravte soubor settings.py](#7-upravte-soubor-settingspy)
+  - [8. Spusťte server](#8-spusťte-server)
+  - [9. Otevřete prohlížeč](#9-otevřete-prohlížeč)
+- [Jak aktualizovat aplikaci](#jak-aktualizovat-aplikaci)
+- [Instalace a nastavení tiskáren - TSC TDP-225](#instalace-a-nastavení-tiskáren---tsc-tdp-225)
+- [Konfigurace tisku](#konfigurace-tisku)
+- [Plánované funkce - todo](#plánované-funkce---todo)
+
 **TicketBadgeManager** je Django aplikace určená pro odbavování vstupenek a tisk visaček pro networkingové eventy na termo tiskárně TSC. 
 
 Aplikace umožňuje importovat CSV se vstupenkami, provádět check-in pomocí QR kódů a tisknout štítek se jménem, příjmením a názvem společnosti.
@@ -23,8 +47,16 @@ Funguje zatím jen na Windows – využívá win32print.
 netsh advfirewall firewall add rule name="Django Web Server" protocol=TCP dir=in localport=8000 action=allow profile=private,domain
 ```
 
-## Jak spustit aplikaci
 
+## Spuštění aplikace pomocí .bat souborů
+
+Pro usnadnění spouštění a aktualizací aplikace jsme připravili tři .bat soubory, které můžete umístit do kořenové složky projektu:
+
+- **install_app.bat** – Tento skript provede základní instalační kroky podle tohoto README. Vytvoří virtuální prostředí (pokud ještě neexistuje), nainstaluje požadované balíčky a provede databázové migrace.
+- **start_server.bat** – Tento skript aktivuje virtuální prostředí a spustí server s SSL (příkaz `runsslserver`). Po spuštění se automaticky otevře výchozí prohlížeč na adrese `https://127.0.0.1:8000`.
+- **update_app.bat** – Tento skript zkontroluje aktuálnost repozitáře, a pokud je nalezena nová verze, nabídne vám její stažení. V případě potvrzení provede `git pull`, aktivuje virtuální prostředí a spustí databázové migrace (`makemigrations` a `migrate`). Pokud uživatel aktualizaci zamítne, skript se ukončí bez provedení migrací.
+
+## Jak spustit aplikaci manuálně
 ### 1. Naklonujte repozitář
 
 ```bash
