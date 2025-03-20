@@ -118,7 +118,22 @@ def import_page(request):
         'current_ticket_count': Ticket.objects.count()
     })
 
+import csv
+import re
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.db import transaction
+from .models import Ticket, Log
+from .forms import CsvImportForm
+
+def extract_qr_code(url):
+    """Extrahuje QR kód z URL (např. https://ti.to/tickets/ti_pX9tJEguENQbdPOdhq66Vtw -> ti_pX9tJEguENQbdPOdhq66Vtw)"""
+    return url.split('/')[-1] if url and 'http' in url else url
+
+
 def import_replace_tickets(request):
+    """Import CSV s přepsáním stávajících vstupenek"""
     if request.method == 'POST':
         form = CsvImportForm(request.POST, request.FILES)
         if form.is_valid():
@@ -127,8 +142,6 @@ def import_replace_tickets(request):
                 delimiter = ';' if ';' in file_content.splitlines()[0] else ','
                 
                 reader = csv.DictReader(file_content.splitlines(), delimiter=delimiter)
-                print(f"Found CSV columns: {reader.fieldnames}")
-                print(f"Using delimiter: {delimiter}")
                 
                 imported_count = 0
                 error_count = 0
@@ -138,49 +151,40 @@ def import_replace_tickets(request):
                     
                     for row in reader:
                         try:
-                            qr_code = (
-                                row.get('Číslo vstupenky') or 
-                                row.get('Ticket Number') or
-                                row.get('Ticket Reference')
-                            )
-                            first_name = (
-                                row.get('Jméno') or
-                                row.get('Jméno_x') or 
-                                row.get('Ticket First Name')
-                            )
-                            last_name = (
-                                row.get('Příjmení') or
-                                row.get('Příjmení_x') or
-                                row.get('Ticket Last Name')
-                            )
-                            company_name = (
-                                row.get('Firma') or 
-                                row.get('Field1') or
-                                row.get('Ticket Company Name')
-                            )
-                            event_name = (
-                                row.get('Akce_x') or 
-                                row.get('Akce') or
-                                row.get('Event') 
-                            )
-                            email = (
-                                row.get('Email') or 
-                                row.get('E-mail') or
-                                row.get('Ticket Email') 
-                            )
-                            
-                            if not all([qr_code, first_name, last_name]):
-                                print(f"Skipping row due to missing required fields: {row}")
-                                Log.objects.create(ticket=None, event_type='SYSTEM', message=f"Skipping row, missing required fields: {row}")
+                            missing_fields = []
+
+                            qr_code = row.get('Číslo vstupenky') or row.get('Ticket Number') or row.get('Unique Ticket URL')
+                            if qr_code:
+                                qr_code = extract_qr_code(qr_code)
+                            else:
+                                missing_fields.append('QR Code')
+
+                            first_name = row.get('Jméno') or row.get('Jméno_x') or row.get('Ticket First Name')
+                            if not first_name:
+                                missing_fields.append('First Name')
+
+                            last_name = row.get('Příjmení') or row.get('Příjmení_x') or row.get('Ticket Last Name')
+                            if not last_name:
+                                missing_fields.append('Last Name')
+
+                            company_name = row.get('Firma') or row.get('Field1') or row.get('Ticket Company Name')
+                            event_name = row.get('Akce_x') or row.get('Akce') or row.get('Event')
+                            email = row.get('Email') or row.get('E-mail') or row.get('Ticket Email')
+
+                            if missing_fields:
+                                Log.objects.create(
+                                    ticket=None, 
+                                    event_type='SYSTEM', 
+                                    message=f"Skipping row due to missing fields: {', '.join(missing_fields)}. Row data: {row}"
+                                )
                                 error_count += 1
                                 continue
                             
                             name = f"{first_name} {last_name}".strip()
-                            qr_code = qr_code.strip()
                             company_name = company_name.strip() if company_name else ''
                             
                             Ticket.objects.create(
-                                qr_code=qr_code,
+                                qr_code=qr_code.strip(),
                                 name=name,
                                 company_name=company_name,
                                 event_name=event_name,
@@ -190,7 +194,6 @@ def import_replace_tickets(request):
                             imported_count += 1
                             
                         except Exception as e:
-                            print(f"Error processing row: {row}. Error: {str(e)}")
                             Log.objects.create(ticket=None, event_type='ERROR', message=f"Error processing row {row}: {e}")
                             error_count += 1
                             continue
@@ -203,22 +206,21 @@ def import_replace_tickets(request):
                 
             except Exception as e:
                 messages.error(request, f'Import failed: {str(e)}')
-                print("Import error:", str(e))
                 Log.objects.create(ticket=None, event_type='ERROR', message=f"Import failed: {e}")
                 
     return redirect('tickets:import_page')
 
+
 def import_add_tickets(request):
+    """Import CSV s přidáním nových vstupenek (nepřepisuje existující)"""
     if request.method == 'POST':
         form = CsvImportForm(request.POST, request.FILES)
         if form.is_valid():
             try:
                 file_content = request.FILES['csv_file'].read().decode('utf-8-sig')
                 delimiter = ';' if ';' in file_content.splitlines()[0] else ','
-                
+
                 reader = csv.DictReader(file_content.splitlines(), delimiter=delimiter)
-                print(f"Found CSV columns: {reader.fieldnames}")
-                print(f"Using delimiter: {delimiter}")
                 
                 imported_count = 0
                 error_count = 0
@@ -229,49 +231,40 @@ def import_add_tickets(request):
                     
                     for row in reader:
                         try:
-                            qr_code = (
-                                row.get('Číslo vstupenky') or 
-                                row.get('Ticket Number') or
-                                row.get('Ticket Reference')
-                            )
-                            first_name = (
-                                row.get('Jméno') or
-                                row.get('Jméno_x') or 
-                                row.get('Ticket First Name')
-                            )
-                            last_name = (
-                                row.get('Příjmení') or
-                                row.get('Příjmení_x') or
-                                row.get('Ticket Last Name')
-                            )
-                            company_name = (
-                                row.get('Firma') or 
-                                row.get('Field1') or
-                                row.get('Ticket Company Name')
-                            )
-                            event_name = (
-                                row.get('Akce_x') or 
-                                row.get('Akce') or
-                                row.get('Event') 
-                            )
-                            email = (
-                                row.get('Email') or 
-                                row.get('E-mail') or
-                                row.get('Ticket Email') 
-                            )
-                            
-                            if not all([qr_code, first_name, last_name]):
-                                print(f"Skipping row due to missing required fields: {row}")
-                                Log.objects.create(ticket=None, event_type='SYSTEM', message=f"Skipping row, missing required fields: {row}")
+                            missing_fields = []
+
+                            qr_code = row.get('Číslo vstupenky') or row.get('Ticket Number') or row.get('Unique Ticket URL')
+                            if qr_code:
+                                qr_code = extract_qr_code(qr_code)
+                            else:
+                                missing_fields.append('QR Code')
+
+                            first_name = row.get('Jméno') or row.get('Jméno_x') or row.get('Ticket First Name')
+                            if not first_name:
+                                missing_fields.append('First Name')
+
+                            last_name = row.get('Příjmení') or row.get('Příjmení_x') or row.get('Ticket Last Name')
+                            if not last_name:
+                                missing_fields.append('Last Name')
+
+                            company_name = row.get('Firma') or row.get('Field1') or row.get('Ticket Company Name')
+                            event_name = row.get('Akce_x') or row.get('Akce') or row.get('Event')
+                            email = row.get('Email') or row.get('E-mail') or row.get('Ticket Email')
+
+                            if missing_fields:
+                                Log.objects.create(
+                                    ticket=None, 
+                                    event_type='SYSTEM', 
+                                    message=f"Skipping row due to missing fields: {', '.join(missing_fields)}. Row data: {row}"
+                                )
                                 error_count += 1
                                 continue
-                            
+
                             name = f"{first_name} {last_name}".strip()
-                            qr_code = qr_code.strip()
                             company_name = company_name.strip() if company_name else ''
-                            
+                            qr_code = qr_code.strip()
+
                             if qr_code in existing_qr_codes:
-                                print(f"Duplicate QR code found: {qr_code}")
                                 Log.objects.create(ticket=None, event_type='SYSTEM', message=f"Duplicate QR code found: {qr_code}")
                                 duplicate_count += 1
                                 continue
@@ -288,7 +281,6 @@ def import_add_tickets(request):
                             existing_qr_codes.add(qr_code)
                             
                         except Exception as e:
-                            print(f"Error processing row: {row}. Error: {str(e)}")
                             Log.objects.create(ticket=None, event_type='ERROR', message=f"Error processing row {row}: {e}")
                             error_count += 1
                             continue
@@ -303,10 +295,10 @@ def import_add_tickets(request):
                 
             except Exception as e:
                 messages.error(request, f'Import failed: {str(e)}')
-                print("Import error:", str(e))
                 Log.objects.create(ticket=None, event_type='ERROR', message=f"Import failed: {e}")
                 
     return redirect('tickets:import_page')
+
 
 def scanner_page(request):
     return render(request, 'tickets/scanner.html')
@@ -784,16 +776,21 @@ def delete_tickets(request):
     return redirect(request.META.get('HTTP_REFERER', 'tickets:ticket_management'))
 
 def export_tickets_csv(request):
-    response = HttpResponse(content_type='text/csv')
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
     response['Content-Disposition'] = 'attachment; filename="tickets_export.csv"'
 
-    writer = csv.writer(response)
+    # Nastavení správného kódování a oddělovače (středník)
+    writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+    # Hlavička souboru
     writer.writerow(['Ticket Number', 'Event Name', 'Name', 'Email', 'Company', 'Status', 'Last Check-In Time'])
 
+    # Načtení dat
     tickets = Ticket.objects.all()
     for ticket in tickets:
         last_checkin = ticket.checkin_set.last()
         check_in_time = last_checkin.check_in_time.strftime("%Y-%m-%d %H:%M") if last_checkin else "-"
+
         writer.writerow([
             ticket.qr_code,
             ticket.event_name,
