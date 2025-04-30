@@ -32,9 +32,9 @@ Testováno na tiskárně **TSC TDP-225**.
 
 Funguje zatím jen na Windows – využívá win32print.
 
-## Screenshot aplikace
+## Ukázka aplikace
 
-![Screenshot aplikace](/TBM_index.png)
+![Ukázka aplikace](/EventBadgeManager_intro.gif)
 
 ## Před samotným spuštěním aplikace
 - Nainstalovaný Python 3.11 – otestováno na 3.11; s verzí 3.12 byl problém s některými moduly – [Python 3.11.9](https://www.python.org/downloads/release/python-3119/). Při instalaci nezapomeňte zaškrtnout „Add Python to PATH“.
