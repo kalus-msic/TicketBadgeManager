@@ -184,6 +184,10 @@ __pycache__/
 # Konfigurace a klíče
 *.sqlite3
 
+# Nastavení klíču atd
+ticket_badge_manager/settings.py
+
+
 # Dočasné obrázky
 temp_label.png
 
