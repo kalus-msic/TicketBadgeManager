@@ -83,13 +83,13 @@ function verifyTicket(qrCode) {
             <div class="d-grid gap-2">
                 <div class="row mt-3">
                     <div class="col-6">
-                        <a href="{% url 'tickets:index' %}" class="btn btn-secondary w-100">
-                            Back to Home
+                        <a href="{% url 'tickets:ticket_list' %}" class="btn btn-secondary w-100">
+                            Back to Tickets
                         </a>
                     </div>
                     <div class="col-6">
                          <a href="{% url 'tickets:ticket_detail_by_qr' %}?qr_code=${encodeURIComponent(data.qr_code)}" class="btn btn-primary w-100">
-                            View Details
+                            View Ticket details
                         </a>
                     </div>
                 </div>
