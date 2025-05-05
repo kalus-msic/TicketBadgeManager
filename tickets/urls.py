@@ -36,6 +36,8 @@ urlpatterns = [
     path('logs/', views.ticket_log_list, name='ticket_log_list'),
     path('delete_logs/', views.delete_logs, name='delete_logs'),
     path('check-server/', views.check_server_status, name='check_server_status'),
+    path("settings/required-fields", views.update_required_fields, name="update_required_fields"),
+
 
 
 ]

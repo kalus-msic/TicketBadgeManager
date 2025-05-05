@@ -19,10 +19,8 @@ import requests
 import unicodedata
 import socket
 
-
-
 # Import modelů a formulářů
-from .models import Ticket, CheckIn, Log, EventeeSettings
+from .models import Ticket, CheckIn, Log, EventeeSettings,DEFAULT_REQUIRED_TICKET_FIELDS
 from .forms import CsvImportForm, TicketForm
 
 if platform.system() == "Windows":
@@ -246,7 +244,7 @@ def import_add_tickets(request):
                             last_name = row.get('Příjmení') or row.get('Příjmení_x') or row.get('Ticket Last Name')
                             if not last_name:
                                 missing_fields.append('Last Name')
-
+ 
                             company_name = row.get('Firma') or row.get('Field1') or row.get('Ticket Company Name')
                             event_name = row.get('Akce_x') or row.get('Akce') or row.get('Event')
                             email = row.get('Email') or row.get('E-mail') or row.get('Ticket Email')
@@ -400,25 +398,42 @@ def check_server_status(request):
     })
 
 def settings(request):
-    from .models import Ticket, CheckIn, Log, EventeeSettings
-
-    ticket_count = Ticket.objects.count()
+    """Render application settings page."""
+    ticket_count  = Ticket.objects.count()
     checkin_count = CheckIn.objects.count()
-    logs_count = Log.objects.count()
-    eventee_setting = EventeeSettings.objects.first()
+    logs_count    = Log.objects.count()
+
+    eventee_settings, created = EventeeSettings.objects.get_or_create(
+        id=1,
+        defaults={"required_ticket_fields": DEFAULT_REQUIRED_TICKET_FIELDS}
+    )
+
+    # globální "singleton" nastavení
+    eventee_settings = EventeeSettings.objects.first()
+
+    # seznam voleb pro checkboxy (labely držíme na jednom místě)
+    field_choices = [
+        ('qr_code', 'QR code'),
+        ('name', 'Name'),
+        ('company_name', 'Company'),
+        ('email', 'E-mail'),
+    ]
 
     local_ip = get_local_ip()
-    port = request.get_port()
+    port     = request.get_port()
 
     context = {
-        'ticket_count': ticket_count,
-        'checkin_count': checkin_count,
-        'logs_count': logs_count,
-        'eventee_token': eventee_setting.api_token if eventee_setting else "",
-        'local_ip': local_ip, 
-        'port': port,
+        "ticket_count":   ticket_count,
+        "checkin_count":  checkin_count,
+        "logs_count":     logs_count,
+        "eventee_token":  eventee_settings.api_token if eventee_settings else "",
+        "eventee_settings": eventee_settings,
+        "field_choices":  field_choices,
+        "local_ip":       local_ip,
+        "port":           port,
     }
-    return render(request, 'tickets/settings.html', context)
+    return render(request, "tickets/settings.html", context)
+
 
 
 def delete_all_data(request):
@@ -819,77 +834,91 @@ def get_text_size(text, font):
     heights = [font.getmetrics()[0] + font.getmetrics()[1] for line in lines]
     return max(widths), sum(heights)
 
-def create_label_image(name, company_name=None, QR=None, printer_queue="1", ticket_obj=None):
-    base_dir = os.path.dirname(__file__)
-    font_name_path = os.path.join(base_dir, 'fonts', 'MontserratBold700.ttf')
-    font_company_path = os.path.join(base_dir, 'fonts', 'MontserratSemiBold600.ttf')
+def create_label_image(name, company_name=None, QR=None,
+                       printer_queue="1", ticket_obj=None):
+    """
+    Vytvoří PNG se jménem (a volitelně firmou) otočeným pro tisk štítku
+    a pošle jej na TSC tiskárnu (fronta 1 / 2).
+    """
 
-    # Ověříme existenci fontů
-    if not os.path.exists(font_name_path) or (company_name and not os.path.exists(font_company_path)):
-        err_msg = f"Chybí fonty. Očekávány cesty: {font_name_path} a {font_company_path}"
-        print(err_msg)
-        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
+    base_dir = os.path.dirname(__file__)
+    font_name_path    = os.path.join(base_dir, "fonts", "MontserratBold700.ttf")
+    font_company_path = os.path.join(base_dir, "fonts", "MontserratSemiBold600.ttf")
+
+    # --- 1. Kontrola existence fontů -----------------------------------------
+    if not os.path.exists(font_name_path) or \
+       (company_name and not os.path.exists(font_company_path)):
+        err = (f"Chybí fonty: {font_name_path}"
+               f"{' nebo ' + font_company_path if company_name else ''}")
+        Log.objects.create(ticket=ticket_obj, event_type="ERROR", message=err)
         return
 
+    # --- 2. Načtení fontů (firma jen pokud je potřeba) -----------------------
     font_size = 250
     try:
         font_name = ImageFont.truetype(font_name_path, font_size)
-        font_company = ImageFont.truetype(font_company_path, int(font_size * 0.70))
+        font_company = None
+        if company_name:
+            font_company = ImageFont.truetype(font_company_path,
+                                              int(font_size * 0.70))
     except Exception as e:
-        err_msg = f"Chyba při načítání fontů: {e}"
-        print(err_msg)
-        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
+        Log.objects.create(ticket=ticket_obj, event_type="ERROR",
+                           message=f"Chyba načítání fontu: {e}")
         return
 
-    img = Image.new('L', (946, 572), color='white')
-    d = ImageDraw.Draw(img)
-    wrapped_name = textwrap.wrap(name, width=18)
-    wrapped_company_name = textwrap.wrap(company_name, width=20) if company_name else []
-    name_width, name_height = get_text_size('\n'.join(wrapped_name), font_name)
-    company_width, company_height = get_text_size('\n'.join(wrapped_company_name), font_company) if company_name else (0, 0)
+    # --- 3. Příprava plátna a textů ------------------------------------------
+    img   = Image.new("L", (946, 572), "white")  # 200 DPI → cca 40×80 mm
+    draw  = ImageDraw.Draw(img)
     margin = 30
-    while name_width > img.width - 2 * margin or company_width > img.width - 2 * margin or name_height + company_height > img.height - 2 * margin:
+
+    wrap_name    = textwrap.wrap(name,          width=18)
+    wrap_company = textwrap.wrap(company_name,  width=20) if company_name else []
+
+    def txt_size(lines, font):
+        return get_text_size("\n".join(lines), font)
+
+    name_w, name_h = txt_size(wrap_name, font_name)
+    comp_w, comp_h = (txt_size(wrap_company, font_company)
+                      if company_name else (0, 0))
+
+    # --- 4. Snižujeme font, dokud se oba bloky vejdou ------------------------
+    while (name_w > img.width - 2*margin or
+           comp_w  > img.width - 2*margin or
+           name_h + comp_h > img.height - 2*margin):
         font_size -= 1
-        try:
-            font_name = ImageFont.truetype(font_name_path, font_size)
-            font_company = ImageFont.truetype(font_company_path, int(font_size * 0.70))
-        except Exception as e:
-            err_msg = f"Chyba při úpravě velikosti fontu: {e}"
-            print(err_msg)
-            Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
-            return
-        name_width, name_height = get_text_size('\n'.join(wrapped_name), font_name)
-        company_width, company_height = get_text_size('\n'.join(wrapped_company_name), font_company) if company_name else (0, 0)
+        font_name = ImageFont.truetype(font_name_path, font_size)
+        if company_name:
+            font_company = ImageFont.truetype(font_company_path,
+                                              int(font_size * 0.70))
+        name_w, name_h = txt_size(wrap_name,  font_name)
+        if company_name:
+            comp_w, comp_h = txt_size(wrap_company, font_company)
+
+    # --- 5. Výpočet pozice a vykreslení -------------------------------------
+    y = (img.height - (name_h + comp_h)) / 2
+    for line in wrap_name:
+        x = max((img.width - font_name.getlength(line)) / 2, margin)
+        draw.text((x, y), line, fill="black", font=font_name)
+        y += font_name.getmetrics()[0] + font_name.getmetrics()[1]
+
     if company_name:
-        name_y = (img.height - name_height - company_height) / 2
-    else:
-        name_y = (img.height - name_height) / 2
-    for line in wrapped_name:
-        line_width = font_name.getlength(line)
-        x = max((img.width - line_width) / 2, margin)
-        d.text((x, name_y), line, fill="black", font=font_name)
-        name_y += font_name.getmetrics()[0] + font_name.getmetrics()[1]
-    if company_name:
-        company_y = name_y
-        for line in wrapped_company_name:
-            line_width = font_company.getlength(line)
-            x = max((img.width - line_width) / 2, margin)
-            d.text((x, company_y), line, fill="black", font=font_company)
-            company_y += font_company.getmetrics()[0] + font_company.getmetrics()[1]
+        for line in wrap_company:
+            x = max((img.width - font_company.getlength(line)) / 2, margin)
+            draw.text((x, y), line, fill="black", font=font_company)
+            y += font_company.getmetrics()[0] + font_company.getmetrics()[1]
+
+    # --- 6. Otočení, uložení, tisk ------------------------------------------
     img = img.rotate(90, expand=True)
     try:
-        output_dir = os.path.join(base_dir, "image")
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        image_file = os.path.join(output_dir, f"{name}-{QR}.png")
-        img.save(image_file)
-        # Předáváme také ticket_obj dál pro logování chyb v tiskové funkci
-        printWin_TSC(image_file, printer_queue, ticket_obj)
+        out_dir = os.path.join(base_dir, "image")
+        os.makedirs(out_dir, exist_ok=True)
+        file_path = os.path.join(out_dir, f"{name}-{QR}.png")
+        img.save(file_path)
+        printWin_TSC(file_path, printer_queue, ticket_obj)
     except Exception as e:
-        err_msg = f"Chyba při ukládání obrázku nebo odesílání na tiskárnu: {e}"
-        print(err_msg)
-        Log.objects.create(ticket=ticket_obj, event_type='ERROR', message=err_msg)
-        return
+        Log.objects.create(ticket=ticket_obj, event_type="ERROR",
+                           message=f"Chyba při ukládání/tištění: {e}")
+
 
 def printWin_TSC(name, queueName, ticket_obj=None):
     if platform.system() != "Windows":
@@ -1029,6 +1058,25 @@ def update_eventee_token(request):
     setting.save()
     messages.success(request, "Eventee API token updated.")
     return redirect('tickets:settings')
+
+@require_POST
+def update_required_fields(request):
+    es, _ = EventeeSettings.objects.get_or_create(id=1)
+    old = es.required_ticket_fields or []
+    new = request.POST.getlist("required_fields")
+
+    if set(old) != set(new):
+        es.required_ticket_fields = new
+        es.save()
+        Log.objects.create(
+            ticket=None,
+            event_type="SYSTEM",
+            message=f"Required ticket fields changed from {old} to {new}",
+        )
+        messages.success(request, "Required-field settings were updated.")
+    else:
+        messages.info(request, "No change detected.")
+    return redirect("tickets:settings")
 
 def normalize_text(text):
     """Odstraní diakritiku a převede text na malá písmena."""

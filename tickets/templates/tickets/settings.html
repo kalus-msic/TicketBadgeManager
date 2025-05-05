@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -54,6 +55,33 @@
                         </div>
                     </div>
 
+                    <!-- Mandatory ticket fields -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">Mandatory ticket fields</h5>
+                                    <form method="post" action="{% url 'tickets:update_required_fields' %}">
+                                        {% csrf_token %}
+                                        {% for fname, flabel in field_choices %}
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="req_{{ fname }}"
+                                                   name="required_fields"
+                                                   value="{{ fname }}"
+                                                   {% if fname in eventee_settings.required_ticket_fields %}checked{% endif %}>
+                                            <label class="form-check-label" for="req_{{ fname }}">
+                                                {{ flabel }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Ostatní části nastavení, např. Delete All Data, Delete Check-ins, Delete Logs -->
                     <div class="row">
                         <!-- Delete All Data -->
@@ -71,7 +99,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Delete Check-ins -->
                         <div class="col-md-6 mb-3">
                             <div class="card border-warning">
@@ -195,26 +223,27 @@
         </div>
     </div>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("checkServerBtn").addEventListener("click", function() {
             let statusDiv = document.getElementById("serverStatus");
             statusDiv.innerHTML = "<p>⏳ Ověřuji dostupnost...</p>";
-    
-            fetch("{% url 'tickets:check_server_status' %}")  // Django URL pro ověření serveru
+
+            fetch("{% url 'tickets:check_server_status' %}")
             .then(response => response.json())
             .then(data => {
-                statusDiv.innerHTML = "";  // Vyčistíme předchozí zprávy
-    
+                statusDiv.innerHTML = "";
+
                 if (data.port_open) {
                     statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace běží na portu: <strong>${data.port}</strong></p>`;
                 } else {
                     statusDiv.innerHTML += "<p class='text-danger'>❌ Aplikace NEBĚŽÍ na žádném portu!</p>";
-                    return;  // Pokud nefunguje, nemá smysl dál testovat přístupnost
+                    return;
                 }
-    
+
                 if (data.accessible) {
-                    statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace je přístupná v síti na adrese: <strong>https://${data.local_ip}:${data.port}</strong></p>`;
+                    statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace je přístupná v síti na adrese: <strong>https://${data.local_ip}:{data.port}</strong></p>`;
                 } else {
                     statusDiv.innerHTML += "<p class='text-warning'>⚠️ Aplikace není přístupná z jiných zařízení!</p>";
                     statusDiv.innerHTML += "<p class='text-info'>ℹ️ Zkontrolujte firewall případně settings.py (allowed hosts).</p>";
@@ -225,7 +254,6 @@
             });
         });
     });
-    </script>
-    
-    
+</script>
+
 {% endblock %}
