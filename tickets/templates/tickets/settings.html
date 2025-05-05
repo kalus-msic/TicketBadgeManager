@@ -55,16 +55,20 @@
                         </div>
                     </div>
 
-                    <!-- Mandatory ticket fields -->
+                    <!-- Required ticket fields -->
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             <div class="card border-primary">
                                 <div class="card-body">
-                                    <h5 class="card-title">Mandatory ticket fields</h5>
+                                    <h5 class="card-title">Required ticket fields</h5>
+                                    <p class="text-muted mb-3">
+                                        This controls only manual ticket creation/editing.  
+                                        Import validation is fixed according to the settings on the Import page.
+                                    </p>
                                     <form method="post" action="{% url 'tickets:update_required_fields' %}">
                                         {% csrf_token %}
                                         {% for fname, flabel in field_choices %}
-                                        <div class="form-check mb-1">
+                                        <div class="form-check mb-2">  <!-- větší odsazení mezi checkboxy -->
                                             <input class="form-check-input" type="checkbox"
                                                    id="req_{{ fname }}"
                                                    name="required_fields"
@@ -75,7 +79,11 @@
                                             </label>
                                         </div>
                                         {% endfor %}
-                                        <button type="submit" class="btn btn-primary">Save</button>
+                                        <div class="mt-3">  <!-- mezera před tlačítkem -->
+                                            <button type="submit" class="btn btn-primary">
+                                                Save
+                                            </button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -243,7 +251,7 @@
                 }
 
                 if (data.accessible) {
-                    statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace je přístupná v síti na adrese: <strong>https://${data.local_ip}:{data.port}</strong></p>`;
+                    statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace je přístupná v síti na adrese: <strong>https://${data.local_ip}:${data.port}</strong></p>`;
                 } else {
                     statusDiv.innerHTML += "<p class='text-warning'>⚠️ Aplikace není přístupná z jiných zařízení!</p>";
                     statusDiv.innerHTML += "<p class='text-info'>ℹ️ Zkontrolujte firewall případně settings.py (allowed hosts).</p>";
