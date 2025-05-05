@@ -36,8 +36,8 @@ class TicketForm(forms.ModelForm):
 
         # 2) Dynamicky označíme pole jako required / nepovinné
         for name, field in self.fields.items():
-            if name == "invite_to_eventee":
-                continue  # necháváme checkbox vždy nepovinný
+            if name in ("invite_to_eventee", "qr_code"):
+                    continue # necháváme checkbox vždy nepovinný
 
             field.required = name in required
             if field.required:

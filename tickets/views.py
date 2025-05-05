@@ -413,7 +413,6 @@ def settings(request):
 
     # seznam voleb pro checkboxy (labely držíme na jednom místě)
     field_choices = [
-        ('qr_code', 'QR code'),
         ('name', 'Name'),
         ('company_name', 'Company'),
         ('email', 'E-mail'),

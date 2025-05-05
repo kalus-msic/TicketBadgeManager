@@ -63,7 +63,6 @@ class Log(models.Model):
         return f"{ticket_info} - {self.event_type} at {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
     
 DEFAULT_REQUIRED_TICKET_FIELDS = [
-    "qr_code",
     "name",
     "company_name",
     "email",
