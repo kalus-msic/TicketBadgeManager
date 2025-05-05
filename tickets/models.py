@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 
-
 class Ticket(models.Model):
     STATUS_CHOICES = [
         ('VALID', 'Valid'),
@@ -17,7 +16,7 @@ class Ticket(models.Model):
     
     qr_code = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=200)
-    company_name = models.CharField(max_length=200)
+    company_name = models.CharField(max_length=200, blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='VALID')
     gdpr = models.CharField(max_length=3, choices=GDPR_CHOICES, default='NFO')
     email = models.CharField(max_length=200, null=True, blank=True)
@@ -62,9 +61,17 @@ class Log(models.Model):
     def __str__(self):
         ticket_info = self.ticket_qr if self.ticket_qr else (self.ticket.qr_code if self.ticket else "Deleted Ticket")
         return f"{ticket_info} - {self.event_type} at {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
-
+    
+DEFAULT_REQUIRED_TICKET_FIELDS = [
+    "qr_code",
+    "name",
+    "company_name",
+    "email",
+]
 class EventeeSettings(models.Model):
     api_token = models.CharField(max_length=255, blank=True, null=True)
+    required_ticket_fields = models.JSONField(default=list, blank=True)
+
     
     def __str__(self):
         return "Eventee Settings"
