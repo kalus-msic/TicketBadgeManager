@@ -13,6 +13,19 @@
                 <div class="card-body">
                     <!-- Skrytý input pro printer_queue -->
                     <input type="hidden" id="printer_queue" value="{{ printer_queue }}">
+                    
+                    <!-- Quick search -->
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="quickSearch" 
+                                   placeholder="Search VALID tickets by name and press Enter (or use scanner below)">
+                            <button class="btn btn-primary" type="button" id="searchBtn">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
+                        <div id="searchResults" class="mt-2"></div>
+                    </div>
+                    
                     <!-- Výsledky se zobrazí zde -->
                     <div id="result"></div>
                     <!-- Skener se zobrazí jen pokud není QR kód v URL parametrech -->
@@ -26,6 +39,28 @@
 <script src="{% static 'js/html5-qrcode.min.js' %}"></script>
 <script>
 let currentQrCode = null;
+
+// Sound feedback
+const successSound = new Audio('data:audio/wav;base64,UklGRqwCAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQgCAACA/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/');
+const errorSound = new Audio('data:audio/wav;base64,UklGRqwCAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQgCAAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA');
+
+// Function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
 
 function updateGDPR(choice) {
     fetch('{% url "tickets:verify_ticket" %}', {
@@ -45,40 +80,68 @@ function updateGDPR(choice) {
     });
 }
 
-function verifyTicket(qrCode) {
+function verifyTicket(qrCode, printBadge = false) {
     currentQrCode = qrCode;
 
     fetch('{% url "tickets:verify_ticket" %}', {
         method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
         body: new URLSearchParams({
             'qr_code': qrCode,
+            'print': printBadge ? 'true' : 'false',
             'printer_queue': document.getElementById('printer_queue').value
         })
     })
     .then(response => response.json())
     .then(data => {
         const resultDiv = document.getElementById('result');
-        if (data.valid) {
+        
+        // Show print warning if exists
+        if (data.print_warning) {
             resultDiv.innerHTML = `
+                <div class="alert alert-warning alert-dismissible fade show mb-3">
+                    <i class="bi bi-exclamation-triangle"></i> ${data.print_warning}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = '';
+        }
+        
+        if (data.success) {
+            // Play success sound
+            successSound.play().catch(e => console.log('Sound play failed:', e));
+            
+            resultDiv.innerHTML += `
                 <div class="alert alert-success">
                     <h4 class="alert-heading">${data.message}</h4>
-                    <p class="mb-0">Ticket number: ${data.qr_code}</p>
-                    <p class="mb-0">Name: ${data.name}</p>
-                    <p class="mb-0">Company: ${data.company}</p>
+                    ${data.ticket ? `
+                        <p class="mb-0">Name: ${data.ticket.name}</p>
+                        <p class="mb-0">Company: ${data.ticket.company}</p>
+                        <p class="mb-0">Status: ${data.ticket.status}</p>
+                    ` : ''}
                 </div>
             `;
             
         } else {
-            resultDiv.innerHTML = `
+            // Play error sound
+            errorSound.play().catch(e => console.log('Sound play failed:', e));
+            
+            resultDiv.innerHTML += `
                 <div class="alert alert-danger">
                     <h4 class="alert-heading">${data.message}</h4>
-                    <p class="mb-0">Ticket number: ${data.qr_code}</p>
-                    <p class="mb-0">Name: ${data.name}</p>
+                    ${data.ticket ? `
+                        <p class="mb-0">Name: ${data.ticket.name}</p>
+                        <p class="mb-0">Company: ${data.ticket.company}</p>
+                    ` : ''}
                 </div>
             `;
         }
         
-        // Přidání tlačítek pro navigaci
+        // Add navigation buttons
         resultDiv.innerHTML += `
             <div class="d-grid gap-2">
                 <div class="row mt-3">
@@ -88,11 +151,22 @@ function verifyTicket(qrCode) {
                         </a>
                     </div>
                     <div class="col-6">
-                         <a href="{% url 'tickets:ticket_detail_by_qr' %}?qr_code=${encodeURIComponent(data.qr_code)}" class="btn btn-primary w-100">
-                            View Ticket details
-                        </a>
+                        ${data.ticket && (data.ticket.id || data.ticket.qr_code) ? `
+                            <a href="${data.ticket.id ? `/tickets/${data.ticket.id}/` : `/tickets/detail/?qr_code=${encodeURIComponent(data.ticket.qr_code)}`}" class="btn btn-primary w-100">
+                                View Ticket details
+                            </a>
+                        ` : ''}
                     </div>
                 </div>
+            </div>
+        `;
+    })
+    .catch(error => {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h4 class="alert-heading">Connection Error</h4>
+                <p>${error.message}</p>
             </div>
         `;
     });
@@ -118,7 +192,9 @@ function checkForQrCodeInUrl() {
     // Pokud je v URL QR kód, nastavíme hodnotu printer_queue do hidden inputu
     if (qrCodeFromUrl) {
         document.getElementById('printer_queue').value = printerQueue;
-        verifyTicket(qrCodeFromUrl);
+        // When coming from "Verify & Print" button, print should be true
+        const shouldPrint = true;
+        verifyTicket(qrCodeFromUrl, shouldPrint);
     } else {
         initializeScanner();
     }
@@ -150,7 +226,7 @@ function onScanSuccess(decodedText, decodedResult) {
     }
 
     scannedCodes.add(decodedText);
-    verifyTicket(decodedText);
+    verifyTicket(decodedText, false);  // Don't print when scanning manually
 
     html5QrcodeScanner.pause();
     setTimeout(() => {
@@ -163,5 +239,73 @@ function onScanError(errorMessage) {
 }
 
 checkForQrCodeInUrl();
+
+// Quick search functionality
+const searchInput = document.getElementById('quickSearch');
+const searchBtn = document.getElementById('searchBtn');
+const searchResults = document.getElementById('searchResults');
+
+function performSearch() {
+    const query = searchInput.value.trim();
+    if (query.length < 2) {
+        searchResults.innerHTML = '';
+        return;
+    }
+    
+    fetch(`{% url 'tickets:search_tickets' %}?q=${encodeURIComponent(query)}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        searchResults.innerHTML = '';
+        
+        if (data.results.length === 0) {
+            searchResults.innerHTML = '<div class="alert alert-info">No tickets found</div>';
+            return;
+        }
+        
+        const resultsList = document.createElement('div');
+        resultsList.className = 'list-group';
+        
+        data.results.forEach(ticket => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${ticket.name}</strong>
+                        ${ticket.company_name ? `<br><small class="text-muted">${ticket.company_name}</small>` : ''}
+                    </div>
+                    <span class="badge bg-primary">Verify & Print</span>
+                </div>
+            `;
+            item.addEventListener('click', () => {
+                searchResults.innerHTML = '';
+                searchInput.value = '';
+                verifyTicket(ticket.qr_code, true);  // Print when selected from search
+            });
+            resultsList.appendChild(item);
+        });
+        
+        searchResults.appendChild(resultsList);
+    })
+    .catch(error => {
+        searchResults.innerHTML = '<div class="alert alert-danger">Search error</div>';
+    });
+}
+
+searchBtn.addEventListener('click', performSearch);
+searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+    }
+});
+
+// Focus on search input when page loads
+searchInput.focus();
 </script>
 {% endblock %}

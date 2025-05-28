@@ -105,8 +105,9 @@
                     <h4 class="mb-0">QR Code</h4>
                 </div>
                 <div class="card-body text-center">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ ticket.qr_code }}&size=200x200" 
-                         alt="QR Code" class="img-fluid">
+                    <img src="{% url 'tickets:generate_qr_code' ticket.pk %}" 
+                         alt="QR Code" class="img-fluid" style="max-width: 200px;">
+                    <p class="mt-2 text-muted small">{{ ticket.qr_code }}</p>
                 </div>
             </div>
 

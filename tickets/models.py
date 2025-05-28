@@ -1,17 +1,18 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 class Ticket(models.Model):
     STATUS_CHOICES = [
-        ('VALID', 'Valid'),
-        ('USED', 'Used'),
-        ('CANCELLED', 'Cancelled'),
+        ('VALID', _('Valid')),
+        ('USED', _('Used')),
+        ('CANCELLED', _('Cancelled')),
     ]
     
     GDPR_CHOICES = [
-        ('NFO', 'Not Filled Out'),
-        ('YES', 'Yes'),
-        ('NO', 'No'),
+        ('NFO', _('Not Filled Out')),
+        ('YES', _('Yes')),
+        ('NO', _('No')),
     ]
     
     qr_code = models.CharField(max_length=100, unique=True)
@@ -40,11 +41,11 @@ class CheckIn(models.Model):
 
 class Log(models.Model):
     EVENT_CHOICES = [
-        ('CHECKIN', 'Check-In'),
-        ('UPDATE', 'Update'),
-        ('OTHER', 'Other'),
-        ('ERROR', 'Error'),
-        ('SYSTEM', 'System'),
+        ('CHECKIN', _('Check-In')),
+        ('UPDATE', _('Update')),
+        ('OTHER', _('Other')),
+        ('ERROR', _('Error')),
+        ('SYSTEM', _('System')),
     ]
     ticket = models.ForeignKey(
         Ticket,
@@ -67,10 +68,24 @@ DEFAULT_REQUIRED_TICKET_FIELDS = [
     "company_name",
     "email",
 ]
-class EventeeSettings(models.Model):
-    api_token = models.CharField(max_length=255, blank=True, null=True)
-    required_ticket_fields = models.JSONField(default=list, blank=True)
 
+class AppSettings(models.Model):
+    """General application settings."""
+    # Eventee API settings
+    eventee_api_token = models.CharField(max_length=255, blank=True, null=True, 
+                                        verbose_name="Eventee API Token")
+    
+    # Ticket form settings
+    required_ticket_fields = models.JSONField(default=list, blank=True,
+                                            verbose_name="Required Ticket Fields")
+    
+    # Printer settings (for future use)
+    default_printer = models.CharField(max_length=255, blank=True, null=True,
+                                     verbose_name="Default Printer")
+    
+    class Meta:
+        verbose_name = "Application Settings"
+        verbose_name_plural = "Application Settings"
     
     def __str__(self):
-        return "Eventee Settings"
+        return "Application Settings"

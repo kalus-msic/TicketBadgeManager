@@ -1,0 +1,316 @@
+# Czech translations for TicketBadgeManager
+msgid ""
+msgstr ""
+"Project-Id-Version: TicketBadgeManager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Common terms
+msgid "TicketBadgeManager"
+msgstr "TicketBadgeManager"
+
+msgid "Dashboard"
+msgstr "Přehled"
+
+msgid "Tickets"
+msgstr "Vstupenky"
+
+msgid "Scanner"
+msgstr "Skener"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "Logs"
+msgstr "Protokoly"
+
+msgid "Name"
+msgstr "Jméno"
+
+msgid "Company"
+msgstr "Firma"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Status"
+msgstr "Stav"
+
+msgid "QR Code"
+msgstr "QR kód"
+
+msgid "Created At"
+msgstr "Vytvořeno"
+
+msgid "Actions"
+msgstr "Akce"
+
+# Status choices
+msgid "Valid"
+msgstr "Platná"
+
+msgid "Used"
+msgstr "Použitá"
+
+msgid "Cancelled"
+msgstr "Zrušená"
+
+# GDPR choices
+msgid "Not Filled Out"
+msgstr "Nevyplněno"
+
+msgid "Yes"
+msgstr "Ano"
+
+msgid "No"
+msgstr "Ne"
+
+# Event types
+msgid "Check-In"
+msgstr "Odbavení"
+
+msgid "Update"
+msgstr "Aktualizace"
+
+msgid "Other"
+msgstr "Jiné"
+
+msgid "Error"
+msgstr "Chyba"
+
+msgid "System"
+msgstr "Systém"
+
+# Messages
+msgid "Ticket not found"
+msgstr "Vstupenka nenalezena"
+
+msgid "Already used"
+msgstr "Již použitá"
+
+msgid "Ticket is cancelled"
+msgstr "Vstupenka je zrušená"
+
+msgid "Check-in successful"
+msgstr "Odbavení úspěšné"
+
+msgid "Ticket created successfully"
+msgstr "Vstupenka úspěšně vytvořena"
+
+msgid "Ticket updated successfully"
+msgstr "Vstupenka úspěšně aktualizována"
+
+msgid "Ticket deleted successfully"
+msgstr "Vstupenka úspěšně smazána"
+
+msgid "tickets reset successfully"
+msgstr "vstupenky úspěšně resetovány"
+
+msgid "tickets deleted successfully"
+msgstr "vstupenky úspěšně smazány"
+
+msgid "No tickets selected"
+msgstr "Nebyly vybrány žádné vstupenky"
+
+# Buttons
+msgid "Search"
+msgstr "Hledat"
+
+msgid "Create New Ticket"
+msgstr "Vytvořit novou vstupenku"
+
+msgid "Save"
+msgstr "Uložit"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "Delete"
+msgstr "Smazat"
+
+msgid "Edit"
+msgstr "Upravit"
+
+msgid "View"
+msgstr "Zobrazit"
+
+msgid "Print"
+msgstr "Tisk"
+
+msgid "Export to CSV"
+msgstr "Exportovat do CSV"
+
+msgid "Import CSV"
+msgstr "Importovat CSV"
+
+msgid "Replace All"
+msgstr "Nahradit vše"
+
+msgid "Add New"
+msgstr "Přidat nové"
+
+# Forms
+msgid "Select file"
+msgstr "Vybrat soubor"
+
+msgid "Required field"
+msgstr "Povinné pole"
+
+msgid "Invite to Eventee"
+msgstr "Pozvat do Eventee"
+
+# Statistics
+msgid "Total Tickets"
+msgstr "Celkem vstupenek"
+
+msgid "Valid Tickets"
+msgstr "Platné vstupenky"
+
+msgid "Used Tickets"
+msgstr "Použité vstupenky"
+
+msgid "Total Check-ins"
+msgstr "Celkem odbavení"
+
+msgid "Recent Check-ins"
+msgstr "Nedávná odbavení"
+
+# Settings page
+msgid "Eventee API Token"
+msgstr "Eventee API Token"
+
+msgid "Required Ticket Fields"
+msgstr "Povinná pole vstupenky"
+
+msgid "Delete All Data"
+msgstr "Smazat všechna data"
+
+msgid "Delete Check-ins"
+msgstr "Smazat odbavení"
+
+msgid "Connection Status"
+msgstr "Stav připojení"
+
+msgid "Connected"
+msgstr "Připojeno"
+
+msgid "Not Connected"
+msgstr "Nepřipojeno"
+
+# Language names
+msgid "English"
+msgstr "Angličtina"
+
+msgid "Czech"
+msgstr "Čeština"
+
+# Additional translations
+msgid "Manage and validate tickets for your event"
+msgstr "Spravujte a ověřujte vstupenky pro vaši akci"
+
+msgid "Scan Tickets"
+msgstr "Skenovat vstupenky"
+
+msgid "Printer"
+msgstr "Tiskárna"
+
+msgid "Ticket Number"
+msgstr "Číslo vstupenky"
+
+msgid "Checked-in"
+msgstr "Odbaveno"
+
+msgid "No recent check-ins"
+msgstr "Žádná nedávná odbavení"
+
+msgid "Total"
+msgstr "Celkem"
+
+msgid "Valid"
+msgstr "Platné"
+
+msgid "Used"
+msgstr "Použité"
+# Special Labels
+msgid "Special Labels"
+msgstr "Speciální štítky"
+
+msgid "Print Special Labels"
+msgstr "Tisk speciálních štítků"
+
+msgid "Print labels for Press, Host, Staff, etc."
+msgstr "Tisk štítků pro Press, Host, Staff, atd."
+
+msgid "Examples: PRESS, HOST, VIP, STAFF, or a person's name"
+msgstr "Příklady: PRESS, HOST, VIP, STAFF, nebo jméno osoby"
+
+msgid "Maximum 50 labels per batch"
+msgstr "Maximum 50 štítků na dávku"
+
+msgid "The printer will pause 0.5 seconds between each label to prevent jamming."
+msgstr "Tiskárna bude čekat 0,5 sekundy mezi každým štítkem, aby se předešlo zaseknutí."
+
+msgid "Print Labels"
+msgstr "Tisknout štítky"
+
+msgid "Quick Print Templates"
+msgstr "Rychlé tiskové šablony"
+
+msgid "PRESS"
+msgstr "PRESS"
+
+msgid "HOST"
+msgstr "HOST"
+
+msgid "VIP"
+msgstr "VIP"
+
+msgid "STAFF"
+msgstr "STAFF"
+
+msgid "Printing Labels"
+msgstr "Tisk štítků"
+
+msgid "Preparing to print..."
+msgstr "Příprava tisku..."
+
+msgid "Printing label"
+msgstr "Tisk štítku"
+
+msgid "of"
+msgstr "z"
+
+msgid "Successfully printed %(success)s labels"
+msgstr "Úspěšně vytištěno %(success)s štítků"
+
+msgid "Failed to print labels"
+msgstr "Tisk štítků selhal"
+
+msgid "Error printing labels: %(error)s"
+msgstr "Chyba při tisku štítků: %(error)s"
+
+msgid "Quantity"
+msgstr "Množství"
+
+msgid "Printer 1"
+msgstr "Tiskárna 1"
+
+msgid "Printer 2"
+msgstr "Tiskárna 2"
+
+msgid "e.g. PRESS, HOST, John Doe"
+msgstr "např. PRESS, HOST, Jan Novák"
+
+msgid "Optional"
+msgstr "Nepovinné"
+
+msgid "CSV File"
+msgstr "CSV soubor"

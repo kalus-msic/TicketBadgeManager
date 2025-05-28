@@ -1,0 +1,316 @@
+# English translations for TicketBadgeManager
+msgid ""
+msgstr ""
+"Project-Id-Version: TicketBadgeManager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Common terms
+msgid "TicketBadgeManager"
+msgstr "TicketBadgeManager"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Tickets"
+msgstr "Tickets"
+
+msgid "Scanner"
+msgstr "Scanner"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Logs"
+msgstr "Logs"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Company"
+msgstr "Company"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "QR Code"
+msgstr "QR Code"
+
+msgid "Created At"
+msgstr "Created At"
+
+msgid "Actions"
+msgstr "Actions"
+
+# Status choices
+msgid "Valid"
+msgstr "Valid"
+
+msgid "Used"
+msgstr "Used"
+
+msgid "Cancelled"
+msgstr "Cancelled"
+
+# GDPR choices
+msgid "Not Filled Out"
+msgstr "Not Filled Out"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"
+
+# Event types
+msgid "Check-In"
+msgstr "Check-In"
+
+msgid "Update"
+msgstr "Update"
+
+msgid "Other"
+msgstr "Other"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "System"
+msgstr "System"
+
+# Messages
+msgid "Ticket not found"
+msgstr "Ticket not found"
+
+msgid "Already used"
+msgstr "Already used"
+
+msgid "Ticket is cancelled"
+msgstr "Ticket is cancelled"
+
+msgid "Check-in successful"
+msgstr "Check-in successful"
+
+msgid "Ticket created successfully"
+msgstr "Ticket created successfully"
+
+msgid "Ticket updated successfully"
+msgstr "Ticket updated successfully"
+
+msgid "Ticket deleted successfully"
+msgstr "Ticket deleted successfully"
+
+msgid "tickets reset successfully"
+msgstr "tickets reset successfully"
+
+msgid "tickets deleted successfully"
+msgstr "tickets deleted successfully"
+
+msgid "No tickets selected"
+msgstr "No tickets selected"
+
+# Buttons
+msgid "Search"
+msgstr "Search"
+
+msgid "Create New Ticket"
+msgstr "Create New Ticket"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "View"
+msgstr "View"
+
+msgid "Print"
+msgstr "Print"
+
+msgid "Export to CSV"
+msgstr "Export to CSV"
+
+msgid "Import CSV"
+msgstr "Import CSV"
+
+msgid "Replace All"
+msgstr "Replace All"
+
+msgid "Add New"
+msgstr "Add New"
+
+# Forms
+msgid "Select file"
+msgstr "Select file"
+
+msgid "Required field"
+msgstr "Required field"
+
+msgid "Invite to Eventee"
+msgstr "Invite to Eventee"
+
+# Statistics
+msgid "Total Tickets"
+msgstr "Total Tickets"
+
+msgid "Valid Tickets"
+msgstr "Valid Tickets"
+
+msgid "Used Tickets"
+msgstr "Used Tickets"
+
+msgid "Total Check-ins"
+msgstr "Total Check-ins"
+
+msgid "Recent Check-ins"
+msgstr "Recent Check-ins"
+
+# Settings page
+msgid "Eventee API Token"
+msgstr "Eventee API Token"
+
+msgid "Required Ticket Fields"
+msgstr "Required Ticket Fields"
+
+msgid "Delete All Data"
+msgstr "Delete All Data"
+
+msgid "Delete Check-ins"
+msgstr "Delete Check-ins"
+
+msgid "Connection Status"
+msgstr "Connection Status"
+
+msgid "Connected"
+msgstr "Connected"
+
+msgid "Not Connected"
+msgstr "Not Connected"
+
+# Language names
+msgid "English"
+msgstr "English"
+
+msgid "Czech"
+msgstr "Czech"
+
+# Additional translations
+msgid "Manage and validate tickets for your event"
+msgstr "Manage and validate tickets for your event"
+
+msgid "Scan Tickets"
+msgstr "Scan Tickets"
+
+msgid "Printer"
+msgstr "Printer"
+
+msgid "Ticket Number"
+msgstr "Ticket Number"
+
+msgid "Checked-in"
+msgstr "Checked-in"
+
+msgid "No recent check-ins"
+msgstr "No recent check-ins"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Valid"
+msgstr "Valid"
+
+msgid "Used"
+msgstr "Used"
+# Special Labels
+msgid "Special Labels"
+msgstr "Special Labels"
+
+msgid "Print Special Labels"
+msgstr "Print Special Labels"
+
+msgid "Print labels for Press, Host, Staff, etc."
+msgstr "Print labels for Press, Host, Staff, etc."
+
+msgid "Examples: PRESS, HOST, VIP, STAFF, or a person's name"
+msgstr "Examples: PRESS, HOST, VIP, STAFF, or a person's name"
+
+msgid "Maximum 50 labels per batch"
+msgstr "Maximum 50 labels per batch"
+
+msgid "The printer will pause 0.5 seconds between each label to prevent jamming."
+msgstr "The printer will pause 0.5 seconds between each label to prevent jamming."
+
+msgid "Print Labels"
+msgstr "Print Labels"
+
+msgid "Quick Print Templates"
+msgstr "Quick Print Templates"
+
+msgid "PRESS"
+msgstr "PRESS"
+
+msgid "HOST"
+msgstr "HOST"
+
+msgid "VIP"
+msgstr "VIP"
+
+msgid "STAFF"
+msgstr "STAFF"
+
+msgid "Printing Labels"
+msgstr "Printing Labels"
+
+msgid "Preparing to print..."
+msgstr "Preparing to print..."
+
+msgid "Printing label"
+msgstr "Printing label"
+
+msgid "of"
+msgstr "of"
+
+msgid "Successfully printed %(success)s labels"
+msgstr "Successfully printed %(success)s labels"
+
+msgid "Failed to print labels"
+msgstr "Failed to print labels"
+
+msgid "Error printing labels: %(error)s"
+msgstr "Error printing labels: %(error)s"
+
+msgid "Quantity"
+msgstr "Quantity"
+
+msgid "Printer 1"
+msgstr "Printer 1"
+
+msgid "Printer 2"
+msgstr "Printer 2"
+
+msgid "e.g. PRESS, HOST, John Doe"
+msgstr "e.g. PRESS, HOST, John Doe"
+
+msgid "Optional"
+msgstr "Optional"
+
+msgid "CSV File"
+msgstr "CSV File"
