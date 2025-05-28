@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Special Labels" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="bi bi-printer"></i> {% trans "Print Special Labels" %}
+                    </h3>
+                    <small class="text-muted">{% trans "Print labels for Press, Host, Staff, etc." %}</small>
+                </div>
+                <div class="card-body">
+                    <form id="special-label-form" method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            {{ form.name|as_crispy_field }}
+                            <small class="form-text text-muted">
+                                {% trans "Examples: PRESS, HOST, VIP, STAFF, or a person's name" %}
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.company_name|as_crispy_field }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.quantity|as_crispy_field }}
+                                    <small class="form-text text-muted">
+                                        {% trans "Maximum 50 labels per batch" %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.printer|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            {% trans "The printer will pause 0.5 seconds between each label to prevent jamming." %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="print-btn">
+                                <i class="bi bi-printer"></i> {% trans "Print Labels" %}
+                            </button>
+                            <a href="{% url 'tickets:index' %}" class="btn btn-secondary">
+                                {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Recent prints -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "Quick Print Templates" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-outline-primary w-100 quick-print" data-name="PRESS">
+                                {% trans "PRESS" %}
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-outline-primary w-100 quick-print" data-name="HOST">
+                                {% trans "HOST" %}
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-outline-primary w-100 quick-print" data-name="VIP">
+                                {% trans "VIP" %}
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-outline-primary w-100 quick-print" data-name="STAFF">
+                                {% trans "STAFF" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Printing Labels" %}</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" 
+                         id="print-progress" 
+                         style="width: 0%">0%</div>
+                </div>
+                <p class="text-center mb-0" id="progress-text">{% trans "Preparing to print..." %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('special-label-form');
+    const printBtn = document.getElementById('print-btn');
+    const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+    const progressBar = document.getElementById('print-progress');
+    const progressText = document.getElementById('progress-text');
+    
+    // Quick print buttons
+    document.querySelectorAll('.quick-print').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('id_name').value = this.dataset.name;
+            document.getElementById('id_company_name').value = '';
+            document.getElementById('id_quantity').value = 1;
+        });
+    });
+    
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        printBtn.disabled = true;
+        progressModal.show();
+        
+        const formData = new FormData(form);
+        const quantity = parseInt(formData.get('quantity'));
+        
+        try {
+            const response = await fetch("{% url 'tickets:print_special_labels' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Simulate progress
+                for (let i = 1; i <= quantity; i++) {
+                    const progress = Math.round((i / quantity) * 100);
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = progress + '%';
+                    progressText.textContent = `{% trans "Printing label" %} ${i} {% trans "of" %} ${quantity}...`;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                progressModal.hide();
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.parentElement.insertBefore(alert, form);
+                
+                // Reset form
+                form.reset();
+            } else {
+                // Show error in modal before hiding
+                progressText.textContent = data.message || '{% trans "Failed to print labels" %}';
+                progressText.className = 'text-center mb-0 text-danger';
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-danger');
+                
+                // Wait before closing modal
+                setTimeout(() => {
+                    progressModal.hide();
+                    
+                    // Show error alert
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-danger alert-dismissible fade show';
+                    alert.innerHTML = `
+                        <i class="bi bi-exclamation-triangle"></i> ${data.message || '{% trans "Failed to print labels" %}'}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    form.parentElement.insertBefore(alert, form);
+                }, 1500);
+            }
+        } catch (error) {
+            // Show error in modal before hiding
+            progressText.textContent = '{% trans "Connection error" %}';
+            progressText.className = 'text-center mb-0 text-danger';
+            progressBar.classList.remove('progress-bar-animated');
+            progressBar.classList.add('bg-danger');
+            
+            setTimeout(() => {
+                progressModal.hide();
+                
+                // Show error alert
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="bi bi-exclamation-triangle"></i> {% trans "Connection error" %}: ${error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.parentElement.insertBefore(alert, form);
+            }, 1500);
+        } finally {
+            setTimeout(() => {
+                printBtn.disabled = false;
+                progressBar.style.width = '0%';
+                progressBar.textContent = '0%';
+                progressBar.classList.remove('bg-danger');
+                progressBar.classList.add('progress-bar-animated');
+                progressText.textContent = '{% trans "Preparing to print..." %}';
+                progressText.className = 'text-center mb-0';
+            }, 2000);
+        }
+    });
+});
+</script>
+{% endblock %}

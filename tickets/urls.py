@@ -4,7 +4,7 @@ from . import views
 
 app_name = 'tickets'
 urlpatterns = [
-    # Existující cesty...
+    # Main routes
     path('', views.index, name='index'),
     path('prepare-import/', views.merge_import, name='merge_import'),
     path('scanner/', views.scanner_page, name='scanner'),
@@ -21,9 +21,9 @@ urlpatterns = [
     path('management/', views.ticket_management_dashboard, name='ticket_management'),
     path('tickets/', views.ticket_list, name='ticket_list'),
     
-    # Upravené cesty pro detail ticketu
-    path('tickets/<int:pk>/', views.ticket_detail, name='ticket_detail'),  # Pro přístup přes ID
-    path('tickets/detail/', views.ticket_detail_by_qr, name='ticket_detail_by_qr'),  # Nová cesta pro QR kód
+    # Ticket detail routes
+    path('tickets/<int:pk>/', views.ticket_detail, name='ticket_detail'),  # Access by ID
+    path('tickets/detail/', views.ticket_detail_by_qr, name='ticket_detail_by_qr'),  # Access by QR code
     
     path('tickets/create/', views.ticket_create, name='ticket_create'),
     path('tickets/<int:pk>/edit/', views.ticket_edit, name='ticket_edit'),
@@ -37,7 +37,19 @@ urlpatterns = [
     path('delete_logs/', views.delete_logs, name='delete_logs'),
     path('check-server/', views.check_server_status, name='check_server_status'),
     path("settings/required-fields", views.update_required_fields, name="update_required_fields"),
-
-
+    
+    # Special labels
+    path('special-labels/', views.special_labels, name='special_labels'),
+    path('special-labels/print/', views.print_special_labels, name='print_special_labels'),
+    
+    # QR code generation
+    path('ticket/<int:ticket_id>/qr-code/', views.generate_qr_code, name='generate_qr_code'),
+    
+    # Search
+    path('search/tickets/', views.search_tickets_by_name, name='search_tickets'),
+    
+    # Kiosk mode
+    path('kiosk/', views.kiosk_mode, name='kiosk'),
+    path('kiosk/verify/', views.kiosk_verify, name='kiosk_verify'),
 
 ]

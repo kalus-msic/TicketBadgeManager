@@ -8,16 +8,6 @@
                     <h2 class="mb-0">GoOut Import</h2>
                 </div>
                 <div class="card-body">
-                    {% if messages %}
-                    <div class="messages mb-4">
-                        {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
                     <p>Since GoOut does not provide an export containing all the required columns (QR code/Ticket number, First Name, Last Name, and Company Name), you can merge two separate files and link them by Order Number.</p>
                     <p>Please use the following exports from the GoOut administration:<br><strong>"Přehled prodeje – transakce položkové.xlsx"</strong><br><strong>"Event name – odbavení - Odbavení.csv"</strong></p>
                     <p>Click on <strong>"Merge Files"</strong> to combine the documents (right join). Once merged, the file will download automatically. We recommend reviewing the merged file before importing.</p>
