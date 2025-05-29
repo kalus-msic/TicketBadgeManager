@@ -284,24 +284,8 @@ msgstr "Checked In"
 msgid "Last Hour"
 msgstr "Last Hour"
 
-msgid "Recent Check-ins"
-msgstr "Recent Check-ins"
-
-# Ticket list additions
-msgid "Tickets"
-msgstr "Tickets"
-
 msgid "Export Tickets"
 msgstr "Export Tickets"
-
-msgid "Total Tickets"
-msgstr "Total Tickets"
-
-msgid "Valid Tickets"
-msgstr "Valid Tickets"
-
-msgid "Used Tickets"
-msgstr "Used Tickets"
 
 msgid "Search by name, company, or QR code"
 msgstr "Search by name, company, or QR code"
@@ -358,21 +342,11 @@ msgstr "CSV Import"
 msgid "File uploaded successfully"
 msgstr "File uploaded successfully"
 
-# Settings additions
-msgid "Eventee API Token"
-msgstr "Eventee API Token"
-
 msgid "Test Connection"
 msgstr "Test Connection"
 
-msgid "Required Ticket Fields"
-msgstr "Required Ticket Fields"
-
 msgid "Save Settings"
 msgstr "Save Settings"
-
-msgid "Delete All Data"
-msgstr "Delete All Data"
 
 msgid "Delete All Check-ins"
 msgstr "Delete All Check-ins"
@@ -440,9 +414,6 @@ msgstr "No logs found"
 msgid "Special labels printed successfully"
 msgstr "Special labels printed successfully"
 
-msgid "Printer"
-msgstr "Printer"
-
 msgid "Printer 1"
 msgstr "Printer 1"
 
@@ -500,12 +471,6 @@ msgstr "Error printing labels: %(error)s"
 msgid "Quantity"
 msgstr "Quantity"
 
-msgid "Printer 1"
-msgstr "Printer 1"
-
-msgid "Printer 2"
-msgstr "Printer 2"
-
 msgid "e.g. PRESS, HOST, John Doe"
 msgstr "e.g. PRESS, HOST, John Doe"
 
@@ -514,3 +479,228 @@ msgstr "Optional"
 
 msgid "CSV File"
 msgstr "CSV File"
+
+
+# Import page
+msgid "Current Data"
+msgstr "Current Data"
+
+msgid "There are currently %(current_ticket_count)s tickets in the database."
+msgstr "There are currently %(current_ticket_count)s tickets in the database."
+
+msgid "Supported CSV Format:"
+msgstr "Supported CSV Format:"
+
+msgid "Tested with ti.to export in UTF-8 and goout files."
+msgstr "Tested with ti.to export in UTF-8 and goout files."
+
+msgid "The file can use either a comma (,) or semicolon (;) as a delimiter. We recommend using the semicolon (;)."
+msgstr "The file can use either a comma (,) or semicolon (;) as a delimiter. We recommend using the semicolon (;)."
+
+msgid "Required columns (if any required field is missing in a row, that row will be skipped during import; you must include at least one of the following variants):"
+msgstr "Required columns (if any required field is missing in a row, that row will be skipped during import; you must include at least one of the following variants):"
+
+msgid "Optional columns (you can include one of the following variants, if applicable):"
+msgstr "Optional columns (you can include one of the following variants, if applicable):"
+
+msgid "Delete All and Import New Data"
+msgstr "Delete All and Import New Data"
+
+msgid "This will delete all existing tickets and their check-in data before importing new data."
+msgstr "This will delete all existing tickets and their check-in data before importing new data."
+
+msgid "Select CSV File"
+msgstr "Select CSV File"
+
+msgid "Are you sure? This will delete ALL existing data."
+msgstr "Are you sure? This will delete ALL existing data."
+
+msgid "Add New Tickets"
+msgstr "Add New Tickets"
+
+msgid "This will add new tickets while keeping existing ones. Duplicate QR codes will be skipped."
+msgstr "This will add new tickets while keeping existing ones. Duplicate QR codes will be skipped."
+
+msgid "GoOut Import file"
+msgstr "GoOut Import file"
+
+msgid "Merge Files"
+msgstr "Merge Files"
+
+msgid "Select First Excel File:"
+msgstr "Select First Excel File:"
+
+msgid "Select Second Excel File:"
+msgstr "Select Second Excel File:"
+
+# Settings page additions
+msgid "Check server status"
+msgstr "Check server status"
+
+msgid "Required ticket fields"
+msgstr "Required ticket fields"
+
+msgid "This controls only manual ticket creation/editing. Import validation is fixed according to the settings on the Import page."
+msgstr "This controls only manual ticket creation/editing. Import validation is fixed according to the settings on the Import page."
+
+msgid "This will delete all tickets and their check-in data. This action cannot be undone."
+msgstr "This will delete all tickets and their check-in data. This action cannot be undone."
+
+msgid "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system."
+msgstr "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system."
+
+msgid "Delete Logs"
+msgstr "Delete Logs"
+
+msgid "This will delete all log entries. This action cannot be undone."
+msgstr "This will delete all log entries. This action cannot be undone."
+
+msgid "Confirm Delete All Data"
+msgstr "Confirm Delete All Data"
+
+msgid "Are you sure you want to delete all tickets and check-in data? This action cannot be undone."
+msgstr "Are you sure you want to delete all tickets and check-in data? This action cannot be undone."
+
+msgid "This will delete:"
+msgstr "This will delete:"
+
+msgid "tickets"
+msgstr "tickets"
+
+msgid "check-ins"
+msgstr "check-ins"
+
+msgid "Confirm Delete Check-ins"
+msgstr "Confirm Delete Check-ins"
+
+msgid "Are you sure you want to delete all check-in data? This action cannot be undone."
+msgstr "Are you sure you want to delete all check-in data? This action cannot be undone."
+
+msgid "This will:"
+msgstr "This will:"
+
+msgid "Reset all tickets to VALID status"
+msgstr "Reset all tickets to VALID status"
+
+msgid "Keep all ticket data intact"
+msgstr "Keep all ticket data intact"
+
+msgid "Confirm Delete Logs"
+msgstr "Confirm Delete Logs"
+
+msgid "Are you sure you want to delete all log entries? This action cannot be undone."
+msgstr "Are you sure you want to delete all log entries? This action cannot be undone."
+
+msgid "Total log entries:"
+msgstr "Total log entries:"
+
+msgid "All log entries"
+msgstr "All log entries"
+
+msgid "in total"
+msgstr "in total"
+
+msgid "Save API Token"
+msgstr "Save API Token"
+
+msgid "API Token"
+msgstr "API Token"
+
+# Logs page
+msgid "Ticket ID / QR Code"
+msgstr "Ticket ID / QR Code"
+
+msgid "All"
+msgstr "All"
+
+msgid "Message Search"
+msgstr "Message Search"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Date/Time"
+msgstr "Date/Time"
+
+msgid "Deleted Ticket"
+msgstr "Deleted Ticket"
+
+msgid "No log entries found."
+msgstr "No log entries found."
+
+msgid "Page navigation"
+msgstr "Page navigation"
+
+# Additional fields from import page
+msgid "Ticket Number:"
+msgstr "Ticket Number:"
+
+msgid "First Name:"
+msgstr "First Name:"
+
+msgid "Last Name:"
+msgstr "Last Name:"
+
+msgid "Company Name:"
+msgstr "Company Name:"
+
+msgid "Event Name:"
+msgstr "Event Name:"
+
+msgid "Email:"
+msgstr "Email:"
+
+msgid "Event Check-in Kiosk"
+msgstr "Event Check-in Kiosk"
+
+msgid "Camera access denied."
+msgstr "Camera access denied."
+
+msgid "Please allow camera access and refresh the page."
+msgstr "Please allow camera access and refresh the page."
+
+# Import page translations
+msgid "Data Import"
+msgstr "Data Import"
+
+msgid "This import function supports:"
+msgstr "This import function supports:"
+
+msgid "Data format: CSV file with headers in the first row"
+msgstr "Data format: CSV file with headers in the first row"
+
+msgid "Content: One ticket per row"
+msgstr "Content: One ticket per row"
+
+msgid "Supported CSV format:"
+msgstr "Supported CSV format:"
+
+msgid "Headers in the first row"
+msgstr "Headers in the first row"
+
+msgid "Required columns: qr_code, name"
+msgstr "Required columns: qr_code, name"
+
+msgid "Optional columns: last_name, email, company"
+msgstr "Optional columns: last_name, email, company"
+
+msgid "UTF-8 or UTF-8-BOM encoding"
+msgstr "UTF-8 or UTF-8-BOM encoding"
+
+msgid "Export example from ti.to or goout"
+msgstr "Export example from ti.to or goout"
+
+msgid "Warning:"
+msgstr "Warning:"
+
+msgid "Alternative: GoOut Import"
+msgstr "Alternative: GoOut Import"
+
+msgid "Prepare file for import"
+msgstr "Prepare file for import"
+
+msgid "To import data from goout.net, you need to prepare the file first"
+msgstr "To import data from goout.net, you need to prepare the file first"
