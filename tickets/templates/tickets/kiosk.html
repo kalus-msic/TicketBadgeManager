@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Check-in Kiosk</title>
+    <title>{% load i18n %}{% trans "Event Check-in Kiosk" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}">
@@ -63,12 +63,12 @@
 <body>
     <div class="kiosk-container">
         <h1 class="mb-4">
-            <i class="bi bi-calendar-check"></i> Event Check-in
+            <i class="bi bi-calendar-check"></i> {% trans "Event Check-in" %}
         </h1>
         
         <div class="card shadow-lg">
             <div class="card-body p-5">
-                <h3 class="mb-4">Please scan your ticket QR code</h3>
+                <h3 class="mb-4">{% trans "Please scan your ticket QR code" %}</h3>
                 
                 <!-- Printer selection (hidden, can be set via URL parameter) -->
                 <input type="hidden" id="printer_queue" value="1">
@@ -77,7 +77,7 @@
                 <div id="result" class="result-container mb-4">
                     <div class="text-muted">
                         <i class="bi bi-qr-code-scan" style="font-size: 3rem;"></i>
-                        <p class="mt-3">Ready to scan...</p>
+                        <p class="mt-3">{% trans "Ready to scan..." %}</p>
                     </div>
                 </div>
                 
@@ -85,7 +85,7 @@
                 <div id="reader"></div>
                 
                 <div class="mt-4 text-muted">
-                    <small>Having trouble? Please ask our staff for assistance.</small>
+                    <small>{% trans "Having trouble? Please ask our staff for assistance." %}</small>
                 </div>
             </div>
         </div>
@@ -94,6 +94,13 @@
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/html5-qrcode.min.js' %}"></script>
     <script>
+        // Translations
+        const translations = {
+            welcome: "{% trans 'Welcome!' %}",
+            badgeBeingPrinted: "{% trans 'Badge is being printed' %}",
+            readyToScan: "{% trans 'Ready to scan...' %}"
+        };
+        
         // Sound feedback
         const successSound = new Audio('data:audio/wav;base64,UklGRqwCAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQgCAACA/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/gP+A/4D/');
         const errorSound = new Audio('data:audio/wav;base64,UklGRqwCAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQgCAAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA');
@@ -142,14 +149,14 @@
                     resultDiv.innerHTML = `
                         <div class="success-animation">
                             <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
-                            <div class="welcome-message mt-3">${data.welcome_message || 'Welcome!'}</div>
+                            <div class="welcome-message mt-3">${data.welcome_message || translations.welcome}</div>
                             ${data.ticket ? `
                                 <p class="mt-2 fs-5">${data.ticket.name}</p>
                                 ${data.ticket.company ? `<p class="text-muted">${data.ticket.company}</p>` : ''}
                             ` : ''}
                             ${data.badge_printed ? `
                                 <div class="alert alert-success mt-3">
-                                    <i class="bi bi-printer"></i> ${data.print_message || 'Badge is being printed'}
+                                    <i class="bi bi-printer"></i> ${data.print_message || translations.badgeBeingPrinted}
                                 </div>
                             ` : data.print_warning ? `
                                 <div class="alert alert-warning mt-3">
@@ -164,7 +171,7 @@
                         <div class="error-animation">
                             <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
                             <div class="error-message mt-3">${data.message}</div>
-                            <p class="mt-3 text-muted">Please see our staff for assistance</p>
+                            <p class="mt-3 text-muted">{% trans "Please see our staff for assistance" %}</p>
                         </div>
                     `;
                 }
@@ -174,7 +181,7 @@
                     resultDiv.innerHTML = `
                         <div class="text-muted">
                             <i class="bi bi-qr-code-scan" style="font-size: 3rem;"></i>
-                            <p class="mt-3">Ready to scan...</p>
+                            <p class="mt-3">${translations.readyToScan}</p>
                         </div>
                     `;
                     isProcessing = false;
@@ -213,8 +220,8 @@
                 console.error("Failed to start scanner:", err);
                 document.getElementById('result').innerHTML = `
                     <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle"></i> Camera access denied. 
-                        Please allow camera access and refresh the page.
+                        <i class="bi bi-exclamation-triangle"></i> {% trans "Camera access denied." %} 
+                        {% trans "Please allow camera access and refresh the page." %}
                     </div>
                 `;
             });
