@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container mt-4">
@@ -6,29 +7,29 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="mb-0">Delete Ticket</h3>
+                    <h3 class="mb-0">{% trans "Delete Ticket" %}</h3>
                 </div>
                 <div class="card-body">
-                    <p>Are you sure you want to delete this ticket?</p>
+                    <p>{% trans "Are you sure you want to delete this ticket?" %}</p>
                     
                     <div class="alert alert-warning">
-                        <h5>Ticket Details:</h5>
-                        <p class="mb-1"><strong>QR Code:</strong> {{ ticket.qr_code }}</p>
-                        <p class="mb-1"><strong>Name:</strong> {{ ticket.name }}</p>
-                        <p class="mb-1"><strong>Company:</strong> {{ ticket.company_name }}</p>
-                        <p class="mb-0"><strong>Status:</strong> {{ ticket.status }}</p>
+                        <h5>{% trans "Ticket Details:" %}</h5>
+                        <p class="mb-1"><strong>{% trans "QR Code:" %}</strong> {{ ticket.qr_code }}</p>
+                        <p class="mb-1"><strong>{% trans "Name:" %}</strong> {{ ticket.name }}</p>
+                        <p class="mb-1"><strong>{% trans "Company:" %}</strong> {{ ticket.company_name }}</p>
+                        <p class="mb-0"><strong>{% trans "Status:" %}</strong> {{ ticket.status }}</p>
                     </div>
                     
                     <div class="alert alert-danger">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        This action cannot be undone. All related check-in data will also be deleted.
+                        {% trans "This action cannot be undone. All related check-in data will also be deleted." %}
                     </div>
                     
                     <form method="post">
                         {% csrf_token %}
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-danger">Confirm Delete</button>
-                            <a href="{% url 'tickets:ticket_management' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">{% trans "Confirm Delete" %}</button>
+                            <a href="{% url 'tickets:ticket_management' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
                         </div>
                     </form>
                 </div>

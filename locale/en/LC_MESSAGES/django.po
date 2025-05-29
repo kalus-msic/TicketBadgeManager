@@ -233,12 +233,6 @@ msgstr "No recent check-ins"
 
 msgid "Total"
 msgstr "Total"
-
-msgid "Valid"
-msgstr "Valid"
-
-msgid "Used"
-msgstr "Used"
 # Special Labels
 msgid "Special Labels"
 msgstr "Special Labels"
@@ -255,8 +249,214 @@ msgstr "Examples: PRESS, HOST, VIP, STAFF, or a person's name"
 msgid "Maximum 50 labels per batch"
 msgstr "Maximum 50 labels per batch"
 
+# Scanner page
+msgid "Scan Ticket"
+msgstr "Scan Ticket"
+
+msgid "Active Scanner"
+msgstr "Active Scanner"
+
+msgid "Search VALID tickets by name and press Enter (or use scanner below)"
+msgstr "Search VALID tickets by name and press Enter (or use scanner below)"
+
+msgid "Back to Tickets"
+msgstr "Back to Tickets"
+
+msgid "View Ticket details"
+msgstr "View Ticket details"
+
+# Dashboard/Index additions
+msgid "Ready to check-in"
+msgstr "Ready to check-in"
+
+msgid "complete"
+msgstr "complete"
+
+msgid "Check-in rate"
+msgstr "Check-in rate"
+
+msgid "Remaining"
+msgstr "Remaining"
+
+msgid "Checked In"
+msgstr "Checked In"
+
+msgid "Last Hour"
+msgstr "Last Hour"
+
+msgid "Recent Check-ins"
+msgstr "Recent Check-ins"
+
+# Ticket list additions
+msgid "Tickets"
+msgstr "Tickets"
+
+msgid "Export Tickets"
+msgstr "Export Tickets"
+
+msgid "Total Tickets"
+msgstr "Total Tickets"
+
+msgid "Valid Tickets"
+msgstr "Valid Tickets"
+
+msgid "Used Tickets"
+msgstr "Used Tickets"
+
+msgid "Search by name, company, or QR code"
+msgstr "Search by name, company, or QR code"
+
+msgid "Clear"
+msgstr "Clear"
+
+msgid "All Statuses"
+msgstr "All Statuses"
+
+msgid "No tickets found"
+msgstr "No tickets found"
+
+msgid "First"
+msgstr "First"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Next"
+msgstr "Next"
+
+msgid "Last"
+msgstr "Last"
+
+msgid "View details"
+msgstr "View details"
+
+msgid "Verify ticket & print label"
+msgstr "Verify ticket & print label"
+
+# Import page
+msgid "Import Tickets"
+msgstr "Import Tickets"
+
+msgid "Upload CSV File"
+msgstr "Upload CSV File"
+
+msgid "Replace all existing tickets"
+msgstr "Replace all existing tickets"
+
+msgid "Add to existing tickets"
+msgstr "Add to existing tickets"
+
+msgid "Download sample CSV"
+msgstr "Download sample CSV"
+
+msgid "Choose file"
+msgstr "Choose file"
+
+msgid "CSV Import"
+msgstr "CSV Import"
+
+msgid "File uploaded successfully"
+msgstr "File uploaded successfully"
+
+# Settings additions
+msgid "Eventee API Token"
+msgstr "Eventee API Token"
+
+msgid "Test Connection"
+msgstr "Test Connection"
+
+msgid "Required Ticket Fields"
+msgstr "Required Ticket Fields"
+
+msgid "Save Settings"
+msgstr "Save Settings"
+
+msgid "Delete All Data"
+msgstr "Delete All Data"
+
+msgid "Delete All Check-ins"
+msgstr "Delete All Check-ins"
+
+msgid "Update Token"
+msgstr "Update Token"
+
+msgid "Required Fields"
+msgstr "Required Fields"
+
+msgid "Settings updated successfully"
+msgstr "Settings updated successfully"
+
+msgid "All data deleted successfully"
+msgstr "All data deleted successfully"
+
+msgid "All check-ins deleted successfully"
+msgstr "All check-ins deleted successfully"
+
+# Kiosk mode
+msgid "Event Check-in"
+msgstr "Event Check-in"
+
+msgid "Please scan your ticket QR code"
+msgstr "Please scan your ticket QR code"
+
+msgid "Ready to scan..."
+msgstr "Ready to scan..."
+
+msgid "Welcome!"
+msgstr "Welcome!"
+
+msgid "Having trouble? Please ask our staff for assistance."
+msgstr "Having trouble? Please ask our staff for assistance."
+
+msgid "Please see our staff for assistance"
+msgstr "Please see our staff for assistance"
+
+msgid "Badge is being printed"
+msgstr "Badge is being printed"
+
+msgid "Camera access denied. Please allow camera access and refresh the page."
+msgstr "Camera access denied. Please allow camera access and refresh the page."
+
+# Logs
+msgid "Event Logs"
+msgstr "Event Logs"
+
+msgid "Delete All Logs"
+msgstr "Delete All Logs"
+
+msgid "Time"
+msgstr "Time"
+
+msgid "Event Type"
+msgstr "Event Type"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "No logs found"
+msgstr "No logs found"
+
+# Additional messages
+msgid "Special labels printed successfully"
+msgstr "Special labels printed successfully"
+
+msgid "Printer"
+msgstr "Printer"
+
+msgid "Printer 1"
+msgstr "Printer 1"
+
+msgid "Printer 2"
+msgstr "Printer 2"
+
 msgid "The printer will pause 0.5 seconds between each label to prevent jamming."
 msgstr "The printer will pause 0.5 seconds between each label to prevent jamming."
+
+msgid "Verify & Print"
+msgstr "Verify & Print"
+
+msgid "Search error"
+msgstr "Search error"
 
 msgid "Print Labels"
 msgstr "Print Labels"

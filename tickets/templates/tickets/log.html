@@ -1,43 +1,44 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Logs</h2>
+    <h2>{% trans "Logs" %}</h2>
     
-    <!-- Filtrační formulář -->
+    <!-- Filter form -->
     <form method="get" class="row g-3 mb-4">
         <div class="col-md-4">
-            <label for="ticket" class="form-label">Ticket ID / QR Code</label>
+            <label for="ticket" class="form-label">{% trans "Ticket ID / QR Code" %}</label>
             <input type="text" id="ticket" name="ticket" class="form-control" value="{{ ticket_filter }}">
         </div>
         <div class="col-md-4">
-            <label for="event_type" class="form-label">Event Type</label>
+            <label for="event_type" class="form-label">{% trans "Event Type" %}</label>
             <select id="event_type" name="event_type" class="form-select">
-                <option value="">All</option>
+                <option value="">{% trans "All" %}</option>
                 {% for code, display in event_choices %}
                     <option value="{{ code }}" {% if event_type == code %}selected{% endif %}>{{ display }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-4">
-            <label for="search" class="form-label">Message Search</label>
+            <label for="search" class="form-label">{% trans "Message Search" %}</label>
             <input type="text" id="search" name="search" class="form-control" value="{{ search }}">
         </div>
         <div class="col-12">
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <a href="{% url 'tickets:ticket_log_list' %}" class="btn btn-secondary">Reset</a>
+            <button type="submit" class="btn btn-primary">{% trans "Filter" %}</button>
+            <a href="{% url 'tickets:ticket_log_list' %}" class="btn btn-secondary">{% trans "Reset" %}</a>
         </div>
     </form>
     
-    <!-- Výpis logů -->
+    <!-- Log entries -->
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Date/Time</th>
-                    <th>Ticket</th>
-                    <th>Event Type</th>
-                    <th>Message</th>
+                    <th>{% trans "Date/Time" %}</th>
+                    <th>{% trans "Ticket" %}</th>
+                    <th>{% trans "Event Type" %}</th>
+                    <th>{% trans "Message" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,7 +51,7 @@
                                 {{ log.ticket.qr_code }}
                             </a>
                         {% else %}
-                            Deleted Ticket (QR: {{ log.ticket_qr }})
+                            {% trans "Deleted Ticket" %} (QR: {{ log.ticket_qr }})
                         {% endif %}
                     </td>
                     <td>{{ log.get_event_type_display }}</td>
@@ -58,7 +59,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center">No log entries found.</td>
+                    <td colspan="4" class="text-center">{% trans "No log entries found." %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -66,16 +67,16 @@
     </div>
     
 
-    <!-- Stránkování -->
+    <!-- Pagination -->
     {% if logs.has_other_pages %}
     <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-center" aria-label="{% trans 'Page navigation' %}">
             {% if logs.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page=1&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">First</a>
+                <a class="page-link" href="?page=1&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">{% trans "First" %}</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ logs.previous_page_number }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">Previous</a>
+                <a class="page-link" href="?page={{ logs.previous_page_number }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">{% trans "Previous" %}</a>
             </li>
             {% endif %}
             
@@ -93,10 +94,10 @@
             
             {% if logs.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ logs.next_page_number }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">Next</a>
+                <a class="page-link" href="?page={{ logs.next_page_number }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">{% trans "Next" %}</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ logs.paginator.num_pages }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">Last</a>
+                <a class="page-link" href="?page={{ logs.paginator.num_pages }}&ticket={{ ticket_filter }}&event_type={{ event_type }}&search={{ search }}">{% trans "Last" %}</a>
             </li>
             {% endif %}
         </ul>

@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="mb-0">Scan Ticket</h2>
+                    <h2 class="mb-0">{% trans "Scan Ticket" %}</h2>
                     <!-- Přidaná informace o čísle skeneru -->
-                    <p class="mb-0 mt-2 text-muted">Active Scanner: #{{ printer_queue }}</p>
+                    <p class="mb-0 mt-2 text-muted">{% trans "Active Scanner" %}: #{{ printer_queue }}</p>
                 </div>
                 <div class="card-body">
                     <!-- Skrytý input pro printer_queue -->
@@ -18,9 +18,9 @@
                     <div class="mb-3">
                         <div class="input-group">
                             <input type="text" class="form-control" id="quickSearch" 
-                                   placeholder="Search VALID tickets by name and press Enter (or use scanner below)">
+                                   placeholder="{% trans 'Search VALID tickets by name and press Enter (or use scanner below)' %}">
                             <button class="btn btn-primary" type="button" id="searchBtn">
-                                <i class="bi bi-search"></i> Search
+                                <i class="bi bi-search"></i> {% trans "Search" %}
                             </button>
                         </div>
                         <div id="searchResults" class="mt-2"></div>
@@ -262,7 +262,7 @@ function performSearch() {
         searchResults.innerHTML = '';
         
         if (data.results.length === 0) {
-            searchResults.innerHTML = '<div class="alert alert-info">No tickets found</div>';
+            searchResults.innerHTML = '<div class="alert alert-info">{% trans "No tickets found" %}</div>';
             return;
         }
         
@@ -279,7 +279,7 @@ function performSearch() {
                         <strong>${ticket.name}</strong>
                         ${ticket.company_name ? `<br><small class="text-muted">${ticket.company_name}</small>` : ''}
                     </div>
-                    <span class="badge bg-primary">Verify & Print</span>
+                    <span class="badge bg-primary">{% trans "Verify & Print" %}</span>
                 </div>
             `;
             item.addEventListener('click', () => {
@@ -293,7 +293,7 @@ function performSearch() {
         searchResults.appendChild(resultsList);
     })
     .catch(error => {
-        searchResults.innerHTML = '<div class="alert alert-danger">Search error</div>';
+        searchResults.innerHTML = '<div class="alert alert-danger">{% trans "Search error" %}</div>';
     });
 }
 
