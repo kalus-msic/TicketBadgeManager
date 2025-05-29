@@ -22,6 +22,7 @@ from .special_label_views import special_labels, print_special_labels
 from .qr_views import generate_qr_code
 from .search_views import search_tickets_by_name
 from .kiosk_views import kiosk_mode, kiosk_verify
+from .language_views import set_language_custom
 
 __all__ = [
     'index',
@@ -38,5 +39,6 @@ __all__ = [
     'special_labels', 'print_special_labels',
     'generate_qr_code',
     'search_tickets_by_name',
-    'kiosk_mode', 'kiosk_verify'
+    'kiosk_mode', 'kiosk_verify',
+    'set_language_custom'
 ]

@@ -22,14 +22,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('i18n/setlang/', set_language, name='set_language'),
+    path('i18n/', include('django.conf.urls.i18n')),
     path('admin/', admin.site.urls),
 ]
 
 # Add i18n patterns for the main app
 urlpatterns += i18n_patterns(
     path('', include('tickets.urls')),  # Include tickets app URL patterns
-    prefix_default_language=False,
+    prefix_default_language=False,  # English URLs don't have /en/ prefix
 )
 
 # Serve static and media files in development
