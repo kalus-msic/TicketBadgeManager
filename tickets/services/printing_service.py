@@ -13,9 +13,10 @@ logger = logging.getLogger(__name__)
 class PrintingService:
     """Service for handling ticket/badge printing operations."""
     
-    LABEL_WIDTH = 464
-    LABEL_HEIGHT = 271
-    QR_SIZE = 150
+    # Label size 40x80mm at 203 DPI (8 dots/mm)
+    # 40mm = 320 pixels, 80mm = 640 pixels
+    LABEL_WIDTH = 320  # 40mm
+    LABEL_HEIGHT = 640  # 80mm
     MARGIN = 10
     
     def __init__(self):
@@ -100,83 +101,72 @@ class PrintingService:
             os.path.dirname(os.path.dirname(__file__)), 
             "fonts"
         )
-        try:
-            font_bold = ImageFont.truetype(
-                os.path.join(font_path, "MontserratBold700.ttf"), 16
-            )
-            font_regular = ImageFont.truetype(
-                os.path.join(font_path, "MontserratSemiBold600.ttf"), 14
-            )
-            # Larger font for special labels
-            font_extra_large = ImageFont.truetype(
-                os.path.join(font_path, "MontserratBold700.ttf"), 24
-            )
-        except:
-            font_bold = ImageFont.load_default()
-            font_regular = ImageFont.load_default()
-            font_extra_large = font_bold
         
-        # Check if this is a special label (no real QR code)
+        # Get text to display
+        name = ticket_data.get('name', '')
+        company = ticket_data.get('company_name', '')
         is_special_label = ticket_data.get('qr_code', '').startswith('SPECIAL_')
         
-        if not is_special_label:
-            # Generate QR code for regular tickets
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-                box_size=4,
-                border=1,
-            )
-            qr.add_data(ticket_data.get('qr_code', ''))
-            qr.make(fit=True)
-            qr_img = qr.make_image(fill_color="black", back_color="white")
-            qr_img = qr_img.resize((self.QR_SIZE, self.QR_SIZE))
-            
-            # Paste QR code
-            img.paste(qr_img, (self.MARGIN, self.MARGIN))
-            
-            # Add text next to QR code
-            text_x = self.QR_SIZE + self.MARGIN * 2
-            text_y = self.MARGIN
-        else:
-            # For special labels, center the text without QR code
-            text_x = self.MARGIN
-            text_y = self.LABEL_HEIGHT // 3
+        # Calculate available space - always use full width (no QR code)
+        available_width = self.LABEL_WIDTH - (self.MARGIN * 2)
+        text_start_y = self.LABEL_HEIGHT // 3  # Start text in upper third of label
         
-        # Name
-        name = ticket_data.get('name', '')
+        # Find optimal font size
+        name_font_size = 30  # Start with larger size
+        min_font_size = 12   # Minimum readable size
         
-        if is_special_label:
-            # For special labels, use larger font and center the name
-            # Calculate text width to center it
-            bbox = draw.textbbox((0, 0), name, font=font_extra_large)
+        while name_font_size >= min_font_size:
+            try:
+                font_bold = ImageFont.truetype(
+                    os.path.join(font_path, "MontserratBold700.ttf"), 
+                    name_font_size
+                )
+                font_regular = ImageFont.truetype(
+                    os.path.join(font_path, "MontserratSemiBold600.ttf"), 
+                    int(name_font_size * 0.7)  # Company font is 70% of name size
+                )
+            except:
+                font_bold = ImageFont.load_default()
+                font_regular = ImageFont.load_default()
+            
+            # Test if text fits
+            name_lines = self._wrap_text(name, font_bold, available_width)
+            company_lines = self._wrap_text(company, font_regular, available_width) if company else []
+            
+            # Calculate total height needed
+            line_height = int(name_font_size * 1.2)
+            company_line_height = int(name_font_size * 0.7 * 1.2)
+            total_height = (len(name_lines) * line_height + 
+                           len(company_lines) * company_line_height)
+            
+            # Check if it fits vertically
+            max_height = self.LABEL_HEIGHT - text_start_y - self.MARGIN
+            
+            if total_height <= max_height:
+                break  # Found good size
+            
+            name_font_size -= 2  # Reduce and try again
+        
+        # Draw the text - always centered
+        y_pos = text_start_y
+        
+        # Draw name
+        for line in name_lines:
+            bbox = draw.textbbox((0, 0), line, font=font_bold)
             text_width = bbox[2] - bbox[0]
-            text_x = (self.LABEL_WIDTH - text_width) // 2
-            draw.text((text_x, text_y), name, font=font_extra_large, fill='black')
-            text_y += 50
-        else:
-            # Regular ticket layout
-            wrapped_name = textwrap.fill(name, width=20)
-            draw.text((text_x, text_y), wrapped_name, font=font_bold, fill='black')
-            text_y += 40
+            x_pos = (self.LABEL_WIDTH - text_width) // 2
+            draw.text((x_pos, y_pos), line, font=font_bold, fill='black')
+            y_pos += line_height
         
-        # Company
-        company = ticket_data.get('company_name', '')
+        # Draw company if exists
         if company:
-            if is_special_label:
-                # Center company name for special labels
-                bbox = draw.textbbox((0, 0), company, font=font_regular)
+            y_pos += 10  # Small gap between name and company
+            for line in company_lines:
+                bbox = draw.textbbox((0, 0), line, font=font_regular)
                 text_width = bbox[2] - bbox[0]
-                text_x = (self.LABEL_WIDTH - text_width) // 2
-                draw.text((text_x, text_y), company, font=font_regular, fill='black')
-            else:
-                wrapped_company = textwrap.fill(company, width=25)
-                draw.text((text_x, text_y), wrapped_company, font=font_regular, fill='black')
-        
-        # Event name (only for regular tickets)
-        if not is_special_label and ticket_data.get('event_name'):
-            text_y += 40
-            draw.text((text_x, text_y), ticket_data['event_name'], font=font_regular, fill='black')
+                x_pos = (self.LABEL_WIDTH - text_width) // 2
+                draw.text((x_pos, y_pos), line, font=font_regular, fill='black')
+                y_pos += company_line_height
         
         # Save image
         temp_filename = f"label_{ticket_data['qr_code'].replace('/', '_')}.png"
@@ -186,6 +176,36 @@ class PrintingService:
         
         return temp_path
     
+    def _wrap_text(self, text: str, font: ImageFont, max_width: int) -> list:
+        """Wrap text to fit within max_width."""
+        words = text.split()
+        lines = []
+        current_line = []
+        
+        # Create temporary image for text measurement
+        temp_img = Image.new('RGB', (1, 1))
+        temp_draw = ImageDraw.Draw(temp_img)
+        
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            bbox = temp_draw.textbbox((0, 0), test_line, font=font)
+            text_width = bbox[2] - bbox[0]
+            
+            if text_width <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                    current_line = [word]
+                else:
+                    # Single word is too long, force it
+                    lines.append(word)
+        
+        if current_line:
+            lines.append(' '.join(current_line))
+        
+        return lines if lines else [text]  # Return at least the original text
+    
     def _send_to_printer(self, image_path: str) -> bool:
         """Send image to printer using TSCLIB."""
         try:
@@ -193,7 +213,7 @@ class PrintingService:
             self.tsclibrary.openport.argtypes = [ctypes.c_char_p]
             self.tsclibrary.openport(self.printer_name.encode('utf-8'))
             
-            self.tsclibrary.sendcommand(b"SIZE 58 mm, 34 mm")
+            self.tsclibrary.sendcommand(b"SIZE 40 mm, 80 mm")
             self.tsclibrary.sendcommand(b"SPEED 4")
             self.tsclibrary.sendcommand(b"DENSITY 10")
             self.tsclibrary.sendcommand(b"DIRECTION 1")
