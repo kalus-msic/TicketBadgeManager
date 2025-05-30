@@ -22,13 +22,28 @@ class TicketService:
         )
         
         if search_query:
+            # For diacritics-insensitive search, we need to search all tickets
+            # and filter in Python
+            all_tickets = list(tickets)
             normalized_query = normalize_text(search_query)
-            tickets = tickets.filter(
-                Q(name__icontains=search_query) |
-                Q(company_name__icontains=search_query) |
-                Q(qr_code__icontains=search_query) |
-                Q(email__icontains=search_query)
-            )
+            
+            filtered_tickets = []
+            for ticket in all_tickets:
+                # Normalize ticket fields for comparison
+                normalized_name = normalize_text(ticket.name or '')
+                normalized_company = normalize_text(ticket.company_name or '')
+                normalized_email = normalize_text(ticket.email or '')
+                
+                # Check if normalized query matches any normalized field
+                if (normalized_query in normalized_name or
+                    normalized_query in normalized_company or
+                    normalized_query in normalized_email or
+                    search_query.lower() in (ticket.qr_code or '').lower()):
+                    filtered_tickets.append(ticket)
+            
+            # Convert back to queryset-like list
+            ticket_ids = [t.id for t in filtered_tickets]
+            tickets = tickets.filter(id__in=ticket_ids)
         
         if status_filter and status_filter != 'ALL':
             tickets = tickets.filter(status=status_filter)
