@@ -1,5 +1,4 @@
 import time
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.translation import gettext as _
@@ -7,9 +6,11 @@ from django.views.decorators.http import require_http_methods
 
 from ..models import Ticket, Log
 from ..services.printing_service import PrintingService
+from ..decorators import staff_required
+from ..utils.auth_utils import get_username_for_log
 
 
-@login_required
+@staff_required
 def bulk_print(request):
     """Display bulk print page with all tickets."""
     tickets = Ticket.objects.all().order_by('name')
@@ -28,7 +29,7 @@ def bulk_print(request):
     return render(request, 'tickets/bulk_print.html', context)
 
 
-@login_required
+@staff_required
 @require_http_methods(["POST"])
 def bulk_print_execute(request):
     """Execute bulk printing of selected tickets."""
@@ -81,7 +82,7 @@ def bulk_print_execute(request):
                         ticket=ticket,
                         ticket_qr=ticket.qr_code,
                         event_type='BULK_PRINT',
-                        message=f"Bulk printed on {printer} by {request.user.username}"
+                        message=f"Bulk printed on {printer} by {get_username_for_log(request.user)}"
                     )
                     
                     results['printed'].append({
