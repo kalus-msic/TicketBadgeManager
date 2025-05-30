@@ -187,6 +187,10 @@ def update_required_fields(request):
         
         messages.success(request, 'Required fields updated successfully')
         return redirect('tickets:settings')
+        
+    except Exception as e:
+        messages.error(request, f'Failed to update required fields: {str(e)}')
+        return redirect('tickets:settings')
 
 
 @staff_required
