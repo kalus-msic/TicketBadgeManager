@@ -96,43 +96,92 @@ def verify_ticket(request):
 @login_required_ajax
 def check_server_status(request):
     """Check if server is running and get local IP."""
+    import platform
+    
     try:
-        # Get local IP
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
+        # Get local IP - better method that works on all platforms
+        local_ip = None
+        try:
+            # Try to connect to Google DNS to find our local IP
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+        except:
+            # Fallback to hostname method
+            hostname = socket.gethostname()
+            local_ip = socket.gethostbyname(hostname)
         
-        # Get port from request
-        port = request.META.get('SERVER_PORT', '8000')
+        # Get actual port from the request
+        # When using runsslserver, the port is in HTTP_HOST
+        host_header = request.META.get('HTTP_HOST', '')
+        if ':' in host_header:
+            port = host_header.split(':')[1]
+        else:
+            # Fallback to SERVER_PORT or default
+            port = request.META.get('SERVER_PORT', '8000')
         
-        # Check if port is open
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex(('localhost', int(port)))
-        sock.close()
-        port_open = result == 0
+        # Additional check - get the actual port we're listening on
+        actual_port = request.get_port()
+        if actual_port:
+            port = str(actual_port)
         
-        # Check if accessible from network
+        # Check if server is accessible locally
+        port_open = False
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex(('127.0.0.1', int(port)))
+            sock.close()
+            port_open = result == 0
+        except:
+            pass
+        
+        # Check if accessible from network (using actual local IP)
         accessible = False
-        if port_open:
+        if port_open and local_ip:
             try:
-                # Try to connect using the local IP
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(1)
+                sock.settimeout(2)
                 result = sock.connect_ex((local_ip, int(port)))
                 sock.close()
                 accessible = result == 0
             except:
                 accessible = False
         
+        # Get all network interfaces for more info
+        all_ips = []
+        if platform.system() == "Windows":
+            # Windows specific
+            hostname = socket.gethostname()
+            all_ips = socket.gethostbyname_ex(hostname)[2]
+        else:
+            # Linux/Mac - try to get all IPs
+            try:
+                import netifaces
+                for interface in netifaces.interfaces():
+                    addrs = netifaces.ifaddresses(interface)
+                    if netifaces.AF_INET in addrs:
+                        for addr in addrs[netifaces.AF_INET]:
+                            ip = addr['addr']
+                            if ip != '127.0.0.1':
+                                all_ips.append(ip)
+            except:
+                all_ips = [local_ip] if local_ip else []
+        
         return JsonResponse({
             'port_open': port_open,
             'accessible': accessible,
             'port': port,
-            'local_ip': local_ip
+            'local_ip': local_ip,
+            'all_ips': all_ips,
+            'platform': platform.system()
         })
     except Exception as e:
         return JsonResponse({
             'port_open': False,
             'accessible': False,
-            'error': str(e)
+            'error': str(e),
+            'local_ip': 'unknown',
+            'port': 'unknown'
         })

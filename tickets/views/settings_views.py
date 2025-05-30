@@ -36,12 +36,24 @@ def settings(request):
     
     # Get local IP and port
     try:
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
+        # Better method to get local IP
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
     except:
-        local_ip = 'localhost'
+        try:
+            hostname = socket.gethostname()
+            local_ip = socket.gethostbyname(hostname)
+        except:
+            local_ip = 'localhost'
     
-    port = request.META.get('SERVER_PORT', '8000')
+    # Get port from HTTP_HOST or SERVER_PORT
+    host_header = request.META.get('HTTP_HOST', '')
+    if ':' in host_header:
+        port = host_header.split(':')[1]
+    else:
+        port = request.get_port() or request.META.get('SERVER_PORT', '8000')
     
     # Field choices for required fields checkboxes
     field_choices = [

@@ -661,6 +661,24 @@ msgstr "Přístup ke kameře byl odepřen."
 msgid "Please allow camera access and refresh the page."
 msgstr "Povolte přístup ke kameře a obnovte stránku."
 
+msgid "Application is running on port:"
+msgstr "Aplikace běží na portu:"
+
+msgid "Application is NOT running on any port!"
+msgstr "Aplikace NEBĚŽÍ na žádném portu!"
+
+msgid "Application is accessible on the network at:"
+msgstr "Aplikace je přístupná v síti na adrese:"
+
+msgid "All available network addresses:"
+msgstr "Všechny dostupné síťové adresy:"
+
+msgid "Application is not accessible from other devices!"
+msgstr "Aplikace není přístupná z jiných zařízení!"
+
+msgid "Check your firewall or settings.py (ALLOWED_HOSTS)."
+msgstr "Zkontrolujte firewall nebo settings.py (ALLOWED_HOSTS)."
+
 # Import page translations
 msgid "Data Import"
 msgstr "Import dat"
@@ -703,3 +721,103 @@ msgstr "Připravit soubor pro import"
 
 msgid "To import data from goout.net, you need to prepare the file first"
 msgstr "Pro import dat z goout.net je potřeba nejprve připravit soubor"
+
+# Universal import translations
+msgid "Smart Import with Column Mapping"
+msgstr "Chytrý import s mapováním sloupců"
+
+msgid "Upload any CSV file and map columns to ticket fields. Choose whether to replace, append, or update existing tickets."
+msgstr "Nahrajte libovolný CSV soubor a namapujte sloupce na pole vstupenek. Vyberte, zda chcete nahradit, přidat nebo aktualizovat existující vstupenky."
+
+msgid "Upload and Configure Import"
+msgstr "Nahrát a konfigurovat import"
+
+msgid "CSV Import - Column Mapping"
+msgstr "CSV Import - Mapování sloupců"
+
+msgid "Import Settings"
+msgstr "Nastavení importu"
+
+msgid "Import Mode"
+msgstr "Režim importu"
+
+msgid "Delete all existing tickets and import new ones"
+msgstr "Smazat všechny existující vstupenky a importovat nové"
+
+msgid "Append"
+msgstr "Přidat"
+
+msgid "Add new tickets, skip existing ones (by QR code)"
+msgstr "Přidat nové vstupenky, přeskočit existující (podle QR kódu)"
+
+msgid "Update existing tickets, add new ones"
+msgstr "Aktualizovat existující vstupenky, přidat nové"
+
+msgid "Column Mapping"
+msgstr "Mapování sloupců"
+
+msgid "Map CSV columns to ticket fields. QR Code field is required."
+msgstr "Namapujte CSV sloupce na pole vstupenek. Pole QR kód je povinné."
+
+msgid "CSV Column"
+msgstr "CSV sloupec"
+
+msgid "Sample Data"
+msgstr "Ukázka dat"
+
+msgid "Map to Field"
+msgstr "Mapovat na pole"
+
+msgid "-- Skip this column --"
+msgstr "-- Přeskočit tento sloupec --"
+
+msgid "Import Preview"
+msgstr "Náhled importu"
+
+msgid "Total rows in file:"
+msgstr "Celkem řádků v souboru:"
+
+msgid "Rows to import:"
+msgstr "Řádků k importu:"
+
+msgid "Validation Errors:"
+msgstr "Chyby validace:"
+
+msgid "QR Code field is required"
+msgstr "Pole QR kód je povinné"
+
+msgid "Name field is required"
+msgstr "Pole jméno je povinné"
+
+msgid "Field"
+msgstr "Pole"
+
+msgid "is mapped multiple times"
+msgstr "je namapováno vícekrát"
+
+msgid "Import session expired. Please upload the file again."
+msgstr "Relace importu vypršela. Nahrajte prosím soubor znovu."
+
+msgid "Import Mapping"
+msgstr "Mapování importu"
+
+msgid "Detected delimiter:"
+msgstr "Detekovaný oddělovač:"
+
+msgid "Comma"
+msgstr "Čárka"
+
+msgid "Semicolon"
+msgstr "Středník"
+
+msgid "Tab"
+msgstr "Tabulátor"
+
+msgid "Pipe"
+msgstr "Svislá čára"
+
+msgid "Ticket/Reference"
+msgstr "Vstupenka/Reference"
+
+msgid "Create"
+msgstr "Vytvoření"

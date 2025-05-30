@@ -6,7 +6,7 @@ from .ticket_views import (
 )
 from .import_views import (
     import_page, import_replace_tickets, import_add_tickets,
-    merge_import
+    merge_import, import_mapping, import_execute, import_preview
 )
 from .scanner_views import (
     scanner_page, scanner_page1, scanner_page2,
@@ -30,6 +30,7 @@ __all__ = [
     'ticket_create', 'ticket_edit', 'ticket_delete',
     'reset_ticket_status', 'delete_tickets', 'export_tickets_csv',
     'import_page', 'import_replace_tickets', 'import_add_tickets', 'merge_import',
+    'import_mapping', 'import_execute', 'import_preview',
     'scanner_page', 'scanner_page1', 'scanner_page2', 'verify_ticket',
     'check_server_status',
     'settings', 'delete_all_data', 'delete_checkins',

@@ -42,6 +42,27 @@
                         </ul>
                     </div>
 
+                    <!-- Universal Import with Mapping -->
+                    <div class="card border-success mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">
+                                <i class="bi bi-magic"></i> {% trans "Smart Import with Column Mapping" %}
+                            </h5>
+                            <p class="card-text">{% trans "Upload any CSV file and map columns to ticket fields. Choose whether to replace, append, or update existing tickets." %}</p>
+                            
+                            <form method="post" action="{% url 'tickets:import_mapping' %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">{% trans "Select CSV File" %}</label>
+                                    <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-upload"></i> {% trans "Upload and Configure Import" %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
                     <!-- Delete and Replace -->
                     <div class="card border-danger mb-4">
                         <div class="card-body">

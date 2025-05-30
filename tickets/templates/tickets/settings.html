@@ -233,18 +233,33 @@
             .then(data => {
                 statusDiv.innerHTML = "";
 
+                if (data.error) {
+                    statusDiv.innerHTML += `<p class='text-danger'>❌ Chyba: ${data.error}</p>`;
+                    return;
+                }
+
                 if (data.port_open) {
-                    statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace běží na portu: <strong>${data.port}</strong></p>`;
+                    statusDiv.innerHTML += `<p class='text-success'>✅ {% trans "Application is running on port:" %} <strong>${data.port}</strong></p>`;
                 } else {
-                    statusDiv.innerHTML += "<p class='text-danger'>❌ Aplikace NEBĚŽÍ na žádném portu!</p>";
+                    statusDiv.innerHTML += "<p class='text-danger'>❌ {% trans 'Application is NOT running on any port!' %}</p>";
                     return;
                 }
 
                 if (data.accessible) {
-                    statusDiv.innerHTML += `<p class='text-success'>✅ Aplikace je přístupná v síti na adrese: <strong>https://${data.local_ip}:${data.port}</strong></p>`;
+                    statusDiv.innerHTML += `<p class='text-success'>✅ {% trans "Application is accessible on the network at:" %} <strong>https://${data.local_ip}:${data.port}</strong></p>`;
+                    
+                    // Show all available IPs if there are multiple
+                    if (data.all_ips && data.all_ips.length > 1) {
+                        statusDiv.innerHTML += "<p class='text-info'>{% trans 'All available network addresses:' %}</p>";
+                        statusDiv.innerHTML += "<ul>";
+                        data.all_ips.forEach(ip => {
+                            statusDiv.innerHTML += `<li><strong>https://${ip}:${data.port}</strong></li>`;
+                        });
+                        statusDiv.innerHTML += "</ul>";
+                    }
                 } else {
-                    statusDiv.innerHTML += "<p class='text-warning'>⚠️ Aplikace není přístupná z jiných zařízení!</p>";
-                    statusDiv.innerHTML += "<p class='text-info'>ℹ️ Zkontrolujte firewall případně settings.py (allowed hosts).</p>";
+                    statusDiv.innerHTML += "<p class='text-warning'>⚠️ {% trans 'Application is not accessible from other devices!' %}</p>";
+                    statusDiv.innerHTML += "<p class='text-info'>ℹ️ {% trans 'Check your firewall or settings.py (ALLOWED_HOSTS).' %}</p>";
                 }
             })
             .catch(error => {

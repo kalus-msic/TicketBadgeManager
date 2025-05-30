@@ -18,6 +18,9 @@ urlpatterns = [
     path('import/', views.import_page, name='import_page'),
     path('import/replace/', views.import_replace_tickets, name='import_replace_tickets'),
     path('import/add/', views.import_add_tickets, name='import_add_tickets'),
+    path('import/mapping/', views.import_mapping, name='import_mapping'),
+    path('import/execute/', views.import_execute, name='import_execute'),
+    path('import/preview/', views.import_preview, name='import_preview'),
     path('management/', views.ticket_management_dashboard, name='ticket_management'),
     path('tickets/', views.ticket_list, name='ticket_list'),
     

@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Mapping" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% trans "CSV Import - Column Mapping" %}</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{% trans "Import Settings" %}</h5>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                {% trans "Detected delimiter:" %} 
+                <strong>
+                    {% if delimiter_name == 'comma' %}{% trans "Comma" %} (,)
+                    {% elif delimiter_name == 'semicolon' %}{% trans "Semicolon" %} (;)
+                    {% elif delimiter_name == 'tab' %}{% trans "Tab" %}
+                    {% elif delimiter_name == 'pipe' %}{% trans "Pipe" %} (|)
+                    {% else %}{{ delimiter }}
+                    {% endif %}
+                </strong>
+            </div>
+            
+            <form method="post" action="{% url 'tickets:import_execute' %}">
+                {% csrf_token %}
+                <input type="hidden" name="session_key" value="{{ session_key }}">
+                
+                <!-- Import Mode -->
+                <div class="mb-4">
+                    <label class="form-label">{% trans "Import Mode" %}</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="import_mode" id="mode_replace" value="replace" checked>
+                        <label class="form-check-label" for="mode_replace">
+                            <strong>{% trans "Replace All" %}</strong> - {% trans "Delete all existing tickets and import new ones" %}
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="import_mode" id="mode_append" value="append">
+                        <label class="form-check-label" for="mode_append">
+                            <strong>{% trans "Append" %}</strong> - {% trans "Add new tickets, skip existing ones (by QR code)" %}
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="import_mode" id="mode_update" value="update">
+                        <label class="form-check-label" for="mode_update">
+                            <strong>{% trans "Update" %}</strong> - {% trans "Update existing tickets, add new ones" %}
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Column Mapping -->
+                <div class="mb-4">
+                    <h5>{% trans "Column Mapping" %}</h5>
+                    <p class="text-muted">{% trans "Map CSV columns to ticket fields. QR Code field is required." %}</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "CSV Column" %}</th>
+                                    <th>{% trans "Sample Data" %}</th>
+                                    <th>{% trans "Map to Field" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for column in csv_columns %}
+                                <tr>
+                                    <td><strong>{{ column.name }}</strong></td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {% for sample in column.samples %}
+                                                {{ sample }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <select name="mapping_{{ forloop.counter0 }}" class="form-select column-mapping" data-column="{{ column.name }}">
+                                            <option value="">{% trans "-- Skip this column --" %}</option>
+                                            <option value="qr_code" {% if column.suggested_field == 'qr_code' %}selected{% endif %}>
+                                                {% trans "QR Code" %} *
+                                            </option>
+                                            <option value="name" {% if column.suggested_field == 'name' %}selected{% endif %}>
+                                                {% trans "Name" %} *
+                                            </option>
+                                            <option value="last_name" {% if column.suggested_field == 'last_name' %}selected{% endif %}>
+                                                {% trans "Last Name" %}
+                                            </option>
+                                            <option value="company_name" {% if column.suggested_field == 'company_name' %}selected{% endif %}>
+                                                {% trans "Company" %}
+                                            </option>
+                                            <option value="email" {% if column.suggested_field == 'email' %}selected{% endif %}>
+                                                {% trans "Email" %}
+                                            </option>
+                                            <option value="event_name" {% if column.suggested_field == 'event_name' %}selected{% endif %}>
+                                                {% trans "Event Name" %}
+                                            </option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Preview -->
+                <div class="mb-4">
+                    <h5>{% trans "Import Preview" %}</h5>
+                    <p class="text-muted">
+                        {% trans "Total rows in file:" %} <strong>{{ total_rows }}</strong><br>
+                        {% trans "Rows to import:" %} <strong id="rowsToImport">{{ total_rows }}</strong>
+                    </p>
+                    
+                    <div id="validationErrors" class="alert alert-danger d-none">
+                        <h6>{% trans "Validation Errors:" %}</h6>
+                        <ul id="errorList"></ul>
+                    </div>
+                    
+                    <div id="importPreview" class="table-responsive">
+                        <!-- Preview will be loaded here via JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'tickets:import_page' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> {% trans "Back" %}
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="importBtn">
+                        <i class="bi bi-upload"></i> {% trans "Import Tickets" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mappingSelects = document.querySelectorAll('.column-mapping');
+    const importBtn = document.getElementById('importBtn');
+    const errorDiv = document.getElementById('validationErrors');
+    const errorList = document.getElementById('errorList');
+    
+    // Validate mapping on change
+    function validateMapping() {
+        const mappings = {};
+        const errors = [];
+        let hasQrCode = false;
+        let hasName = false;
+        
+        // Check for duplicate mappings
+        mappingSelects.forEach(select => {
+            const value = select.value;
+            if (value) {
+                if (value === 'qr_code') hasQrCode = true;
+                if (value === 'name') hasName = true;
+                
+                if (mappings[value]) {
+                    errors.push(`{% trans "Field" %} "${value}" {% trans "is mapped multiple times" %}`);
+                }
+                mappings[value] = true;
+            }
+        });
+        
+        // Check required fields
+        if (!hasQrCode) {
+            errors.push("{% trans 'QR Code field is required' %}");
+        }
+        if (!hasName) {
+            errors.push("{% trans 'Name field is required' %}");
+        }
+        
+        // Show/hide errors
+        if (errors.length > 0) {
+            errorList.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+            errorDiv.classList.remove('d-none');
+            importBtn.disabled = true;
+        } else {
+            errorDiv.classList.add('d-none');
+            importBtn.disabled = false;
+        }
+        
+        // Update preview
+        updatePreview();
+    }
+    
+    // Update preview based on current mapping
+    function updatePreview() {
+        // This would make an AJAX call to get preview data
+        // For now, just update the UI
+        const mode = document.querySelector('input[name="import_mode"]:checked').value;
+        const rowsElement = document.getElementById('rowsToImport');
+        
+        if (mode === 'replace') {
+            rowsElement.textContent = '{{ total_rows }}';
+        } else {
+            // In real implementation, this would check for duplicates
+            rowsElement.textContent = '{{ total_rows }}';
+        }
+    }
+    
+    // Add event listeners
+    mappingSelects.forEach(select => {
+        select.addEventListener('change', validateMapping);
+    });
+    
+    document.querySelectorAll('input[name="import_mode"]').forEach(radio => {
+        radio.addEventListener('change', updatePreview);
+    });
+    
+    // Initial validation
+    validateMapping();
+});
+</script>
+{% endblock %}

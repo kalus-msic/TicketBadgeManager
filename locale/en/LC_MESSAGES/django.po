@@ -662,6 +662,24 @@ msgstr "Camera access denied."
 msgid "Please allow camera access and refresh the page."
 msgstr "Please allow camera access and refresh the page."
 
+msgid "Application is running on port:"
+msgstr "Application is running on port:"
+
+msgid "Application is NOT running on any port!"
+msgstr "Application is NOT running on any port!"
+
+msgid "Application is accessible on the network at:"
+msgstr "Application is accessible on the network at:"
+
+msgid "All available network addresses:"
+msgstr "All available network addresses:"
+
+msgid "Application is not accessible from other devices!"
+msgstr "Application is not accessible from other devices!"
+
+msgid "Check your firewall or settings.py (ALLOWED_HOSTS)."
+msgstr "Check your firewall or settings.py (ALLOWED_HOSTS)."
+
 # Import page translations
 msgid "Data Import"
 msgstr "Data Import"
@@ -704,3 +722,103 @@ msgstr "Prepare file for import"
 
 msgid "To import data from goout.net, you need to prepare the file first"
 msgstr "To import data from goout.net, you need to prepare the file first"
+
+# Universal import translations
+msgid "Smart Import with Column Mapping"
+msgstr "Smart Import with Column Mapping"
+
+msgid "Upload any CSV file and map columns to ticket fields. Choose whether to replace, append, or update existing tickets."
+msgstr "Upload any CSV file and map columns to ticket fields. Choose whether to replace, append, or update existing tickets."
+
+msgid "Upload and Configure Import"
+msgstr "Upload and Configure Import"
+
+msgid "CSV Import - Column Mapping"
+msgstr "CSV Import - Column Mapping"
+
+msgid "Import Settings"
+msgstr "Import Settings"
+
+msgid "Import Mode"
+msgstr "Import Mode"
+
+msgid "Delete all existing tickets and import new ones"
+msgstr "Delete all existing tickets and import new ones"
+
+msgid "Append"
+msgstr "Append"
+
+msgid "Add new tickets, skip existing ones (by QR code)"
+msgstr "Add new tickets, skip existing ones (by QR code)"
+
+msgid "Update existing tickets, add new ones"
+msgstr "Update existing tickets, add new ones"
+
+msgid "Column Mapping"
+msgstr "Column Mapping"
+
+msgid "Map CSV columns to ticket fields. QR Code field is required."
+msgstr "Map CSV columns to ticket fields. QR Code field is required."
+
+msgid "CSV Column"
+msgstr "CSV Column"
+
+msgid "Sample Data"
+msgstr "Sample Data"
+
+msgid "Map to Field"
+msgstr "Map to Field"
+
+msgid "-- Skip this column --"
+msgstr "-- Skip this column --"
+
+msgid "Import Preview"
+msgstr "Import Preview"
+
+msgid "Total rows in file:"
+msgstr "Total rows in file:"
+
+msgid "Rows to import:"
+msgstr "Rows to import:"
+
+msgid "Validation Errors:"
+msgstr "Validation Errors:"
+
+msgid "QR Code field is required"
+msgstr "QR Code field is required"
+
+msgid "Name field is required"
+msgstr "Name field is required"
+
+msgid "Field"
+msgstr "Field"
+
+msgid "is mapped multiple times"
+msgstr "is mapped multiple times"
+
+msgid "Import session expired. Please upload the file again."
+msgstr "Import session expired. Please upload the file again."
+
+msgid "Import Mapping"
+msgstr "Import Mapping"
+
+msgid "Detected delimiter:"
+msgstr "Detected delimiter:"
+
+msgid "Comma"
+msgstr "Comma"
+
+msgid "Semicolon"
+msgstr "Semicolon"
+
+msgid "Tab"
+msgstr "Tab"
+
+msgid "Pipe"
+msgstr "Pipe"
+
+msgid "Ticket/Reference"
+msgstr "Ticket/Reference"
+
+msgid "Create"
+msgstr "Create"
