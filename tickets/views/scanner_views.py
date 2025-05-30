@@ -13,6 +13,8 @@ from ..utils.validators import sanitize_string
 @login_required_ajax
 def scanner_page(request, printer_queue='1'):
     """Display QR code scanner page."""
+    from ..models import AppSettings
+    
     host = request.get_host()
     
     # Check if accessed via HTTPS
@@ -21,11 +23,16 @@ def scanner_page(request, printer_queue='1'):
     # Get printer queue from URL parameter or use default
     printer_queue = request.GET.get('printer_queue', printer_queue)
     
+    # Get app settings
+    app_settings = AppSettings.objects.first()
+    auto_print = app_settings.auto_print_on_scan if app_settings else True
+    
     return render(request, 'tickets/scanner.html', {
         'host': host,
         'is_https': is_https,
         'mode': request.GET.get('mode', 'verify'),
-        'printer_queue': printer_queue
+        'printer_queue': printer_queue,
+        'auto_print_on_scan': auto_print
     })
 
 

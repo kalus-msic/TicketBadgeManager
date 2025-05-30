@@ -14,7 +14,7 @@ from .scanner_views import (
 )
 from .settings_views import (
     settings, delete_all_data, delete_checkins,
-    update_eventee_token, update_required_fields
+    update_eventee_token, update_required_fields, update_printer_settings
 )
 from .log_views import ticket_log_list, delete_logs
 from .management_views import ticket_management_dashboard
@@ -35,7 +35,7 @@ __all__ = [
     'scanner_page', 'scanner_page1', 'scanner_page2', 'verify_ticket',
     'check_server_status',
     'settings', 'delete_all_data', 'delete_checkins',
-    'update_eventee_token', 'update_required_fields',
+    'update_eventee_token', 'update_required_fields', 'update_printer_settings',
     'ticket_log_list', 'delete_logs',
     'ticket_management_dashboard',
     'special_labels', 'print_special_labels',

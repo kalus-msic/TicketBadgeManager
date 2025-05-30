@@ -13,6 +13,8 @@
                 <div class="card-body">
                     <!-- Skrytý input pro printer_queue -->
                     <input type="hidden" id="printer_queue" value="{{ printer_queue }}">
+                    <!-- Skrytý input pro auto_print_on_scan -->
+                    <input type="hidden" id="auto_print_on_scan" value="{{ auto_print_on_scan|yesno:'true,false' }}">
                     
                     <!-- Quick search -->
                     <div class="mb-3">
@@ -226,7 +228,9 @@ function onScanSuccess(decodedText, decodedResult) {
     }
 
     scannedCodes.add(decodedText);
-    verifyTicket(decodedText, false);  // Don't print when scanning manually
+    // Use auto print setting
+    const autoPrint = document.getElementById('auto_print_on_scan').value === 'true';
+    verifyTicket(decodedText, autoPrint);
 
     html5QrcodeScanner.pause();
     setTimeout(() => {

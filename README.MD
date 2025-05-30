@@ -298,9 +298,10 @@ The application supports English and Czech languages:
 
 4. **QR Scanner** (`/scanner/`)
    - Scan QR codes using device camera
-   - Automatic check-in
-   - Optional badge printing
+   - Automatic check-in with immediate badge printing (default)
+   - Configurable automatic printing (can be disabled in settings)
    - Two scanner instances for different printers
+   - Sound feedback on successful/failed scans
 
 5. **Special Labels** (`/special-labels/`)
    - Print custom labels without QR codes
@@ -311,6 +312,7 @@ The application supports English and Czech languages:
 6. **Settings** (`/settings/`)
    - Configure Eventee API token
    - Set required ticket fields
+   - **Printer Settings** - Enable/disable automatic printing when scanning
    - Delete all data or check-ins
    - Test API connection
    - **Check server status** - View local IP for mobile access
