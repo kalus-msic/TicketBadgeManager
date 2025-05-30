@@ -55,6 +55,7 @@ def verify_ticket(request):
     """Verify ticket and optionally print badge."""
     qr_code = sanitize_string(request.POST.get('qr_code', ''))
     print_badge = request.POST.get('print', 'false').lower() == 'true'
+    printer_queue = request.POST.get('printer_queue', '1')
     
     if not qr_code:
         return JsonResponse({
