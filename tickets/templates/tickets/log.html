@@ -36,7 +36,7 @@
             <thead>
                 <tr>
                     <th>{% trans "Date/Time" %}</th>
-                    <th>{% trans "Ticket" %}</th>
+                    <th>{% trans "Ticket/Reference" %}</th>
                     <th>{% trans "Event Type" %}</th>
                     <th>{% trans "Message" %}</th>
                 </tr>
@@ -46,15 +46,31 @@
                 <tr>
                     <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
                     <td>
-                        {% if log.ticket %}
+                        {% if log.event_type == 'SYSTEM' %}
+                            <span class="text-muted">-</span>
+                        {% elif log.ticket %}
                             <a href="{% url 'tickets:ticket_detail' log.ticket.pk %}">
                                 {{ log.ticket.qr_code }}
                             </a>
+                        {% elif log.ticket_qr %}
+                            <span class="text-muted">{{ log.ticket_qr }}</span>
                         {% else %}
-                            {% trans "Deleted Ticket" %} (QR: {{ log.ticket_qr }})
+                            <span class="text-muted">-</span>
                         {% endif %}
                     </td>
-                    <td>{{ log.get_event_type_display }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if log.event_type == 'CHECKIN' %}bg-success
+                            {% elif log.event_type == 'CREATE' %}bg-primary
+                            {% elif log.event_type == 'UPDATE' %}bg-info
+                            {% elif log.event_type == 'DELETE' %}bg-danger
+                            {% elif log.event_type == 'IMPORT' %}bg-warning
+                            {% elif log.event_type == 'ERROR' %}bg-danger
+                            {% elif log.event_type == 'SYSTEM' %}bg-secondary
+                            {% else %}bg-dark{% endif %}">
+                            {{ log.get_event_type_display }}
+                        </span>
+                    </td>
                     <td>{{ log.message }}</td>
                 </tr>
                 {% empty %}

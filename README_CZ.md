@@ -26,7 +26,15 @@
 
 **TicketBadgeManager** je Django aplikace určená pro odbavování vstupenek a tisk visaček pro networkingové eventy na termo tiskárně TSC. 
 
-Aplikace umožňuje importovat CSV se vstupenkami, provádět check-in pomocí QR kódů a tisknout štítek se jménem, příjmením a názvem společnosti.
+Aplikace umožňuje:
+- ✅ **Chytrý CSV import** - Import vstupenek s inteligentním mapováním sloupců
+- ✅ **QR skenování** - Check-in účastníků pomocí webové kamery
+- ✅ **Tisk visaček** - Tisk jmen a firem na štítky 40x80mm
+- ✅ **Speciální štítky** - Tisk štítků pro Press, Host, VIP, Staff
+- ✅ **Eventee integrace** - Automatické pozvánky do aplikace Eventee
+- ✅ **Kiosk mód** - Samoobslužná check-in stanice s tiskem
+- ✅ **Dvojjazyčnost** - Česká a anglická verze
+- ✅ **Sledování statistik** - Přehled o odbavených vstupenkách
 
 Testováno na tiskárně **TSC TDP-225**.
 
@@ -34,7 +42,7 @@ Funguje zatím jen na Windows – využívá win32print.
 
 ## Ukázka aplikace
 
-![Ukázka aplikace](/EventBadgeManager_intro.gif)
+![Ukázka aplikace](TicketBadgeManager_intro.gif)
 
 ## Před samotným spuštěním aplikace
 - Nainstalovaný Python 3.11 – otestováno na 3.11; s verzí 3.12 byl problém s některými moduly – [Python 3.11.9](https://www.python.org/downloads/release/python-3119/). Při instalaci nezapomeňte zaškrtnout „Add Python to PATH“.
@@ -98,7 +106,14 @@ Pokud chcete prostředí vypnout, stačí použít:
 deactivate
 ```
 
-### 5. Nainstalujte požadované balíčky  
+### 5. Nastavení prostředí
+Vytvořte soubor `.env` v kořenové složce projektu:
+```bash
+copy .env.example .env
+```
+Upravte hodnoty podle potřeby, zejména `SECRET_KEY`.
+
+### 6. Nainstalujte požadované balíčky  
 
 Než spustíte tento příkaz, **ujistěte se, že máte aktivované virtuální prostředí** (viz informace výše).  
 Poznáte to podle toho, že na začátku příkazového řádku vidíte název virtuálního prostředí v závorkách, například:  
@@ -115,14 +130,25 @@ Jakmile je aktivní, nainstalujte požadované balíčky:
 pip install -r requirements.txt
 ```
 
-### 6. Proveďte databázové migrace
+### 7. Proveďte databázové migrace
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 7. Upravte soubor settings.py – SECRET_KEY a ALLOWED_HOSTS
+### 8. Zkompilujte překlady
+```bash
+python manage.py compilemessages
+```
+
+### 9. Vytvořte výchozího uživatele (volitelné)
+Pokud je autentizace zapnutá (`DISABLE_AUTH=False` v .env):
+```bash
+python manage.py createsuperuser
+```
+
+### 10. Upravte soubor settings.py – SECRET_KEY a ALLOWED_HOSTS
 **Důležité:** Před spuštěním aplikace si změňte hodnotu `SECRET_KEY` v souboru `ticket_badge_manager/settings.py` na unikátní a bezpečnou hodnotu.  
 Například můžete vygenerovat nový secret key pomocí příkazu:
 
@@ -137,7 +163,7 @@ Dále do ALLOWED_HOSTS přidejte IP vašeho počítače, na kterém běží apli
 ALLOWED_HOSTS = ['127.0.0.1', '192.x.x.x']
 ```
 
-### 8. Spusťte server
+### 11. Spusťte server
 
 ```bash
 python manage.py runsslserver 0.0.0.0:8000
@@ -158,7 +184,7 @@ venvTBM311\Scripts\activate
 
 A pokračujte od bodu 5. 
 
-### 9. Otevřete prohlížeč – pokud není specifikováno
+### 12. Otevřete prohlížeč – pokud není specifikováno
 ```bash
 https://127.0.0.1:8000/
 ```
@@ -211,20 +237,90 @@ Výchozí tiskárna: TDP-2251
 Skener 1: TDP-2251  
 Skener 2: TDP-2252
 
+## Hlavní funkce aplikace
+
+### 1. **Dashboard** (`/`)
+- Přehled statistik
+- Nedávné odbavení
+- Rychlé akce
+
+### 2. **Import vstupenek** (`/import/`)
+- **Chytrý import s mapováním sloupců** - NOVINKA!
+  - Automatická detekce a mapování sloupců
+  - Tři režimy importu: Nahradit vše, Přidat, Aktualizovat
+  - Náhled před importem s validací
+  - Podpora libovolného CSV formátu
+- Rychlý import s předdefinovaným mapováním
+- Import ze souboru GoOut
+
+### 3. **QR Scanner** (`/scanner/`)
+- Skenování QR kódů pomocí kamery
+- Automatické odbavení
+- Volitelný tisk visačky
+- Dvě instance pro různé tiskárny
+
+### 4. **Speciální štítky** (`/special-labels/`)
+- Tisk štítků bez QR kódů
+- Ideální pro Press, Host, VIP, Staff
+- Hromadný tisk s nastavitelným počtem
+
+### 5. **Kiosk mód** (`/kiosk/`)
+- Celoobrazovkový samoobslužný check-in
+- Účastníci skenují své vstupenky sami
+- Automatický tisk visaček
+- Zvuková zpětná vazba
+
+### 6. **Nastavení** (`/settings/`)
+- Konfigurace Eventee API tokenu
+- Nastavení povinných polí
+- Smazání dat nebo odbavení
+- **Kontrola stavu serveru** - zobrazení lokální IP pro mobilní přístup
+
+### 7. **Logy** (`/logs/`)
+- Zobrazení všech systémových aktivit
+- Filtrování podle typu události
+- **Barevné kódování typů událostí:**
+  - 🟢 **Check-in** (zelená) - Odbavení účastníků
+  - 🔵 **Vytvoření** (modrá) - Vytvoření vstupenky
+  - 🟦 **Aktualizace** (světle modrá) - Aktualizace vstupenky
+  - 🔴 **Smazání** (červená) - Operace mazání
+  - 🟡 **Import** (žlutá) - Import CSV souborů
+  - 🔴 **Chyba** (červená) - Systémové chyby
+  - ⚫ **Systém** (šedá) - Systémové operace
+
 ## Konfigurace tisku
-**Poznámka:** Tisk je připraven pro štítky o velikosti 40x80 mm. Výchozí nastavení předpokládá, že se štítky tisknou vertikálně, přičemž celý obrázek štítku je vygenerován a poté otočen o 90 stupňů (viz funkce `create_label_image`), aby byl výsledný tisk správně orientován.
+**Poznámka:** Tisk je připraven pro štítky o velikosti 40x80 mm.
 
-Tiskové parametry (např. šířka, výška štítku, DPI, density, contrast, název tiskárny, velikost fontu a cesty k fontům) jsou v současné verzi aplikace definovány přímo v souboru `views.py` (sekce věnovaná tiskárenským funkcím). Pokud si znalý uživatel přeje změnit výchozí nastavení tisku, musí ručně upravit následující proměnné:
+### Parametry tisku:
+- **Velikost štítku:** 40x80 mm
+- **Automatické přizpůsobení velikosti písma** - text se vždy vejde na štítek
+- **Poměr velikosti:** firma je zobrazena 70% velikostí jména
+- **Zarovnání:** text je vycentrován na střed štítku
+- **Design:** čistý vzhled bez QR kódu
 
-- **PWIDTH** – šířka štítku (výchozí: `40`)
-- **PHEIGHT** – výška štítku (výchozí: `80`)
-- **DPI** – hustota tiskového rozlišení (výchozí: `200`)
-- **DENSITY** – hustota tisku (výchozí: `15`)
-- **CONTRAST** – prahová hodnota kontrastu (výchozí: `128`)
-- **printerName** – výchozí název tiskárny (výchozí: `"TDP-225"`)
-- **font_size** – počáteční velikost fontu při tisku (výchozí: `250`)
-- **Cesty k fontům** – cesty k souborům fontů (`fonts/MontserratBold700.ttf` a `fonts/MontserratSemiBold600.ttf`)
+Tisk je implementován v `tickets/services/printing_service.py`.
 
+
+## CSV Import
+
+### Chytrý import (doporučeno)
+Nová funkce chytrého importu umožňuje:
+- Nahrát libovolný CSV formát
+- Mapovat sloupce na pole vstupenek pomocí intuitivního rozhraní
+- Zobrazit náhled výsledků před zpracováním
+- Vybrat režim importu:
+  - **Nahradit vše** - Smazat existující vstupenky a importovat nové
+  - **Přidat** - Přidat pouze nové vstupenky, přeskočit duplicity
+  - **Aktualizovat** - Aktualizovat existující vstupenky a přidat nové
+
+### Rychlý import
+Pro standardní formáty jsou názvy sloupců automaticky rozpoznány:
+- **QR kód:** `Ticket Number`, `Číslo vstupenky`, `Unique Ticket URL`, `qr`, `code`
+- **Jméno:** `Ticket First Name`, `Jméno`, `name`, `first name`
+- **Příjmení:** `Ticket Last Name`, `Příjmení`, `last name`, `surname`
+- **Firma:** `Ticket Company Name`, `Firma`, `company`, `organization`
+- **Email:** `Ticket Email`, `Email`, `E-mail`, `mail`
+- **Akce:** `Event`, `Akce`, `event name`
 
 ## Plánované funkce - todo
 
@@ -233,6 +329,9 @@ Tiskové parametry (např. šířka, výška štítku, DPI, density, contrast, n
 - [x] Lepší logování změn
 - [ ] Přidat info o možnosti využití ngrok – odpadá potřeba vlastní lokální sítě; pomalejší odezva, ale možnost napojit aplikace prodejců vstupenek (ti.to).
 - [x] Napojení na Eventee – při manuálním vytvoření vstupenky v TBM přidat i do Eventee.
-- [ ] Dvoujazyčná podpora.
+- [x] Dvoujazyčná podpora - aplikace je nyní plně dvojjazyčná (CZ/EN).
 - [x] Ošetřit některé chyby.
 - [x] Zlepšit výpis stavů – místo využití příkazu print zobrazovat informace přímo v aplikaci.
+- [x] Univerzální CSV import s mapováním sloupců
+- [x] Kiosk mód pro samoobslužné odbavení
+- [x] Kontrola IP adresy serveru v nastavení

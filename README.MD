@@ -34,12 +34,13 @@
 **TicketBadgeManager** is a Django application designed for event check-in and badge printing on TSC thermal printers.
 
 ### Key Features:
-- ✅ **CSV Import** - Import tickets from CSV files with flexible field mapping
+- ✅ **Smart CSV Import** - Import tickets with intelligent column mapping and multiple import modes
 - ✅ **QR Code Scanning** - Check-in attendees using QR codes via web camera
-- ✅ **Badge Printing** - Print badges with names and company information
+- ✅ **Badge Printing** - Print badges on TSC thermal printers (40x80mm labels)
 - ✅ **Special Label Printing** - Print custom labels for Press, Host, VIP, Staff, etc.
 - ✅ **Eventee Integration** - Automatically invite attendees to Eventee platform
 - ✅ **Multi-printer Support** - Support for multiple TSC printers
+- ✅ **Kiosk Mode** - Self-service check-in station with automatic badge printing
 - ✅ **Bilingual Support** - English and Czech language interface
 - ✅ **Real-time Statistics** - Track check-ins and ticket status
 - ✅ **Secure Access** - Optional authentication system
@@ -286,9 +287,13 @@ The application supports English and Czech languages:
    - Bulk operations (reset status, delete)
 
 3. **Import Tickets** (`/import/`)
-   - Upload CSV files
+   - **Smart Import with Column Mapping** - NEW!
+     - Automatic column detection and mapping
+     - Three import modes: Replace, Append, Update
+     - Preview before import with validation
+     - Support for any CSV format
+   - Quick import with predefined mapping
    - Replace all tickets or add new ones
-   - Flexible field mapping
 
 4. **QR Scanner** (`/scanner/`)
    - Scan QR codes using device camera
@@ -307,11 +312,34 @@ The application supports English and Czech languages:
    - Set required ticket fields
    - Delete all data or check-ins
    - Test API connection
+   - **Check server status** - View local IP for mobile access
 
 7. **Logs** (`/logs/`)
    - View all system activities
    - Filter by event type
    - Track errors and check-ins
+   - **Color-coded event types:**
+     - 🟢 **Check-in** (green) - Attendee check-ins
+     - 🔵 **Create** (blue) - Ticket creation
+     - 🟦 **Update** (light blue) - Ticket updates
+     - 🔴 **Delete** (red) - Deletion operations
+     - 🟡 **Import** (yellow) - CSV imports
+     - 🔴 **Error** (red) - System errors
+     - ⚫ **System** (gray) - System operations
+
+8. **Kiosk Mode** (`/kiosk/`)
+   - Full-screen self-service check-in
+   - Attendees scan their own tickets
+   - Automatic badge printing
+   - Sound feedback
+   - Auto-refresh to prevent memory issues
+
+9. **Badge Printing**
+   - Label size: 40x80mm (TSC thermal printer format)
+   - Automatic font sizing to fit long names
+   - Company name displayed at 70% of name size
+   - Centered text layout
+   - No QR code on badges (clean design)
 
 ## API Integration
 
@@ -322,15 +350,26 @@ The application supports English and Czech languages:
 3. Test connection to verify token
 4. Enable "Invite to Eventee" when creating/editing tickets
 
-### CSV Import Format
+### CSV Import
 
-Supported column names (case-insensitive):
-- **QR Code:** `Ticket Number`, `Číslo vstupenky`, `Unique Ticket URL`
-- **Name:** `Ticket First Name`, `Jméno`, `Jméno_x`
-- **Surname:** `Ticket Last Name`, `Příjmení`, `Příjmení_x`
-- **Company:** `Ticket Company Name`, `Firma`, `Field1`
-- **Email:** `Ticket Email`, `Email`, `E-mail`
-- **Event:** `Event`, `Akce`, `Akce_x`
+#### Smart Import (Recommended)
+The new Smart Import feature allows you to:
+- Upload any CSV format
+- Map columns to ticket fields using intuitive interface
+- Preview import results before processing
+- Choose import mode:
+  - **Replace All** - Delete existing tickets and import new ones
+  - **Append** - Add only new tickets, skip duplicates
+  - **Update** - Update existing tickets and add new ones
+
+#### Quick Import
+For standard formats, column names are automatically recognized:
+- **QR Code:** `Ticket Number`, `Číslo vstupenky`, `Unique Ticket URL`, `qr`, `code`
+- **Name:** `Ticket First Name`, `Jméno`, `name`, `first name`
+- **Surname:** `Ticket Last Name`, `Příjmení`, `last name`, `surname`
+- **Company:** `Ticket Company Name`, `Firma`, `company`, `organization`
+- **Email:** `Ticket Email`, `Email`, `E-mail`, `mail`
+- **Event:** `Event`, `Akce`, `event name`
 
 ## Updating the Application
 

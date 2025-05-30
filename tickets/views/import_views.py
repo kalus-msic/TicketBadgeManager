@@ -2,6 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.core.cache import cache
+from django.http import JsonResponse
+import csv
+import io
+import uuid
 from ..models import Ticket, Log
 from ..forms import CsvImportForm
 from ..services.ticket_service import TicketService
@@ -47,7 +52,7 @@ def import_replace_tickets(request):
             )
             
             Log.objects.create(
-                event_type='SYSTEM',
+                event_type='IMPORT',
                 message=f"CSV import (replace) by {get_username_for_log(request)}: "
                        f"{results['imported']} imported, {results['errors']} errors"
             )
@@ -82,7 +87,7 @@ def import_add_tickets(request):
             )
             
             Log.objects.create(
-                event_type='SYSTEM',
+                event_type='IMPORT',
                 message=f"CSV import (add) by {get_username_for_log(request)}: "
                        f"{results['imported']} imported, {results['duplicates']} duplicates, "
                        f"{results['errors']} errors"
@@ -95,3 +100,290 @@ def import_add_tickets(request):
 def merge_import(request):
     """Prepare import with merge options."""
     return render(request, 'tickets/prepare_import.html')
+
+
+@staff_required
+@handle_view_errors
+def import_mapping(request):
+    """Handle CSV upload and show column mapping interface."""
+    if request.method == 'POST' and 'csv_file' in request.FILES:
+        csv_file = request.FILES['csv_file']
+        
+        # Validate file
+        validate_csv_file(csv_file)
+        
+        # Read and parse CSV
+        file_content = csv_file.read().decode('utf-8-sig')
+        
+        # Try to detect delimiter
+        try:
+            # Use csv.Sniffer to detect delimiter
+            sample = file_content[:1024]  # First 1KB for detection
+            sniffer = csv.Sniffer()
+            dialect = sniffer.sniff(sample, delimiters=[',', ';', '\t', '|'])
+            delimiter = dialect.delimiter
+        except:
+            # Default to comma if detection fails
+            delimiter = ','
+        
+        # Try parsing with detected delimiter
+        csv_reader = csv.DictReader(io.StringIO(file_content), delimiter=delimiter)
+        
+        # Get column names and sample data
+        rows = list(csv_reader)
+        if not rows:
+            messages.error(request, "CSV file is empty")
+            return redirect('tickets:import_page')
+        
+        # If we only got one column, try the other delimiter
+        if len(csv_reader.fieldnames) == 1 and delimiter == ',':
+            # Try semicolon
+            file_content_io = io.StringIO(file_content)
+            csv_reader = csv.DictReader(file_content_io, delimiter=';')
+            rows = list(csv_reader)
+            delimiter = ';'
+        elif len(csv_reader.fieldnames) == 1 and delimiter == ';':
+            # Try comma
+            file_content_io = io.StringIO(file_content)
+            csv_reader = csv.DictReader(file_content_io, delimiter=',')
+            rows = list(csv_reader)
+            delimiter = ','
+        
+        columns = []
+        for field in csv_reader.fieldnames:
+            # Get sample values (up to 3)
+            samples = []
+            for i, row in enumerate(rows[:3]):
+                if row.get(field):
+                    samples.append(row[field])
+            
+            # Try to guess field mapping
+            suggested_field = _suggest_field_mapping(field, samples)
+            
+            columns.append({
+                'name': field,
+                'samples': samples,
+                'suggested_field': suggested_field
+            })
+        
+        # Store CSV data in cache for processing
+        session_key = str(uuid.uuid4())
+        cache.set(f'import_{session_key}', {
+            'fieldnames': csv_reader.fieldnames,
+            'rows': rows,
+            'filename': csv_file.name,
+            'delimiter': delimiter
+        }, 3600)  # Cache for 1 hour
+        
+        context = {
+            'csv_columns': columns,
+            'total_rows': len(rows),
+            'session_key': session_key,
+            'delimiter': delimiter,
+            'delimiter_name': 'comma' if delimiter == ',' else 
+                            'semicolon' if delimiter == ';' else
+                            'tab' if delimiter == '\t' else
+                            'pipe' if delimiter == '|' else 'other'
+        }
+        
+        return render(request, 'tickets/import_mapping.html', context)
+    
+    return redirect('tickets:import_page')
+
+
+def _suggest_field_mapping(column_name, samples):
+    """Try to guess the appropriate field mapping based on column name and data."""
+    column_lower = column_name.lower().strip()
+    
+    # QR Code patterns
+    if any(x in column_lower for x in ['qr', 'code', 'ticket', 'unique']):
+        return 'qr_code'
+    
+    # Email patterns
+    if 'email' in column_lower or 'mail' in column_lower:
+        return 'email'
+    elif samples and '@' in str(samples[0]):
+        return 'email'
+    
+    # Name patterns
+    if any(x in column_lower for x in ['first', 'given', 'forename']):
+        return 'name'
+    elif column_lower in ['name', 'jméno', 'meno']:
+        return 'name'
+    
+    # Last name patterns
+    if any(x in column_lower for x in ['last', 'surname', 'family']):
+        return 'last_name'
+    elif column_lower in ['příjmení', 'priezvisko']:
+        return 'last_name'
+    
+    # Company patterns
+    if any(x in column_lower for x in ['company', 'firma', 'organization', 'org']):
+        return 'company_name'
+    
+    # Event patterns
+    if any(x in column_lower for x in ['event', 'akce', 'událost']):
+        return 'event_name'
+    
+    return None
+
+
+@staff_required
+@import_ratelimit
+@handle_view_errors
+def import_execute(request):
+    """Execute the import with user-defined mapping."""
+    if request.method != 'POST':
+        return redirect('tickets:import_page')
+    
+    session_key = request.POST.get('session_key')
+    import_mode = request.POST.get('import_mode', 'replace')
+    
+    # Get cached CSV data
+    csv_data = cache.get(f'import_{session_key}')
+    if not csv_data:
+        messages.error(request, "Import session expired. Please upload the file again.")
+        return redirect('tickets:import_page')
+    
+    # Build field mapping
+    field_mapping = {}
+    for i, fieldname in enumerate(csv_data['fieldnames']):
+        mapping_value = request.POST.get(f'mapping_{i}')
+        if mapping_value:
+            field_mapping[fieldname] = mapping_value
+    
+    # Validate required fields
+    if 'qr_code' not in field_mapping.values():
+        messages.error(request, "QR Code field mapping is required")
+        return redirect('tickets:import_page')
+    
+    if 'name' not in field_mapping.values():
+        messages.error(request, "Name field mapping is required")
+        return redirect('tickets:import_page')
+    
+    # Process import
+    imported = 0
+    errors = 0
+    duplicates = 0
+    updated = 0
+    
+    with transaction.atomic():
+        # Handle replace mode
+        if import_mode == 'replace':
+            old_count = Ticket.objects.count()
+            Ticket.objects.all().delete()
+            Log.objects.create(
+                event_type='DELETE',
+                message=f"Deleted {old_count} tickets before import (replace mode) by {get_username_for_log(request)}"
+            )
+        
+        # Process each row
+        for row_num, row in enumerate(csv_data['rows'], start=2):
+            try:
+                # Map fields according to user mapping
+                ticket_data = {}
+                for csv_field, model_field in field_mapping.items():
+                    value = row.get(csv_field, '').strip()
+                    if value:
+                        ticket_data[model_field] = value
+                
+                # Check if ticket exists (by QR code)
+                qr_code = ticket_data.get('qr_code')
+                if not qr_code:
+                    errors += 1
+                    continue
+                
+                existing_ticket = Ticket.objects.filter(qr_code=qr_code).first()
+                
+                if import_mode == 'append' and existing_ticket:
+                    duplicates += 1
+                    continue
+                elif import_mode == 'update' and existing_ticket:
+                    # Update existing ticket
+                    for field, value in ticket_data.items():
+                        if field != 'qr_code':  # Don't update QR code
+                            setattr(existing_ticket, field, value)
+                    existing_ticket.save()
+                    updated += 1
+                else:
+                    # Create new ticket
+                    # Combine name and last_name if both exist
+                    if 'last_name' in ticket_data and 'name' in ticket_data:
+                        full_name = f"{ticket_data['name']} {ticket_data['last_name']}"
+                        ticket_data['name'] = full_name
+                        del ticket_data['last_name']
+                    
+                    Ticket.objects.create(**ticket_data)
+                    imported += 1
+                    
+            except Exception as e:
+                errors += 1
+                # Could log specific error here
+    
+    # Clear cache
+    cache.delete(f'import_{session_key}')
+    
+    # Create log entry
+    Log.objects.create(
+        event_type='IMPORT',
+        message=f"CSV import ({import_mode}) by {get_username_for_log(request)}: "
+               f"{imported} imported, {updated} updated, {duplicates} duplicates, {errors} errors"
+    )
+    
+    # Show results
+    if import_mode == 'replace':
+        messages.success(request, f"Successfully imported {imported} tickets. {errors} rows had errors.")
+    elif import_mode == 'append':
+        messages.success(request, f"Successfully imported {imported} new tickets. "
+                                f"{duplicates} duplicates skipped, {errors} rows had errors.")
+    else:  # update
+        messages.success(request, f"Successfully imported {imported} new tickets and updated {updated} existing ones. "
+                                f"{errors} rows had errors.")
+    
+    return redirect('tickets:ticket_list')
+
+
+@staff_required
+def import_preview(request):
+    """AJAX endpoint to preview import results."""
+    session_key = request.GET.get('session_key')
+    import_mode = request.GET.get('import_mode', 'replace')
+    
+    # Get cached CSV data
+    csv_data = cache.get(f'import_{session_key}')
+    if not csv_data:
+        return JsonResponse({'error': 'Session expired'}, status=400)
+    
+    # Build field mapping from request
+    field_mapping = {}
+    for key, value in request.GET.items():
+        if key.startswith('mapping_'):
+            idx = int(key.replace('mapping_', ''))
+            if idx < len(csv_data['fieldnames']) and value:
+                field_mapping[csv_data['fieldnames'][idx]] = value
+    
+    # Preview first 5 rows
+    preview_data = []
+    for row in csv_data['rows'][:5]:
+        mapped_row = {}
+        for csv_field, model_field in field_mapping.items():
+            value = row.get(csv_field, '')
+            if value:
+                mapped_row[model_field] = value
+        
+        # Check if would be duplicate
+        if 'qr_code' in mapped_row:
+            existing = Ticket.objects.filter(qr_code=mapped_row['qr_code']).exists()
+            mapped_row['_exists'] = existing
+            mapped_row['_action'] = 'skip' if (import_mode == 'append' and existing) else \
+                                   'update' if (import_mode == 'update' and existing) else \
+                                   'create'
+        
+        preview_data.append(mapped_row)
+    
+    return JsonResponse({
+        'preview': preview_data,
+        'total_existing': Ticket.objects.filter(
+            qr_code__in=[r.get(field_mapping.get('qr_code', ''), '') for r in csv_data['rows']]
+        ).count()
+    })

@@ -43,9 +43,12 @@ class Log(models.Model):
     EVENT_CHOICES = [
         ('CHECKIN', _('Check-In')),
         ('UPDATE', _('Update')),
-        ('OTHER', _('Other')),
+        ('CREATE', _('Create')),
+        ('DELETE', _('Delete')),
+        ('IMPORT', _('Import')),
         ('ERROR', _('Error')),
         ('SYSTEM', _('System')),
+        ('OTHER', _('Other')),
     ]
     ticket = models.ForeignKey(
         Ticket,
