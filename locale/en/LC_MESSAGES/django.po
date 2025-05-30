@@ -656,6 +656,15 @@ msgstr "Email:"
 msgid "Event Check-in Kiosk"
 msgstr "Event Check-in Kiosk"
 
+msgid "Event Check-in"
+msgstr "Event Check-in"
+
+msgid "Please scan your ticket QR code"
+msgstr "Please scan your ticket QR code"
+
+msgid "Welcome!"
+msgstr "Welcome!"
+
 msgid "Camera access denied."
 msgstr "Camera access denied."
 
@@ -684,6 +693,9 @@ msgstr "Check your firewall or settings.py (ALLOWED_HOSTS)."
 msgid "Data Import"
 msgstr "Data Import"
 
+msgid "Import Tickets"
+msgstr "Import Tickets"
+
 msgid "This import function supports:"
 msgstr "This import function supports:"
 
@@ -692,6 +704,9 @@ msgstr "Data format: CSV file with headers in the first row"
 
 msgid "Content: One ticket per row"
 msgstr "Content: One ticket per row"
+
+msgid "Tested with ti.to export in UTF-8 and goout files."
+msgstr "Tested with ti.to export in UTF-8 and goout files."
 
 msgid "Supported CSV format:"
 msgstr "Supported CSV format:"
@@ -713,6 +728,18 @@ msgstr "Export example from ti.to or goout"
 
 msgid "Warning:"
 msgstr "Warning:"
+
+msgid "This will delete all existing tickets and their check-in data before importing new data."
+msgstr "This will delete all existing tickets and their check-in data before importing new data."
+
+msgid "Select CSV File"
+msgstr "Select CSV File"
+
+msgid "Are you sure? This will delete ALL existing data."
+msgstr "Are you sure? This will delete ALL existing data."
+
+msgid "Delete All and Import New Data"
+msgstr "Delete All and Import New Data"
 
 msgid "Alternative: GoOut Import"
 msgstr "Alternative: GoOut Import"
@@ -742,6 +769,9 @@ msgstr "Import Settings"
 msgid "Import Mode"
 msgstr "Import Mode"
 
+msgid "Replace All"
+msgstr "Replace All"
+
 msgid "Delete all existing tickets and import new ones"
 msgstr "Delete all existing tickets and import new ones"
 
@@ -750,6 +780,9 @@ msgstr "Append"
 
 msgid "Add new tickets, skip existing ones (by QR code)"
 msgstr "Add new tickets, skip existing ones (by QR code)"
+
+msgid "Update"
+msgstr "Update"
 
 msgid "Update existing tickets, add new ones"
 msgstr "Update existing tickets, add new ones"
@@ -783,6 +816,9 @@ msgstr "Rows to import:"
 
 msgid "Validation Errors:"
 msgstr "Validation Errors:"
+
+msgid "Import Tickets"
+msgstr "Import Tickets"
 
 msgid "QR Code field is required"
 msgstr "QR Code field is required"
@@ -822,3 +858,15 @@ msgstr "Ticket/Reference"
 
 msgid "Create"
 msgstr "Create"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system."
+msgstr "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system."
+
+msgid "This will delete all log entries. This action cannot be undone."
+msgstr "This will delete all log entries. This action cannot be undone."

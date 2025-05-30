@@ -94,7 +94,7 @@ def print_special_labels(request):
         
         Log.objects.create(
             event_type='ERROR',
-            message=f'Failed to print special labels: {str(e)}'
+            message=f'Failed to print special labels by {get_username_for_log(request)}: {str(e)}'
         )
         
         return JsonResponse({
