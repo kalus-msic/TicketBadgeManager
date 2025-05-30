@@ -37,6 +37,7 @@
 - ✅ **Smart CSV Import** - Import tickets with intelligent column mapping and multiple import modes
 - ✅ **QR Code Scanning** - Check-in attendees using QR codes via web camera
 - ✅ **Badge Printing** - Print badges on TSC thermal printers (40x80mm labels)
+- ✅ **Bulk Print** - Print all event badges in advance for small events
 - ✅ **Special Label Printing** - Print custom labels for Press, Host, VIP, Staff, etc.
 - ✅ **Eventee Integration** - Automatically invite attendees to Eventee platform
 - ✅ **Multi-printer Support** - Support for multiple TSC printers
@@ -313,6 +314,7 @@ The application supports English and Czech languages:
    - Delete all data or check-ins
    - Test API connection
    - **Check server status** - View local IP for mobile access
+   - **Bulk Print Labels** - Print all event badges in advance
 
 7. **Logs** (`/logs/`)
    - View all system activities
@@ -340,6 +342,16 @@ The application supports English and Czech languages:
    - Company name displayed at 70% of name size
    - Centered text layout
    - No QR code on badges (clean design)
+
+10. **Bulk Print** (`/bulk-print/`)
+   - Print all labels in advance for small events
+   - Filter tickets by status (all/valid/not printed)
+   - Select specific tickets or print all at once
+   - Choose between available printers
+   - 0.5 second delay between prints to prevent printer overload
+   - Track print status to avoid duplicate printing
+   - View detailed results and retry failed prints
+   - All bulk prints are logged for audit purposes
 
 ## API Integration
 

@@ -30,6 +30,7 @@ Aplikace umožňuje:
 - ✅ **Chytrý CSV import** - Import vstupenek s inteligentním mapováním sloupců
 - ✅ **QR skenování** - Check-in účastníků pomocí webové kamery
 - ✅ **Tisk visaček** - Tisk jmen a firem na štítky 40x80mm
+- ✅ **Hromadný tisk** - Tisk všech visaček předem pro malé akce
 - ✅ **Speciální štítky** - Tisk štítků pro Press, Host, VIP, Staff
 - ✅ **Eventee integrace** - Automatické pozvánky do aplikace Eventee
 - ✅ **Kiosk mód** - Samoobslužná check-in stanice s tiskem
@@ -275,6 +276,7 @@ Skener 2: TDP-2252
 - Nastavení povinných polí
 - Smazání dat nebo odbavení
 - **Kontrola stavu serveru** - zobrazení lokální IP pro mobilní přístup
+- **Hromadný tisk štítků** - Tisk všech visaček předem
 
 ### 7. **Logy** (`/logs/`)
 - Zobrazení všech systémových aktivit
@@ -287,6 +289,16 @@ Skener 2: TDP-2252
   - 🟡 **Import** (žlutá) - Import CSV souborů
   - 🔴 **Chyba** (červená) - Systémové chyby
   - ⚫ **Systém** (šedá) - Systémové operace
+
+### 8. **Hromadný tisk** (`/bulk-print/`)
+- Tisk všech štítků předem pro malé akce
+- Filtrování vstupenek podle stavu (všechny/platné/nevytištěné)
+- Výběr konkrétních vstupenek nebo tisk všech najednou
+- Volba mezi dostupnými tiskárnami
+- 0,5 sekundová prodleva mezi tisky pro prevenci přetížení tiskárny
+- Sledování stavu tisku pro zabránění duplicitnímu tisku
+- Zobrazení podrobných výsledků a možnost opakování neúspěšných tisků
+- Všechny hromadné tisky jsou zaznamenány v logu
 
 ## Konfigurace tisku
 **Poznámka:** Tisk je připraven pro štítky o velikosti 40x80 mm.
