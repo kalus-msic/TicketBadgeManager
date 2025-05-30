@@ -40,6 +40,7 @@ urlpatterns = [
     path('delete_logs/', views.delete_logs, name='delete_logs'),
     path('check-server/', views.check_server_status, name='check_server_status'),
     path("settings/required-fields", views.update_required_fields, name="update_required_fields"),
+    path("settings/printer-settings", views.update_printer_settings, name="update_printer_settings"),
     
     # Special labels
     path('special-labels/', views.special_labels, name='special_labels'),

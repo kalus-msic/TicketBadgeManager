@@ -909,3 +909,15 @@ msgstr "Máte"
 
 msgid "tickets. Printing all labels may take a long time."
 msgstr "vstupenek. Tisk všech štítků může trvat dlouho."
+
+msgid "Printer Settings"
+msgstr "Nastavení tiskárny"
+
+msgid "Automatically print labels when scanning tickets"
+msgstr "Automaticky tisknout štítky při skenování vstupenek"
+
+msgid "When enabled, labels will be printed automatically after each successful scan. When disabled, only check-in will be performed."
+msgstr "Pokud je povoleno, štítky se vytisknou automaticky po každém úspěšném skenování. Pokud je zakázáno, provede se pouze odbavení."
+
+msgid "Save Settings"
+msgstr "Uložit nastavení"

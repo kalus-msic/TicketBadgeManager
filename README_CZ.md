@@ -256,9 +256,10 @@ Skener 2: TDP-2252
 
 ### 3. **QR Scanner** (`/scanner/`)
 - Skenování QR kódů pomocí kamery
-- Automatické odbavení
-- Volitelný tisk visačky
+- Automatické odbavení s okamžitým tiskem visačky (výchozí)
+- Konfigurovatelný automatický tisk (lze vypnout v nastavení)
 - Dvě instance pro různé tiskárny
+- Zvuková zpětná vazba
 
 ### 4. **Speciální štítky** (`/special-labels/`)
 - Tisk štítků bez QR kódů
@@ -274,6 +275,7 @@ Skener 2: TDP-2252
 ### 6. **Nastavení** (`/settings/`)
 - Konfigurace Eventee API tokenu
 - Nastavení povinných polí
+- **Nastavení tiskárny** - Zapnout/vypnout automatický tisk při skenování
 - Smazání dat nebo odbavení
 - **Kontrola stavu serveru** - zobrazení lokální IP pro mobilní přístup
 - **Hromadný tisk štítků** - Tisk všech visaček předem

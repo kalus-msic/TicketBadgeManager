@@ -9,6 +9,7 @@ from ..services.eventee_service import EventeeService
 from ..decorators import staff_required
 from ..utils.error_handlers import handle_view_errors
 from ..utils.auth_utils import get_username_for_log
+from django.urls import reverse
 
 
 @staff_required
@@ -186,7 +187,25 @@ def update_required_fields(request):
         
         messages.success(request, 'Required fields updated successfully')
         return redirect('tickets:settings')
-        
-    except Exception as e:
-        messages.error(request, f'Failed to update required fields: {str(e)}')
-        return redirect('tickets:settings')
+
+
+@staff_required
+@require_http_methods(['POST'])
+def update_printer_settings(request):
+    """Update printer settings."""
+    auto_print = request.POST.get('auto_print_on_scan', '') == 'on'
+    
+    settings_obj = AppSettings.objects.first()
+    if not settings_obj:
+        settings_obj = AppSettings.objects.create()
+    
+    settings_obj.auto_print_on_scan = auto_print
+    settings_obj.save()
+    
+    Log.objects.create(
+        event_type='SYSTEM',
+        message=f'Printer settings updated by {get_username_for_log(request)}: Auto print on scan = {auto_print}'
+    )
+    
+    messages.success(request, 'Printer settings updated successfully')
+    return redirect('tickets:settings')

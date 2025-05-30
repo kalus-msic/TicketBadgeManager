@@ -84,9 +84,11 @@ class AppSettings(models.Model):
     required_ticket_fields = models.JSONField(default=list, blank=True,
                                             verbose_name="Required Ticket Fields")
     
-    # Printer settings (for future use)
+    # Printer settings
     default_printer = models.CharField(max_length=255, blank=True, null=True,
                                      verbose_name="Default Printer")
+    auto_print_on_scan = models.BooleanField(default=True,
+                                           verbose_name="Automatically print labels when scanning")
     
     class Meta:
         verbose_name = "Application Settings"
