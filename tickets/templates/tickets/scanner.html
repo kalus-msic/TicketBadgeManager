@@ -62,6 +62,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Get CSRF token
 const csrftoken = getCookie('csrftoken');
 
 function updateGDPR(choice) {
@@ -84,6 +85,17 @@ function updateGDPR(choice) {
 
 function verifyTicket(qrCode, printBadge = false) {
     currentQrCode = qrCode;
+    
+    if (!qrCode) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h4 class="alert-heading">{% trans "Error" %}</h4>
+                <p>{% trans "QR code is required" %}</p>
+            </div>
+        `;
+        return;
+    }
 
     fetch('{% url "tickets:verify_ticket" %}', {
         method: 'POST',
@@ -99,6 +111,7 @@ function verifyTicket(qrCode, printBadge = false) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Verify response:', data);  // Debug log
         const resultDiv = document.getElementById('result');
         
         // Show print warning if exists
@@ -119,7 +132,7 @@ function verifyTicket(qrCode, printBadge = false) {
             
             resultDiv.innerHTML += `
                 <div class="alert alert-success">
-                    <h4 class="alert-heading">${data.message}</h4>
+                    <h4 class="alert-heading">${data.message || 'Check-in successful'}</h4>
                     ${data.ticket ? `
                         <p class="mb-0">Name: ${data.ticket.name}</p>
                         <p class="mb-0">Company: ${data.ticket.company}</p>
@@ -134,7 +147,7 @@ function verifyTicket(qrCode, printBadge = false) {
             
             resultDiv.innerHTML += `
                 <div class="alert alert-danger">
-                    <h4 class="alert-heading">${data.message}</h4>
+                    <h4 class="alert-heading">${data.message || 'Error occurred'}</h4>
                     ${data.ticket ? `
                         <p class="mb-0">Name: ${data.ticket.name}</p>
                         <p class="mb-0">Company: ${data.ticket.company}</p>
@@ -221,6 +234,11 @@ function initializeScanner() {
 
 function onScanSuccess(decodedText, decodedResult) {
     console.log("QR Code detected:", decodedText);
+    
+    if (!decodedText || decodedText === 'undefined') {
+        console.error("Invalid QR code:", decodedText);
+        return;
+    }
 
     if (scannedCodes.has(decodedText)) {
         console.log("Duplicate QR code ignored.");
@@ -230,6 +248,7 @@ function onScanSuccess(decodedText, decodedResult) {
     scannedCodes.add(decodedText);
     // Use auto print setting
     const autoPrint = document.getElementById('auto_print_on_scan').value === 'true';
+    console.log("Auto print setting:", autoPrint);
     verifyTicket(decodedText, autoPrint);
 
     html5QrcodeScanner.pause();
