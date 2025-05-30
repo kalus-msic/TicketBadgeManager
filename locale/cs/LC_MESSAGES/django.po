@@ -821,3 +821,100 @@ msgstr "Vstupenka/Reference"
 
 msgid "Create"
 msgstr "Vytvoření"
+
+# Bulk print translations
+msgid "Bulk Print Labels"
+msgstr "Hromadný tisk štítků"
+
+msgid "Print all labels in advance for small events. Labels will be printed without checking in the tickets."
+msgstr "Vytiskněte všechny štítky předem pro malé akce. Štítky budou vytištěny bez odbavení vstupenek."
+
+msgid "Print All Labels"
+msgstr "Vytisknout všechny štítky"
+
+msgid "Bulk Print"
+msgstr "Hromadný tisk"
+
+msgid "Select Tickets to Print"
+msgstr "Vyberte vstupenky k tisku"
+
+msgid "Select which tickets you want to print labels for. Labels will be printed without checking in the tickets."
+msgstr "Vyberte, pro které vstupenky chcete vytisknout štítky. Štítky budou vytištěny bez odbavení vstupenek."
+
+msgid "Filter by status"
+msgstr "Filtrovat podle stavu"
+
+msgid "All tickets"
+msgstr "Všechny vstupenky"
+
+msgid "Valid tickets only"
+msgstr "Pouze platné vstupenky"
+
+msgid "Not printed yet"
+msgstr "Ještě nevytištěno"
+
+msgid "Printer"
+msgstr "Tiskárna"
+
+msgid "Select All"
+msgstr "Vybrat vše"
+
+msgid "Select None"
+msgstr "Zrušit výběr"
+
+msgid "Print Status"
+msgstr "Stav tisku"
+
+msgid "Printed"
+msgstr "Vytištěno"
+
+msgid "Not printed"
+msgstr "Nevytištěno"
+
+msgid "Selected tickets:"
+msgstr "Vybrané vstupenky:"
+
+msgid "Back to Settings"
+msgstr "Zpět do nastavení"
+
+msgid "Print Selected Labels"
+msgstr "Vytisknout vybrané štítky"
+
+msgid "Printing Labels"
+msgstr "Tisk štítků"
+
+msgid "Please wait while labels are being printed..."
+msgstr "Počkejte prosím, než se vytisknou štítky..."
+
+msgid "Do not close this window while printing is in progress."
+msgstr "Nezavírejte toto okno během tisku."
+
+msgid "Print Results"
+msgstr "Výsledky tisku"
+
+msgid "Successfully printed"
+msgstr "Úspěšně vytištěno"
+
+msgid "labels"
+msgstr "štítků"
+
+msgid "Failed to print"
+msgstr "Nepodařilo se vytisknout"
+
+msgid "Retry Failed Prints"
+msgstr "Opakovat neúspěšné tisky"
+
+msgid "An error occurred while printing."
+msgstr "Při tisku došlo k chybě."
+
+msgid "No tickets selected"
+msgstr "Nejsou vybrány žádné vstupenky"
+
+msgid "You have"
+msgstr "Máte"
+
+msgid "tickets. Printing all labels may take a long time."
+msgstr "vstupenek. Tisk všech štítků může trvat dlouho."
+
+msgid "Warning:"
+msgstr "Varování:"

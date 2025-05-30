@@ -23,6 +23,7 @@ from .qr_views import generate_qr_code
 from .search_views import search_tickets_by_name
 from .kiosk_views import kiosk_mode, kiosk_verify
 from .language_views import set_language_custom
+from .bulk_print_views import bulk_print, bulk_print_execute
 
 __all__ = [
     'index',
@@ -41,5 +42,6 @@ __all__ = [
     'generate_qr_code',
     'search_tickets_by_name',
     'kiosk_mode', 'kiosk_verify',
-    'set_language_custom'
+    'set_language_custom',
+    'bulk_print', 'bulk_print_execute'
 ]
