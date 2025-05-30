@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from ..models import Log
+from .auth_utils import get_username_for_log
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ def handle_view_errors(view_func):
             # Log to database
             Log.objects.create(
                 event_type='ERROR',
-                message=f"View error in {view_func.__name__}: {str(e)}"
+                message=f"View error in {view_func.__name__} by {get_username_for_log(request)}: {str(e)}"
             )
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

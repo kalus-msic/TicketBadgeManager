@@ -102,12 +102,12 @@
                         <div class="col-md-6 mb-3">
                             <div class="card border-warning">
                                 <div class="card-body">
-                                    <h5 class="card-title text-warning">Delete Check-ins</h5>
-                                    <p class="card-text">This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system.</p>
+                                    <h5 class="card-title text-warning">{% trans "Delete Check-ins" %}</h5>
+                                    <p class="card-text">{% trans "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system." %}</p>
                                     <form method="post" action="{% url 'tickets:delete_checkins' %}">
                                         {% csrf_token %}
                                         <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#deleteCheckinsModal">
-                                            Delete Check-ins
+                                            {% trans "Delete Check-ins" %}
                                         </button>
                                     </form>
                                 </div>
@@ -120,12 +120,12 @@
                         <div class="col-md-12 mb-3">
                             <div class="card border-info">
                                 <div class="card-body">
-                                    <h5 class="card-title text-info">Delete Logs</h5>
-                                    <p class="card-text">This will delete all log entries. This action cannot be undone.</p>
+                                    <h5 class="card-title text-info">{% trans "Delete Logs" %}</h5>
+                                    <p class="card-text">{% trans "This will delete all log entries. This action cannot be undone." %}</p>
                                     <form method="post" action="{% url 'tickets:delete_logs' %}">
                                         {% csrf_token %}
                                         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#deleteLogsModal">
-                                            Delete Logs
+                                            {% trans "Delete Logs" %}
                                         </button>
                                     </form>
                                 </div>

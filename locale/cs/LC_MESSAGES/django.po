@@ -26,6 +26,12 @@ msgstr "Skener"
 msgid "Import"
 msgstr "Import"
 
+msgid "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system."
+msgstr "Toto smaže pouze data o odbavení a resetuje všechny vstupenky na stav PLATNÁ. Vstupenky zůstanou v systému."
+
+msgid "This will delete all log entries. This action cannot be undone."
+msgstr "Toto smaže všechny záznamy protokolu. Tuto akci nelze vrátit zpět."
+
 msgid "Settings"
 msgstr "Nastavení"
 
@@ -655,6 +661,15 @@ msgstr "Email:"
 msgid "Event Check-in Kiosk"
 msgstr "Kiosek pro odbavení"
 
+msgid "Event Check-in"
+msgstr "Odbavení na akci"
+
+msgid "Please scan your ticket QR code"
+msgstr "Prosím naskenujte QR kód vaší vstupenky"
+
+msgid "Welcome!"
+msgstr "Vítejte!"
+
 msgid "Camera access denied."
 msgstr "Přístup ke kameře byl odepřen."
 
@@ -683,6 +698,9 @@ msgstr "Zkontrolujte firewall nebo settings.py (ALLOWED_HOSTS)."
 msgid "Data Import"
 msgstr "Import dat"
 
+msgid "Import Tickets"
+msgstr "Import vstupenek"
+
 msgid "This import function supports:"
 msgstr "Tato funkce importu podporuje:"
 
@@ -691,6 +709,9 @@ msgstr "Formát dat: CSV soubor s hlavičkami v prvním řádku"
 
 msgid "Content: One ticket per row"
 msgstr "Obsah: Jedna vstupenka na řádek"
+
+msgid "Tested with ti.to export in UTF-8 and goout files."
+msgstr "Testováno s exportem ti.to v UTF-8 a soubory goout."
 
 msgid "Supported CSV format:"
 msgstr "Podporovaný formát CSV:"
@@ -712,6 +733,18 @@ msgstr "Příklad exportu z ti.to nebo goout"
 
 msgid "Warning:"
 msgstr "Upozornění:"
+
+msgid "This will delete all existing tickets and their check-in data before importing new data."
+msgstr "Toto smaže všechny existující vstupenky a jejich data o odbavení před importem nových dat."
+
+msgid "Select CSV File"
+msgstr "Vybrat CSV soubor"
+
+msgid "Are you sure? This will delete ALL existing data."
+msgstr "Jste si jisti? Toto smaže VŠECHNA existující data."
+
+msgid "Delete All and Import New Data"
+msgstr "Smazat vše a importovat nová data"
 
 msgid "Alternative: GoOut Import"
 msgstr "Alternativa: Import GoOut"
@@ -741,6 +774,9 @@ msgstr "Nastavení importu"
 msgid "Import Mode"
 msgstr "Režim importu"
 
+msgid "Replace All"
+msgstr "Nahradit vše"
+
 msgid "Delete all existing tickets and import new ones"
 msgstr "Smazat všechny existující vstupenky a importovat nové"
 
@@ -749,6 +785,9 @@ msgstr "Přidat"
 
 msgid "Add new tickets, skip existing ones (by QR code)"
 msgstr "Přidat nové vstupenky, přeskočit existující (podle QR kódu)"
+
+msgid "Update"
+msgstr "Aktualizovat"
 
 msgid "Update existing tickets, add new ones"
 msgstr "Aktualizovat existující vstupenky, přidat nové"
@@ -782,6 +821,9 @@ msgstr "Řádků k importu:"
 
 msgid "Validation Errors:"
 msgstr "Chyby validace:"
+
+msgid "Import Tickets"
+msgstr "Importovat vstupenky"
 
 msgid "QR Code field is required"
 msgstr "Pole QR kód je povinné"
@@ -821,3 +863,15 @@ msgstr "Vstupenka/Reference"
 
 msgid "Create"
 msgstr "Vytvoření"
+
+msgid "Delete"
+msgstr "Smazání"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system."
+msgstr "Toto smaže pouze data o odbavení a resetuje všechny vstupenky na stav PLATNÁ. Vstupenky zůstanou v systému."
+
+msgid "This will delete all log entries. This action cannot be undone."
+msgstr "Toto smaže všechny záznamy protokolu. Tuto akci nelze vrátit zpět."

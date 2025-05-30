@@ -111,7 +111,7 @@ def ticket_create(request):
             
             Log.objects.create(
                 ticket=ticket,
-                event_type='UPDATE',
+                event_type='CREATE',
                 message=f'Ticket created by {get_username_for_log(request)}'
             )
             
@@ -210,8 +210,8 @@ def ticket_delete(request, pk):
     if request.method == 'POST':
         Log.objects.create(
             ticket_qr=ticket.qr_code,
-            event_type='UPDATE',
-            message=f'Ticket deleted by {request.user.username}: {ticket.name}'
+            event_type='DELETE',
+            message=f'Ticket deleted by {get_username_for_log(request)}: {ticket.name}'
         )
         ticket.delete()
         messages.success(request, 'Ticket deleted successfully')
@@ -288,8 +288,8 @@ def delete_tickets(request):
         for ticket in tickets:
             Log.objects.create(
                 ticket_qr=ticket.qr_code,
-                event_type='UPDATE',
-                message=f'Ticket deleted by {request.user.username}: {ticket.name}'
+                event_type='DELETE',
+                message=f'Ticket deleted by {get_username_for_log(request)}: {ticket.name}'
             )
         
         tickets.delete()
