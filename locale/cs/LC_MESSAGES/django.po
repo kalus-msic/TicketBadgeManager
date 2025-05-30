@@ -853,9 +853,6 @@ msgstr "Pouze platné vstupenky"
 msgid "Not printed yet"
 msgstr "Ještě nevytištěno"
 
-msgid "Printer"
-msgstr "Tiskárna"
-
 msgid "Select All"
 msgstr "Vybrat vše"
 
@@ -879,9 +876,6 @@ msgstr "Zpět do nastavení"
 
 msgid "Print Selected Labels"
 msgstr "Vytisknout vybrané štítky"
-
-msgid "Printing Labels"
-msgstr "Tisk štítků"
 
 msgid "Please wait while labels are being printed..."
 msgstr "Počkejte prosím, než se vytisknou štítky..."
@@ -907,14 +901,8 @@ msgstr "Opakovat neúspěšné tisky"
 msgid "An error occurred while printing."
 msgstr "Při tisku došlo k chybě."
 
-msgid "No tickets selected"
-msgstr "Nejsou vybrány žádné vstupenky"
-
 msgid "You have"
 msgstr "Máte"
 
 msgid "tickets. Printing all labels may take a long time."
 msgstr "vstupenek. Tisk všech štítků může trvat dlouho."
-
-msgid "Warning:"
-msgstr "Varování:"
