@@ -54,5 +54,9 @@ urlpatterns = [
     # Kiosk mode
     path('kiosk/', views.kiosk_mode, name='kiosk'),
     path('kiosk/verify/', views.kiosk_verify, name='kiosk_verify'),
+    
+    # Bulk print
+    path('bulk-print/', views.bulk_print, name='bulk_print'),
+    path('bulk-print/execute/', views.bulk_print_execute, name='bulk_print_execute'),
 
 ]

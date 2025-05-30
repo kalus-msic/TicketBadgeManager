@@ -46,6 +46,7 @@ class Log(models.Model):
         ('CREATE', _('Create')),
         ('DELETE', _('Delete')),
         ('IMPORT', _('Import')),
+        ('BULK_PRINT', _('Bulk Print')),
         ('ERROR', _('Error')),
         ('SYSTEM', _('System')),
         ('OTHER', _('Other')),
