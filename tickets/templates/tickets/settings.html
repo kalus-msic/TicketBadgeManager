@@ -132,6 +132,21 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Bulk Print -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">{% trans "Bulk Print Labels" %}</h5>
+                                    <p class="card-text">{% trans "Print all labels in advance for small events. Labels will be printed without checking in the tickets." %}</p>
+                                    <a href="{% url 'tickets:bulk_print' %}" class="btn btn-primary">
+                                        <i class="bi bi-printer"></i> {% trans "Print All Labels" %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
