@@ -2,6 +2,7 @@ import socket
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from ..models import Log
 from ..services.ticket_service import TicketService
 from ..services.printing_service import PrintingService
 from ..decorators import login_required_ajax, ticket_verify_ratelimit
@@ -10,28 +11,34 @@ from ..utils.validators import sanitize_string
 
 
 @login_required_ajax
-def scanner_page(request):
+def scanner_page(request, printer_queue='1'):
     """Display QR code scanner page."""
     host = request.get_host()
     
     # Check if accessed via HTTPS
     is_https = request.is_secure() or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https'
     
+    # Get printer queue from URL parameter or use default
+    printer_queue = request.GET.get('printer_queue', printer_queue)
+    
     return render(request, 'tickets/scanner.html', {
         'host': host,
         'is_https': is_https,
-        'mode': request.GET.get('mode', 'verify')
+        'mode': request.GET.get('mode', 'verify'),
+        'printer_queue': printer_queue
     })
 
 
+@login_required_ajax
 def scanner_page1(request):
-    """Scanner page with mode 1."""
-    return scanner_page(request)
+    """Scanner page with printer queue 1."""
+    return scanner_page(request, printer_queue='1')
 
 
+@login_required_ajax
 def scanner_page2(request):
-    """Scanner page with mode 2."""
-    return scanner_page(request)
+    """Scanner page with printer queue 2."""
+    return scanner_page(request, printer_queue='2')
 
 
 @require_http_methods(['POST'])
@@ -68,6 +75,13 @@ def verify_ticket(request):
         # Print badge if requested and verification successful
         if success and print_badge:
             printing_service = PrintingService()
+            
+            # Override printer based on printer_queue
+            if printer_queue == '2':
+                printing_service.printer_name = 'TDP-2252'
+            else:
+                printing_service.printer_name = 'TDP-2251'
+            
             print_success = printing_service.print_ticket({
                 'qr_code': ticket.qr_code,
                 'name': ticket.name,
@@ -79,15 +93,29 @@ def verify_ticket(request):
                 import platform
                 if platform.system() != "Windows":
                     os_name = platform.system()
-                    response_data['print_warning'] = (
-                        f'Label printing is not available on {os_name}. '
-                        f'TSC thermal printers require Windows with TSCLIB.dll library. '
-                        f'The ticket was checked in successfully.'
+                    error_msg = (
+                        f'Label printing failed on {os_name}. '
+                        f'TSC thermal printers require Windows with TSCLIB.dll library.'
+                    )
+                    response_data['print_warning'] = error_msg + ' The ticket was checked in successfully.'
+                    
+                    # Log the print failure
+                    Log.objects.create(
+                        ticket=ticket,
+                        ticket_qr=ticket.qr_code,
+                        event_type='ERROR',
+                        message=f"Print failed from Scanner {printer_queue}: {error_msg}"
                     )
                 else:
-                    response_data['print_warning'] = (
-                        'Label printing failed - please check printer connection and configuration. '
-                        'The ticket was checked in successfully.'
+                    error_msg = 'Label printing failed - please check printer connection and configuration.'
+                    response_data['print_warning'] = error_msg + ' The ticket was checked in successfully.'
+                    
+                    # Log the print failure
+                    Log.objects.create(
+                        ticket=ticket,
+                        ticket_qr=ticket.qr_code,
+                        event_type='ERROR',
+                        message=f"Print failed from Scanner {printer_queue}: {error_msg}"
                     )
     
     return JsonResponse(response_data)
