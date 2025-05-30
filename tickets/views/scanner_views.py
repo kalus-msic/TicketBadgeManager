@@ -89,7 +89,16 @@ def verify_ticket(request):
                 'event_name': ticket.event_name
             })
             
-            if not print_success:
+            if print_success:
+                # Log successful print
+                Log.objects.create(
+                    ticket=ticket,
+                    ticket_qr=ticket.qr_code,
+                    event_type='PRINT',
+                    message=f"Label printed successfully on Scanner {printer_queue} (Printer: {printing_service.printer_name})"
+                )
+                response_data['print_success'] = True
+            else:
                 import platform
                 if platform.system() != "Windows":
                     os_name = platform.system()

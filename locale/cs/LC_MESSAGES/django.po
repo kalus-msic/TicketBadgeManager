@@ -832,6 +832,9 @@ msgstr "Vytiskněte všechny štítky předem pro malé akce. Štítky budou vyt
 msgid "Print All Labels"
 msgstr "Vytisknout všechny štítky"
 
+msgid "Print"
+msgstr "Tisk"
+
 msgid "Bulk Print"
 msgstr "Hromadný tisk"
 

@@ -67,7 +67,14 @@ class PrintingService:
             return False
             
         if not self.tsclibrary or not self.printer_name:
-            logger.error("Printer not properly initialized - TSCLIB.dll not loaded or no printer configured")
+            error_msg = "Printer not properly initialized - TSCLIB.dll not loaded or no printer configured"
+            logger.error(error_msg)
+            # Log to database for user visibility
+            from ..models import Log
+            Log.objects.create(
+                event_type='ERROR',
+                message=f'Print failed: {error_msg}'
+            )
             return False
         
         try:
@@ -84,7 +91,14 @@ class PrintingService:
             return success
             
         except Exception as e:
-            logger.error(f"Failed to print ticket: {e}")
+            error_msg = f"Failed to print ticket: {e}"
+            logger.error(error_msg)
+            # Log to database for user visibility
+            from ..models import Log
+            Log.objects.create(
+                event_type='ERROR',
+                message=f'Print failed: {error_msg}'
+            )
             return False
     
     def _generate_ticket_image(self, ticket_data: dict) -> str:
@@ -229,9 +243,19 @@ class PrintingService:
             self.tsclibrary.printlabel(b"1", b"1")
             self.tsclibrary.closeport()
             
-            logger.info(f"Successfully printed ticket from {image_path}")
+            logger.info(f"Successfully sent to printer {self.printer_name} from {image_path}")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to send to printer: {e}")
+            error_msg = f"Failed to send to printer {self.printer_name}: {e}"
+            logger.error(error_msg)
+            # Log to database for user visibility
+            try:
+                from ..models import Log
+                Log.objects.create(
+                    event_type='ERROR',
+                    message=f'Print failed: {error_msg}'
+                )
+            except:
+                pass  # Don't fail if logging fails
             return False

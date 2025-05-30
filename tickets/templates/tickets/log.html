@@ -65,6 +65,8 @@
                             {% elif log.event_type == 'UPDATE' %}bg-info
                             {% elif log.event_type == 'DELETE' %}bg-danger
                             {% elif log.event_type == 'IMPORT' %}bg-warning
+                            {% elif log.event_type == 'PRINT' %}bg-success
+                            {% elif log.event_type == 'BULK_PRINT' %}bg-success
                             {% elif log.event_type == 'ERROR' %}bg-danger
                             {% elif log.event_type == 'SYSTEM' %}bg-secondary
                             {% else %}bg-dark{% endif %}">
