@@ -283,11 +283,13 @@ Skener 2: TDP-2252
 - Filtrování podle typu události
 - **Barevné kódování typů událostí:**
   - 🟢 **Check-in** (zelená) - Odbavení účastníků
+  - 🟢 **Tisk** (zelená) - Úspěšný tisk štítků
+  - 🟢 **Hromadný tisk** (zelená) - Hromadný tisk štítků
   - 🔵 **Vytvoření** (modrá) - Vytvoření vstupenky
   - 🟦 **Aktualizace** (světle modrá) - Aktualizace vstupenky
   - 🔴 **Smazání** (červená) - Operace mazání
   - 🟡 **Import** (žlutá) - Import CSV souborů
-  - 🔴 **Chyba** (červená) - Systémové chyby
+  - 🔴 **Chyba** (červená) - Systémové chyby a selhání tisku
   - ⚫ **Systém** (šedá) - Systémové operace
 
 ### 8. **Hromadný tisk** (`/bulk-print/`)

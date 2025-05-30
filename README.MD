@@ -322,11 +322,13 @@ The application supports English and Czech languages:
    - Track errors and check-ins
    - **Color-coded event types:**
      - 🟢 **Check-in** (green) - Attendee check-ins
+     - 🟢 **Print** (green) - Successful label prints
+     - 🟢 **Bulk Print** (green) - Bulk label prints
      - 🔵 **Create** (blue) - Ticket creation
      - 🟦 **Update** (light blue) - Ticket updates
      - 🔴 **Delete** (red) - Deletion operations
      - 🟡 **Import** (yellow) - CSV imports
-     - 🔴 **Error** (red) - System errors
+     - 🔴 **Error** (red) - System errors and print failures
      - ⚫ **System** (gray) - System operations
 
 8. **Kiosk Mode** (`/kiosk/`)
