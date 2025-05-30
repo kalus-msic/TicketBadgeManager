@@ -1,5 +1,5 @@
-Django==5.1.1
-pillow==10.4.0
+Django==5.1.9
+Pillow==10.4.0
 django-sslserver==0.22
 requests==2.32.3
 python-dotenv==1.0.0
@@ -7,3 +7,4 @@ django-ratelimit==4.1.0
 qrcode==7.4.2
 django-crispy-forms==2.1
 crispy-bootstrap5==2024.2
+pywin32==306 ; sys_platform == 'win32'
