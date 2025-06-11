@@ -48,6 +48,7 @@ urlpatterns = [
     
     # QR code generation
     path('ticket/<int:ticket_id>/qr-code/', views.generate_qr_code, name='generate_qr_code'),
+    path('qr-code/', views.generate_qr_code, name='generate_qr_code_url'),  # For URL-based QR codes
     
     # Search
     path('search/tickets/', views.search_tickets_by_name, name='search_tickets'),
