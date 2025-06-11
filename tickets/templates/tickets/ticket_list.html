@@ -27,6 +27,26 @@
                 {% endfor %}
             </ul>
         </div>
+        <hr>
+        <p class="mb-2">{% trans "You can try to import these rows anyway. Missing values will be filled with placeholders:" %}</p>
+        <ul class="small mb-3">
+            <li>{% trans "Missing QR codes will be generated as: MISSING_QR_[timestamp]_[row]" %}</li>
+            <li>{% trans "Missing names will be set as: Missing Name (Row X)" %}</li>
+        </ul>
+        {% if session.import_session_key %}
+        <form method="post" action="{% url 'tickets:import_execute' %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="session_key" value="{{ session.import_session_key }}">
+            <input type="hidden" name="import_mode" value="{{ session.import_mode }}">
+            <input type="hidden" name="force_import" value="true">
+            {% for key, value in session.import_field_mapping.items %}
+            <input type="hidden" name="mapping_{{ forloop.counter0 }}" value="{{ value }}">
+            {% endfor %}
+            <button type="submit" class="btn btn-warning btn-sm">
+                <i class="bi bi-exclamation-triangle"></i> {% trans "Force Import with Errors" %}
+            </button>
+        </form>
+        {% endif %}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endif %}

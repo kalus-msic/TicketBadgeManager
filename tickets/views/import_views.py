@@ -238,6 +238,7 @@ def import_execute(request):
     
     session_key = request.POST.get('session_key')
     import_mode = request.POST.get('import_mode', 'replace')
+    force_import = request.POST.get('force_import', 'false') == 'true'
     
     # Get cached CSV data
     csv_data = cache.get(f'import_{session_key}')
@@ -291,15 +292,25 @@ def import_execute(request):
                 # Check if ticket exists (by QR code)
                 qr_code = ticket_data.get('qr_code')
                 if not qr_code:
-                    errors += 1
-                    error_details.append(f"Row {row_num}: Missing QR code")
-                    continue
+                    if force_import:
+                        # Generate a placeholder QR code
+                        from django.utils import timezone
+                        qr_code = f"MISSING_QR_{timezone.now().strftime('%Y%m%d%H%M%S')}_{row_num}"
+                        ticket_data['qr_code'] = qr_code
+                    else:
+                        errors += 1
+                        error_details.append(f"Row {row_num}: Missing QR code")
+                        continue
                 
                 # Check if name exists
                 if not ticket_data.get('name'):
-                    errors += 1
-                    error_details.append(f"Row {row_num}: Missing name (QR: {qr_code})")
-                    continue
+                    if force_import:
+                        # Use a placeholder name
+                        ticket_data['name'] = f"Missing Name (Row {row_num})"
+                    else:
+                        errors += 1
+                        error_details.append(f"Row {row_num}: Missing name (QR: {qr_code})")
+                        continue
                 
                 existing_ticket = Ticket.objects.filter(qr_code=qr_code).first()
                 
@@ -325,8 +336,35 @@ def import_execute(request):
                     imported += 1
                     
         except Exception as e:
-            errors += 1
-            error_details.append(f"Row {row_num}: {str(e)} (QR: {ticket_data.get('qr_code', 'N/A')})")
+            if force_import and "UNIQUE constraint failed" in str(e):
+                # Handle duplicate QR code in force mode
+                try:
+                    # Generate alternative QR code
+                    original_qr = ticket_data.get('qr_code', '')
+                    ticket_data['qr_code'] = f"{original_qr}_DUP_{row_num}"
+                    
+                    # Try again with modified QR
+                    if import_mode == 'update' and existing_ticket:
+                        for field, value in ticket_data.items():
+                            if field != 'qr_code':
+                                setattr(existing_ticket, field, value)
+                        existing_ticket.save()
+                        updated += 1
+                    else:
+                        # Combine name and last_name if both exist
+                        if 'last_name' in ticket_data and 'name' in ticket_data:
+                            full_name = f"{ticket_data['name']} {ticket_data['last_name']}"
+                            ticket_data['name'] = full_name
+                            del ticket_data['last_name']
+                        
+                        Ticket.objects.create(**ticket_data)
+                        imported += 1
+                except Exception as e2:
+                    errors += 1
+                    error_details.append(f"Row {row_num}: {str(e2)} (QR: {ticket_data.get('qr_code', 'N/A')})")
+            else:
+                errors += 1
+                error_details.append(f"Row {row_num}: {str(e)} (QR: {ticket_data.get('qr_code', 'N/A')})")
     
     # Clear cache
     cache.delete(f'import_{session_key}')
@@ -347,26 +385,50 @@ def import_execute(request):
     )
     
     # Show results with error details
-    if errors > 0:
-        # Store error details in session for display
+    if errors > 0 and not force_import:
+        # Store error details and import data in session for possible retry
         request.session['import_errors'] = error_details
+        request.session['import_session_key'] = session_key
+        request.session['import_mode'] = import_mode
+        
+        # Store mapping with indices for form reconstruction
+        indexed_mapping = {}
+        for i, fieldname in enumerate(csv_data['fieldnames']):
+            if fieldname in field_mapping:
+                indexed_mapping[i] = field_mapping[fieldname]
+        request.session['import_field_mapping'] = indexed_mapping
+        
+        # Re-cache the data for a bit longer to allow retry
+        cache.set(f'import_{session_key}', csv_data, 300)  # Keep for 5 more minutes
+    else:
+        # Clear any previous import session data
+        request.session.pop('import_errors', None)
+        request.session.pop('import_session_key', None)
+        request.session.pop('import_mode', None)
+        request.session.pop('import_field_mapping', None)
         
     if import_mode == 'replace':
-        if errors > 0:
-            messages.warning(request, f"Imported {imported} tickets. {errors} rows had errors. Check the log for details.")
+        if errors > 0 and not force_import:
+            messages.warning(request, f"Imported {imported} tickets. {errors} rows had errors. You can force import these rows if needed.")
+        elif force_import and imported > 0:
+            messages.success(request, f"Force imported {imported} tickets with placeholders for missing data.")
         else:
             messages.success(request, f"Successfully imported {imported} tickets.")
     elif import_mode == 'append':
-        if errors > 0:
+        if errors > 0 and not force_import:
             messages.warning(request, f"Imported {imported} new tickets. "
-                                    f"{duplicates} duplicates skipped, {errors} rows had errors. Check the log for details.")
+                                    f"{duplicates} duplicates skipped, {errors} rows had errors. You can force import these rows if needed.")
+        elif force_import and imported > 0:
+            messages.success(request, f"Force imported {imported} new tickets with placeholders. {duplicates} duplicates skipped.")
         else:
             messages.success(request, f"Successfully imported {imported} new tickets. "
                                     f"{duplicates} duplicates skipped.")
     else:  # update
-        if errors > 0:
+        if errors > 0 and not force_import:
             messages.warning(request, f"Imported {imported} new tickets and updated {updated} existing ones. "
-                                    f"{errors} rows had errors. Check the log for details.")
+                                    f"{errors} rows had errors. You can force import these rows if needed.")
+        elif force_import and (imported > 0 or updated > 0):
+            messages.success(request, f"Force imported {imported} new tickets and updated {updated} existing ones with placeholders.")
         else:
             messages.success(request, f"Successfully imported {imported} new tickets and updated {updated} existing ones.")
     
