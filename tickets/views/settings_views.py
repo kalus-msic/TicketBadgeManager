@@ -148,7 +148,8 @@ def update_eventee_token(request):
         if connected:
             messages.success(request, 'API token updated and verified successfully')
         else:
-            messages.warning(request, f'API token saved but verification failed: {message}')
+            # Always show as warning since we can't properly verify
+            messages.warning(request, f'{message}')
         
         Log.objects.create(
             event_type='SYSTEM',
