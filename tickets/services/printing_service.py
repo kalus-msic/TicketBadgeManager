@@ -127,78 +127,98 @@ class PrintingService:
         # Get text to display
         name = ticket_data.get('name', '')
         company = ticket_data.get('company_name', '')
-        is_special_label = ticket_data.get('qr_code', '').startswith('SPECIAL_')
+        qr_code = ticket_data.get('qr_code', '')
         
-        # Calculate available space - always use full width (no QR code)
-        available_width = self.LABEL_WIDTH - (self.MARGIN * 2)
-        text_start_y = self.LABEL_HEIGHT // 3  # Start text in upper third of label
+        # Start with font size from original
+        font_size = 250
+        margin = 30
         
-        # Find optimal font size - start with larger size like original
-        name_font_size = 250  # Start with larger size like original
-        min_font_size = 30   # Minimum readable size
-        
-        while name_font_size >= min_font_size:
-            try:
-                font_bold = ImageFont.truetype(
-                    os.path.join(font_path, "MontserratBold700.ttf"), 
-                    name_font_size
-                )
-                font_regular = ImageFont.truetype(
+        try:
+            font_name = ImageFont.truetype(
+                os.path.join(font_path, "MontserratBold700.ttf"), 
+                font_size
+            )
+            font_company = None
+            if company:
+                font_company = ImageFont.truetype(
                     os.path.join(font_path, "MontserratSemiBold600.ttf"), 
-                    int(name_font_size * 0.7)  # Company font is 70% of name size
+                    int(font_size * 0.70)
                 )
-            except:
-                font_bold = ImageFont.load_default()
-                font_regular = ImageFont.load_default()
-            
-            # Test if text fits
-            name_lines = self._wrap_text(name, font_bold, available_width)
-            company_lines = self._wrap_text(company, font_regular, available_width) if company else []
-            
-            # Calculate total height needed
-            line_height = int(name_font_size * 1.2)
-            company_line_height = int(name_font_size * 0.7 * 1.2)
-            total_height = (len(name_lines) * line_height + 
-                           len(company_lines) * company_line_height)
-            
-            # Check if it fits vertically
-            max_height = self.LABEL_HEIGHT - text_start_y - self.MARGIN
-            
-            if total_height <= max_height:
-                break  # Found good size
-            
-            name_font_size -= 2  # Reduce and try again
+        except Exception as e:
+            logger.error(f"Font loading error: {e}")
+            font_name = ImageFont.load_default()
+            font_company = ImageFont.load_default() if company else None
         
-        # Calculate centered starting position like in original
-        total_text_height = (len(name_lines) * line_height + 
-                            len(company_lines) * company_line_height)
-        y_pos = (self.LABEL_HEIGHT - total_text_height) / 2
+        # Wrap text like in original - using character width
+        wrap_name = textwrap.wrap(name, width=18)
+        wrap_company = textwrap.wrap(company, width=20) if company else []
         
-        # Draw name
-        for line in name_lines:
-            bbox = draw.textbbox((0, 0), line, font=font_bold)
-            text_width = bbox[2] - bbox[0]
-            x_pos = (self.LABEL_WIDTH - text_width) // 2
-            draw.text((x_pos, y_pos), line, font=font_bold, fill='black')
-            y_pos += line_height
+        def get_text_dimensions(lines, font):
+            """Get dimensions of wrapped text."""
+            if not lines:
+                return 0, 0
+            max_width = 0
+            total_height = 0
+            for line in lines:
+                bbox = draw.textbbox((0, 0), line, font=font)
+                width = bbox[2] - bbox[0]
+                height = bbox[3] - bbox[1]
+                max_width = max(max_width, width)
+                total_height += height
+            return max_width, total_height
         
-        # Draw company if exists
+        name_w, name_h = get_text_dimensions(wrap_name, font_name)
+        comp_w, comp_h = get_text_dimensions(wrap_company, font_company) if company else (0, 0)
+        
+        # Reduce font size until it fits like in original
+        while (name_w > img.width - 2*margin or 
+               comp_w > img.width - 2*margin or 
+               name_h + comp_h > img.height - 2*margin):
+            font_size -= 1
+            font_name = ImageFont.truetype(
+                os.path.join(font_path, "MontserratBold700.ttf"), 
+                font_size
+            )
+            if company:
+                font_company = ImageFont.truetype(
+                    os.path.join(font_path, "MontserratSemiBold600.ttf"), 
+                    int(font_size * 0.70)
+                )
+            name_w, name_h = get_text_dimensions(wrap_name, font_name)
+            if company:
+                comp_w, comp_h = get_text_dimensions(wrap_company, font_company)
+        
+        # Calculate vertical centering like in original
+        y = (img.height - (name_h + comp_h)) / 2
+        
+        # Draw name lines
+        for line in wrap_name:
+            bbox = draw.textbbox((0, 0), line, font=font_name)
+            line_width = bbox[2] - bbox[0]
+            x = max((img.width - line_width) / 2, margin)
+            draw.text((x, y), line, fill="black", font=font_name)
+            # Use font metrics for line height like in original
+            metrics = font_name.getmetrics()
+            y += metrics[0] + metrics[1]
+        
+        # Draw company lines if exists
         if company:
-            y_pos += 10  # Small gap between name and company
-            for line in company_lines:
-                bbox = draw.textbbox((0, 0), line, font=font_regular)
-                text_width = bbox[2] - bbox[0]
-                x_pos = (self.LABEL_WIDTH - text_width) // 2
-                draw.text((x_pos, y_pos), line, font=font_regular, fill='black')
-                y_pos += company_line_height
+            for line in wrap_company:
+                bbox = draw.textbbox((0, 0), line, font=font_company)
+                line_width = bbox[2] - bbox[0]
+                x = max((img.width - line_width) / 2, margin)
+                draw.text((x, y), line, fill="black", font=font_company)
+                metrics = font_company.getmetrics()
+                y += metrics[0] + metrics[1]
         
         # Rotate image 90 degrees like in original
         img = img.rotate(90, expand=True)
         
-        # Save image
-        temp_filename = f"label_{ticket_data['qr_code'].replace('/', '_')}.png"
-        temp_path = os.path.join(settings.BASE_DIR, 'temp', temp_filename)
-        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+        # Save image with QR in filename like original
+        temp_dir = os.path.join(settings.BASE_DIR, 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_filename = f"{name}-{qr_code}.png".replace('/', '_')
+        temp_path = os.path.join(temp_dir, temp_filename)
         img.save(temp_path)
         
         return temp_path
