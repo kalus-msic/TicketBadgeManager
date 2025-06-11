@@ -37,7 +37,17 @@ def ticket_list(request):
     stats = TicketService.get_statistics()
     
     # Check for import errors in session
-    import_errors = request.session.pop('import_errors', None)
+    import_errors = request.session.get('import_errors', None)
+    import_session_key = request.session.get('import_session_key', None)
+    import_mode = request.session.get('import_mode', None)
+    import_field_mapping = request.session.get('import_field_mapping', None)
+    
+    # Clear import data from session after reading
+    if import_errors:
+        request.session.pop('import_errors', None)
+        request.session.pop('import_session_key', None)
+        request.session.pop('import_mode', None)
+        request.session.pop('import_field_mapping', None)
     
     context = {
         'tickets': tickets_page,
@@ -47,6 +57,9 @@ def ticket_list(request):
         'valid_count': stats['valid'],
         'used_count': stats['used'],
         'import_errors': import_errors,
+        'import_session_key': import_session_key,
+        'import_mode': import_mode,
+        'import_field_mapping': import_field_mapping,
     }
     
     # Return partial template for AJAX requests
