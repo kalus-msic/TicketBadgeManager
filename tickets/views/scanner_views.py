@@ -84,12 +84,6 @@ def verify_ticket(request):
         if success and print_badge:
             printing_service = PrintingService()
             
-            # Override printer based on printer_queue
-            if printer_queue == '2':
-                printing_service.printer_name = 'TDP-2252'
-            else:
-                printing_service.printer_name = 'TDP-2251'
-            
             print_success = printing_service.print_ticket({
                 'qr_code': ticket.qr_code,
                 'name': ticket.name,
@@ -103,7 +97,7 @@ def verify_ticket(request):
                     ticket=ticket,
                     ticket_qr=ticket.qr_code,
                     event_type='PRINT',
-                    message=f"Label printed successfully on Scanner {printer_queue} (Printer: {printing_service.printer_name})"
+                    message=f"Label printed successfully on Scanner {printer_queue} (Printer: TDP-225{printer_queue})"
                 )
                 response_data['print_success'] = True
             else:
