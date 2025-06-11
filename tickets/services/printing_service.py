@@ -13,6 +13,14 @@ logger = logging.getLogger(__name__)
 class PrintingService:
     """Service for handling ticket/badge printing operations."""
     
+    # Label printing configuration from original
+    PWIDTH = 40
+    PHEIGHT = 80
+    DPI = 200
+    DENSITY = 15
+    DOT = DPI // 100 * 4
+    CONTRAST = 128
+    
     # Label size - based on original working code
     # These values match the original create_label_image function
     LABEL_WIDTH = 946
@@ -240,13 +248,13 @@ class PrintingService:
             
             # Use wide character functions like in original
             self.tsclibrary.openportW(printer_name)
-            self.tsclibrary.sendcommandW("DENSITY 10")
-            self.tsclibrary.sendcommandW("SIZE 80 mm, 40 mm")
+            self.tsclibrary.sendcommandW(f"DENSITY {self.DENSITY}")
+            self.tsclibrary.sendcommandW(f"SIZE {self.PWIDTH} mm, {self.PHEIGHT} mm")
             self.tsclibrary.clearbuffer()
             self.tsclibrary.sendcommandW("CLS")
             
-            # Call the printOnTop function equivalent
-            self._print_image_on_top(image_path)
+            # Call the printOnTop function equivalent with left position 0
+            self._print_on_top(image_path, 0)
             
             # Print
             self.tsclibrary.printlabelW("1", "1")
@@ -269,60 +277,46 @@ class PrintingService:
                 pass  # Don't fail if logging fails
             return False
     
-    def _print_image_on_top(self, image_path: str, x: int = 0, y: int = 65):
+    def _print_on_top(self, image_path: str, position: int):
         """Print image on top of label like in original printOnTop function."""
-        try:
-            # Call printPic equivalent
-            self._print_pic(image_path, x, y, 1)
-            
-        except Exception as e:
-            logger.error(f"Error in _print_image_on_top: {e}")
-            raise
+        self._print_pic(image_path, position, 65, 1)
     
     def _print_pic(self, image_path: str, x: int, y: int, mode: int):
-        """Print picture using BITMAP command like in original."""
-        CONTRAST = 128
-        DOT = 8
-        PWIDTH = 80
-        PHEIGHT = 40
-        
-        # Open and process image
-        img = Image.open(image_path)
-        img.thumbnail((PWIDTH * DOT, PHEIGHT * DOT), Image.LANCZOS)
-        width, height = img.size
+        """Print picture using BITMAP command exactly like in original."""
+        print(f"PRINTING {image_path}")
+        im = Image.open(image_path)
+        im.thumbnail((self.PWIDTH * self.DOT, self.PHEIGHT * self.DOT), Image.LANCZOS)
+        width, height = im.size
         
         if width < 248:
-            logger.error("Image is too small")
-            return
+            print("FAILURE: IMAGE IS TOO SMALL\n")
+            logger.error(f"Image is too small: {width}x{height}")
+            return -1
         
         # Convert to grayscale
-        img = img.convert("L")
-        data = list(img.getdata())
+        im = im.convert("L")
+        data = list(im.getdata())
         
-        # Convert to binary bitmap
-        im1 = [1 if d >= CONTRAST else 0 for d in data]
+        # Convert to binary bitmap exactly like original
+        im1 = [1 if d >= self.CONTRAST else 0 for d in data]
         bitmap = [0 for _ in range(width * height // 8)]
         offset = [255 for _ in range(width * height // 8)]
         
         for i in range(width * height // 8):
             bits = im1[i*8:(i+1)*8]
-            # Convert 8 bits to a byte
-            byte_val = 0
-            for j, bit in enumerate(bits):
-                byte_val |= (bit << (7-j))
-            bitmap[i] = byte_val
+            # Convert 8 bits to a byte using eval like in original
+            binary_str = "0b" + "".join(str(bit) for bit in bits)
+            bitmap[i] = eval(binary_str)
             if bitmap[i] == 0:
                 bitmap[i] = 1
                 offset[i] = 254
         
-        # Send BITMAP command
+        # Send BITMAP command exactly like original
         ini = f"BITMAP {x},{y},{width // 8},{height},{mode},"
-        self.tsclibrary.sendcommandW(ini)
-        
-        # Send bitmap data as in original
+        ini_bytes = ini.encode()
         bm = bytes(bitmap)
         ofs = bytes(offset)
         end = b"\0"
         # Use sendcommand (not W) for binary data
-        self.tsclibrary.sendcommand(ini.encode() + bm + end)
-        self.tsclibrary.sendcommand(ini.encode() + ofs + end)
+        self.tsclibrary.sendcommand(ini_bytes + bm + end)
+        self.tsclibrary.sendcommand(ini_bytes + ofs + end)
