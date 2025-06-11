@@ -266,20 +266,21 @@ def import_execute(request):
     errors = 0
     duplicates = 0
     updated = 0
+    error_details = []  # Store error details for logging
     
-    with transaction.atomic():
-        # Handle replace mode
-        if import_mode == 'replace':
-            old_count = Ticket.objects.count()
-            Ticket.objects.all().delete()
-            Log.objects.create(
-                event_type='DELETE',
-                message=f"Deleted {old_count} tickets before import (replace mode) by {get_username_for_log(request)}"
-            )
-        
-        # Process each row
-        for row_num, row in enumerate(csv_data['rows'], start=2):
-            try:
+    # Handle replace mode first (outside of row processing)
+    if import_mode == 'replace':
+        old_count = Ticket.objects.count()
+        Ticket.objects.all().delete()
+        Log.objects.create(
+            event_type='DELETE',
+            message=f"Deleted {old_count} tickets before import (replace mode) by {get_username_for_log(request)}"
+        )
+    
+    # Process each row individually (not in atomic transaction)
+    for row_num, row in enumerate(csv_data['rows'], start=2):
+        try:
+            with transaction.atomic():
                 # Map fields according to user mapping
                 ticket_data = {}
                 for csv_field, model_field in field_mapping.items():
@@ -291,6 +292,13 @@ def import_execute(request):
                 qr_code = ticket_data.get('qr_code')
                 if not qr_code:
                     errors += 1
+                    error_details.append(f"Row {row_num}: Missing QR code")
+                    continue
+                
+                # Check if name exists
+                if not ticket_data.get('name'):
+                    errors += 1
+                    error_details.append(f"Row {row_num}: Missing name (QR: {qr_code})")
                     continue
                 
                 existing_ticket = Ticket.objects.filter(qr_code=qr_code).first()
@@ -316,29 +324,51 @@ def import_execute(request):
                     Ticket.objects.create(**ticket_data)
                     imported += 1
                     
-            except Exception as e:
-                errors += 1
-                # Could log specific error here
+        except Exception as e:
+            errors += 1
+            error_details.append(f"Row {row_num}: {str(e)} (QR: {ticket_data.get('qr_code', 'N/A')})")
     
     # Clear cache
     cache.delete(f'import_{session_key}')
     
-    # Create log entry
+    # Create main log entry
+    log_message = f"CSV import ({import_mode}) by {get_username_for_log(request)}: "
+    log_message += f"{imported} imported, {updated} updated, {duplicates} duplicates, {errors} errors"
+    
+    # Add error details to log if any
+    if error_details:
+        log_message += "\n\nError details:\n" + "\n".join(error_details[:20])  # Limit to first 20 errors
+        if len(error_details) > 20:
+            log_message += f"\n... and {len(error_details) - 20} more errors"
+    
     Log.objects.create(
         event_type='IMPORT',
-        message=f"CSV import ({import_mode}) by {get_username_for_log(request)}: "
-               f"{imported} imported, {updated} updated, {duplicates} duplicates, {errors} errors"
+        message=log_message
     )
     
-    # Show results
+    # Show results with error details
+    if errors > 0:
+        # Store error details in session for display
+        request.session['import_errors'] = error_details
+        
     if import_mode == 'replace':
-        messages.success(request, f"Successfully imported {imported} tickets. {errors} rows had errors.")
+        if errors > 0:
+            messages.warning(request, f"Imported {imported} tickets. {errors} rows had errors. Check the log for details.")
+        else:
+            messages.success(request, f"Successfully imported {imported} tickets.")
     elif import_mode == 'append':
-        messages.success(request, f"Successfully imported {imported} new tickets. "
-                                f"{duplicates} duplicates skipped, {errors} rows had errors.")
+        if errors > 0:
+            messages.warning(request, f"Imported {imported} new tickets. "
+                                    f"{duplicates} duplicates skipped, {errors} rows had errors. Check the log for details.")
+        else:
+            messages.success(request, f"Successfully imported {imported} new tickets. "
+                                    f"{duplicates} duplicates skipped.")
     else:  # update
-        messages.success(request, f"Successfully imported {imported} new tickets and updated {updated} existing ones. "
-                                f"{errors} rows had errors.")
+        if errors > 0:
+            messages.warning(request, f"Imported {imported} new tickets and updated {updated} existing ones. "
+                                    f"{errors} rows had errors. Check the log for details.")
+        else:
+            messages.success(request, f"Successfully imported {imported} new tickets and updated {updated} existing ones.")
     
     return redirect('tickets:ticket_list')
 

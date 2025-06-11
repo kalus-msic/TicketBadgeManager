@@ -15,6 +15,22 @@
         </div>
     </div>
 
+    <!-- Import Errors -->
+    {% if import_errors %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading">{% trans "Import Errors" %}</h5>
+        <p>{% trans "The following rows had errors during import:" %}</p>
+        <div style="max-height: 200px; overflow-y: auto;">
+            <ul class="mb-0">
+                {% for error in import_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
     <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-md-4">
