@@ -36,6 +36,9 @@ def ticket_list(request):
     # Get statistics
     stats = TicketService.get_statistics()
     
+    # Check for import errors in session
+    import_errors = request.session.pop('import_errors', None)
+    
     context = {
         'tickets': tickets_page,
         'search_query': search_query,
@@ -43,6 +46,7 @@ def ticket_list(request):
         'total_count': stats['total'],
         'valid_count': stats['valid'],
         'used_count': stats['used'],
+        'import_errors': import_errors,
     }
     
     # Return partial template for AJAX requests
@@ -238,21 +242,39 @@ def reset_ticket_status(request):
         for ticket in tickets:
             if ticket.status != 'VALID':  # Only log if status is actually changing
                 Log.objects.create(
-                    ticket_qr=ticket.qr_code,  # Use only ticket_qr, not ticket reference
+                    ticket=ticket,  # Use ticket reference to link to ticket
+                    ticket_qr=ticket.qr_code,  # Also store QR code for reference
                     event_type='UPDATE',
                     message=f'Ticket reset to VALID status by {get_username_for_log(request)} (was {ticket.get_status_display()})'
                 )
+        
+        # Get ticket info before update for logging
+        ticket_info = []
+        for ticket in tickets:
+            if ticket.status != 'VALID':
+                ticket_info.append(f"{ticket.qr_code} ({ticket.name})")
         
         count = tickets.update(status='VALID')
         
         # Delete associated check-ins
         CheckIn.objects.filter(ticket__in=tickets).delete()
         
-        # Create summary log entry
-        Log.objects.create(
-            event_type='SYSTEM',
-            message=f'{count} tickets reset to VALID status by {get_username_for_log(request)}'
-        )
+        # Create summary log entry with ticket details
+        if ticket_info:
+            if len(ticket_info) <= 3:
+                ticket_list = ", ".join(ticket_info)
+            else:
+                ticket_list = f"{', '.join(ticket_info[:3])}, and {len(ticket_info) - 3} more"
+            
+            Log.objects.create(
+                event_type='SYSTEM',
+                message=f'{count} ticket(s) reset to VALID status by {get_username_for_log(request)}: {ticket_list}'
+            )
+        else:
+            Log.objects.create(
+                event_type='SYSTEM',
+                message=f'No tickets needed resetting (all were already VALID) by {get_username_for_log(request)}'
+            )
     
     messages.success(request, f'{count} ticket(s) reset successfully')
     
