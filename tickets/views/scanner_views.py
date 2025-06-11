@@ -95,7 +95,7 @@ def verify_ticket(request):
                 'name': ticket.name,
                 'company_name': ticket.company_name,
                 'event_name': ticket.event_name
-            })
+            }, printer_queue)
             
             if print_success:
                 # Log successful print
