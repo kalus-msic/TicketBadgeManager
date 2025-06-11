@@ -25,6 +25,18 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{% trans "Application URL QR Code" %}</h5>
+                                    <img src="{% url 'tickets:generate_qr_code_url' %}?url=https://{{ local_ip }}:{{ port }}" 
+                                         alt="Application URL QR Code" 
+                                         class="img-fluid mb-2" 
+                                         style="max-width: 200px;">
+                                    <p class="text-muted small">{% trans "Scan to open the application" %}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Sekce pro zadání Eventee API tokenu -->
@@ -303,7 +315,7 @@
                     }
                 } else {
                     statusDiv.innerHTML += "<p class='text-warning'>⚠️ {% trans 'Application is not accessible from other devices!' %}</p>";
-                    statusDiv.innerHTML += "<p class='text-info'>ℹ️ {% trans 'Check your firewall or settings.py (ALLOWED_HOSTS).' %}</p>";
+                    statusDiv.innerHTML += "<p class='text-info'>ℹ️ {% trans 'Check your firewall or settings.py/.env file (ALLOWED_HOSTS).' %}</p>";
                 }
             })
             .catch(error => {
