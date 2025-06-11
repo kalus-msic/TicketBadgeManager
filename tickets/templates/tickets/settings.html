@@ -50,6 +50,22 @@
                                         <div class="mb-3">
                                             <label for="api_token" class="form-label">{% trans "API Token" %}</label>
                                             <input type="text" class="form-control" id="api_token" name="api_token" value="{{ eventee_token }}">
+                                            <div class="form-text">
+                                                {% trans "Enter your Eventee API token." %}<br>
+                                                {% trans "You can find it in your Eventee event settings." %}<br>
+                                                {% trans "The token should have permissions to invite attendees." %}
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>{% trans "API Status:" %}</strong>
+                                            {% if api_connected %}
+                                                <span class="badge bg-success">✅ {% trans "Connected" %}</span>
+                                                <small class="text-muted">{{ api_message }}</small>
+                                            {% else %}
+                                                <span class="badge bg-danger">❌ {% trans "Not Connected" %}</span>
+                                                <br>
+                                                <small class="text-danger">{{ api_message }}</small>
+                                            {% endif %}
                                         </div>
                                         <button type="submit" class="btn btn-primary">{% trans "Save API Token" %}</button>
                                     </form>
