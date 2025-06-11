@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class EventeeService:
     """Service for handling Eventee API interactions."""
     
-    API_BASE_URL = "https://api.eventee.co/v1"
+    API_BASE_URL = "https://api.eventee.co/public/v1"
     TIMEOUT = 30  # seconds
     
     def __init__(self):
@@ -34,21 +34,28 @@ class EventeeService:
             return False, "No API token configured"
         
         try:
+            # Since most endpoints require event ID in the URL,
+            # we can't really test the connection without knowing the event ID
+            # Let's try a simple request to see if we get 401 (unauthorized) vs other errors
+            
+            # Try to access the base API to at least check if token format is correct
             response = requests.get(
-                f"{self.API_BASE_URL}/me",
+                self.API_BASE_URL,  # Just the base URL
                 headers=self.headers,
                 timeout=self.TIMEOUT
             )
             
-            if response.status_code == 200:
-                return True, "Connection successful"
-            elif response.status_code == 401:
-                return False, "Invalid API token"
+            # Even if we get 404, if we don't get 401, the token is at least formatted correctly
+            if response.status_code == 401:
+                return False, "Invalid API token - authentication failed"
+            elif response.status_code == 403:
+                return False, "Access forbidden - check API token permissions"
             else:
-                return False, f"API error: {response.status_code}"
+                # Token seems valid (we didn't get 401)
+                return True, "API token appears valid (authentication successful)"
                 
         except requests.exceptions.Timeout:
-            return False, "Connection timeout"
+            return False, "Connection timeout - API might be unreachable"
         except requests.exceptions.RequestException as e:
             logger.error(f"Eventee API connection error: {e}")
             return False, f"Connection error: {str(e)}"
@@ -62,26 +69,62 @@ class EventeeService:
             return False, "Email is required"
         
         try:
+            # According to the API documentation, we just need the Bearer token
+            # The event ID might be associated with the token on Eventee's side
+            # or might need to be passed in the request body
+            
             data = {
                 'email': email,
                 'name': name,
                 'company': company or ''
             }
             
+            # Log the request for debugging
+            logger.info(f"Sending invite request to: {self.API_BASE_URL}/attendee/invite")
+            logger.info(f"Request data: {data}")
+            
+            # Try the endpoint as documented
             response = requests.post(
-                f"{self.API_BASE_URL}/attendees/invite",
+                f"{self.API_BASE_URL}/attendee/invite",
                 json=data,
                 headers=self.headers,
                 timeout=self.TIMEOUT
             )
             
+            # Log the response for debugging
+            logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response headers: {response.headers}")
+            try:
+                logger.info(f"Response body: {response.text}")
+            except:
+                pass
+            
             if response.status_code in [200, 201]:
                 return True, "Invitation sent successfully"
             elif response.status_code == 409:
                 return False, "Attendee already exists"
+            elif response.status_code == 401:
+                return False, "Invalid API token - authentication failed"
+            elif response.status_code == 403:
+                return False, "Access forbidden - check API token permissions"
+            elif response.status_code == 404:
+                # If we get 404, the endpoint might be wrong or need event ID
+                return False, "API endpoint not found. The API might require event ID in the URL or request body."
+            elif response.status_code == 400:
+                # Bad request - missing required fields
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('message', error_data.get('error', 'Bad request'))
+                    return False, f"Bad request: {error_msg}"
+                except:
+                    return False, f"Bad request: {response.text}"
             else:
-                error_msg = response.json().get('message', 'Unknown error')
-                return False, f"API error: {error_msg}"
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('message', error_data.get('error', response.text))
+                except:
+                    error_msg = response.text
+                return False, f"API error {response.status_code}: {error_msg}"
                 
         except requests.exceptions.Timeout:
             return False, "Request timeout"
