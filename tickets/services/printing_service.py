@@ -269,23 +269,60 @@ class PrintingService:
                 pass  # Don't fail if logging fails
             return False
     
-    def _print_image_on_top(self, image_path: str):
+    def _print_image_on_top(self, image_path: str, x: int = 0, y: int = 65):
         """Print image on top of label like in original printOnTop function."""
         try:
-            # Open and process image
-            img = Image.open(image_path)
-            
-            # Convert to grayscale if needed
-            if img.mode != 'L':
-                img = img.convert('L')
-            
-            # Get dimensions
-            width, height = img.size
-            
-            # Send image to printer
-            self.tsclibrary.downloadpcxW(image_path, "LABEL.PCX")
-            self.tsclibrary.sendcommandW("PUTPCX 0,0,\"LABEL.PCX\"")
+            # Call printPic equivalent
+            self._print_pic(image_path, x, y, 1)
             
         except Exception as e:
             logger.error(f"Error in _print_image_on_top: {e}")
             raise
+    
+    def _print_pic(self, image_path: str, x: int, y: int, mode: int):
+        """Print picture using BITMAP command like in original."""
+        CONTRAST = 128
+        DOT = 8
+        PWIDTH = 80
+        PHEIGHT = 40
+        
+        # Open and process image
+        img = Image.open(image_path)
+        img.thumbnail((PWIDTH * DOT, PHEIGHT * DOT), Image.LANCZOS)
+        width, height = img.size
+        
+        if width < 248:
+            logger.error("Image is too small")
+            return
+        
+        # Convert to grayscale
+        img = img.convert("L")
+        data = list(img.getdata())
+        
+        # Convert to binary bitmap
+        im1 = [1 if d >= CONTRAST else 0 for d in data]
+        bitmap = [0 for _ in range(width * height // 8)]
+        offset = [255 for _ in range(width * height // 8)]
+        
+        for i in range(width * height // 8):
+            bits = im1[i*8:(i+1)*8]
+            # Convert 8 bits to a byte
+            byte_val = 0
+            for j, bit in enumerate(bits):
+                byte_val |= (bit << (7-j))
+            bitmap[i] = byte_val
+            if bitmap[i] == 0:
+                bitmap[i] = 1
+                offset[i] = 254
+        
+        # Send BITMAP command
+        ini = f"BITMAP {x},{y},{width // 8},{height},{mode},"
+        self.tsclibrary.sendcommandW(ini)
+        
+        # Send bitmap data as in original
+        bm = bytes(bitmap)
+        ofs = bytes(offset)
+        end = b"\0"
+        # Use sendcommand (not W) for binary data
+        self.tsclibrary.sendcommand(ini.encode() + bm + end)
+        self.tsclibrary.sendcommand(ini.encode() + ofs + end)
