@@ -42,8 +42,9 @@ class EventeeService:
         if len(self.api_token.strip()) < 10:
             return False, "API token appears too short"
         
-        # Return success since the real test happens when inviting
-        return True, "API token saved. It will be validated when inviting attendees."
+        # Always return False to indicate we can't verify
+        # This prevents confusion in the UI
+        return False, "API token saved but not verified. Authentication will be tested when inviting attendees."
     
     def invite_attendee(self, email: str, name: str, company: str = '') -> Tuple[bool, str]:
         """Invite an attendee to Eventee."""
@@ -66,6 +67,7 @@ class EventeeService:
                         "firstName": first_name,
                         "lastName": last_name,
                         "email": email,
+                        "send_email": True,
                     }
                 ]
             }
