@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 class PrintingService:
     """Service for handling ticket/badge printing operations."""
     
-    # Label size 40x80mm at 203 DPI (8 dots/mm)
-    # 40mm = 320 pixels, 80mm = 640 pixels
-    LABEL_WIDTH = 320  # 40mm
-    LABEL_HEIGHT = 640  # 80mm
-    MARGIN = 10
+    # Label size - based on original working code
+    # These values match the original create_label_image function
+    LABEL_WIDTH = 946
+    LABEL_HEIGHT = 572
+    MARGIN = 30
     
     def __init__(self):
         self.tsclibrary = None
@@ -53,7 +53,7 @@ class PrintingService:
         else:
             logger.info(f"Running on {platform.system()} - TSC printer support not available")
     
-    def print_ticket(self, ticket_data: dict) -> bool:
+    def print_ticket(self, ticket_data: dict, printer_queue: str = "1") -> bool:
         """Print a ticket with the given data."""
         if platform.system() != "Windows":
             os_name = platform.system()
@@ -82,7 +82,7 @@ class PrintingService:
             image_path = self._generate_ticket_image(ticket_data)
             
             # Print the image
-            success = self._send_to_printer(image_path)
+            success = self._send_to_printer(image_path, printer_queue)
             
             # Clean up
             if os.path.exists(image_path):
@@ -106,8 +106,8 @@ class PrintingService:
         import qrcode
         from django.conf import settings
         
-        # Create blank image
-        img = Image.new('RGB', (self.LABEL_WIDTH, self.LABEL_HEIGHT), 'white')
+        # Create blank image - grayscale like in original
+        img = Image.new('L', (self.LABEL_WIDTH, self.LABEL_HEIGHT), 'white')
         draw = ImageDraw.Draw(img)
         
         # Load fonts
@@ -125,9 +125,9 @@ class PrintingService:
         available_width = self.LABEL_WIDTH - (self.MARGIN * 2)
         text_start_y = self.LABEL_HEIGHT // 3  # Start text in upper third of label
         
-        # Find optimal font size
-        name_font_size = 30  # Start with larger size
-        min_font_size = 12   # Minimum readable size
+        # Find optimal font size - start with larger size like original
+        name_font_size = 250  # Start with larger size like original
+        min_font_size = 30   # Minimum readable size
         
         while name_font_size >= min_font_size:
             try:
@@ -161,8 +161,10 @@ class PrintingService:
             
             name_font_size -= 2  # Reduce and try again
         
-        # Draw the text - always centered
-        y_pos = text_start_y
+        # Calculate centered starting position like in original
+        total_text_height = (len(name_lines) * line_height + 
+                            len(company_lines) * company_line_height)
+        y_pos = (self.LABEL_HEIGHT - total_text_height) / 2
         
         # Draw name
         for line in name_lines:
@@ -181,6 +183,9 @@ class PrintingService:
                 x_pos = (self.LABEL_WIDTH - text_width) // 2
                 draw.text((x_pos, y_pos), line, font=font_regular, fill='black')
                 y_pos += company_line_height
+        
+        # Rotate image 90 degrees like in original
+        img = img.rotate(90, expand=True)
         
         # Save image
         temp_filename = f"label_{ticket_data['qr_code'].replace('/', '_')}.png"
@@ -220,34 +225,38 @@ class PrintingService:
         
         return lines if lines else [text]  # Return at least the original text
     
-    def _send_to_printer(self, image_path: str) -> bool:
+    def _send_to_printer(self, image_path: str, printer_queue: str = "1") -> bool:
         """Send image to printer using TSCLIB."""
         try:
-            # TSCLIB commands
-            self.tsclibrary.openport.argtypes = [ctypes.c_char_p]
-            self.tsclibrary.openport(self.printer_name.encode('utf-8'))
+            # Use the specific printer with queue like in original
+            printer_name = f"TDP-225{printer_queue}"
             
-            self.tsclibrary.sendcommand(b"SIZE 40 mm, 80 mm")
-            self.tsclibrary.sendcommand(b"SPEED 4")
-            self.tsclibrary.sendcommand(b"DENSITY 10")
-            self.tsclibrary.sendcommand(b"DIRECTION 1")
-            self.tsclibrary.sendcommand(b"REFERENCE 0,0")
-            self.tsclibrary.sendcommand(b"CLS")
+            # Check if printer exists
+            import win32print
+            printers = [printer[2] for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL)]
+            if printer_name not in printers:
+                logger.error(f"Printer {printer_name} not found")
+                return False
             
-            # Send image
-            self.tsclibrary.downloadpcx.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-            self.tsclibrary.downloadpcx(image_path.encode('utf-8'), b"TICKET.PCX")
-            self.tsclibrary.sendcommand(b"PUTPCX 0,0,\"TICKET.PCX\"")
+            # Use wide character functions like in original
+            self.tsclibrary.openportW(printer_name)
+            self.tsclibrary.sendcommandW("DENSITY 10")
+            self.tsclibrary.sendcommandW("SIZE 80 mm, 40 mm")
+            self.tsclibrary.clearbuffer()
+            self.tsclibrary.sendcommandW("CLS")
+            
+            # Call the printOnTop function equivalent
+            self._print_image_on_top(image_path)
             
             # Print
-            self.tsclibrary.printlabel(b"1", b"1")
+            self.tsclibrary.printlabelW("1", "1")
             self.tsclibrary.closeport()
             
-            logger.info(f"Successfully sent to printer {self.printer_name} from {image_path}")
+            logger.info(f"Successfully sent to printer {printer_name}")
             return True
             
         except Exception as e:
-            error_msg = f"Failed to send to printer {self.printer_name}: {e}"
+            error_msg = f"Failed to send to printer: {e}"
             logger.error(error_msg)
             # Log to database for user visibility
             try:
@@ -259,3 +268,24 @@ class PrintingService:
             except:
                 pass  # Don't fail if logging fails
             return False
+    
+    def _print_image_on_top(self, image_path: str):
+        """Print image on top of label like in original printOnTop function."""
+        try:
+            # Open and process image
+            img = Image.open(image_path)
+            
+            # Convert to grayscale if needed
+            if img.mode != 'L':
+                img = img.convert('L')
+            
+            # Get dimensions
+            width, height = img.size
+            
+            # Send image to printer
+            self.tsclibrary.downloadpcxW(image_path, "LABEL.PCX")
+            self.tsclibrary.sendcommandW("PUTPCX 0,0,\"LABEL.PCX\"")
+            
+        except Exception as e:
+            logger.error(f"Error in _print_image_on_top: {e}")
+            raise
