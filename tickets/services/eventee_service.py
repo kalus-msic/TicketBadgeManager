@@ -37,14 +37,31 @@ class EventeeService:
         if not self.api_token.strip():
             return False, "API token is empty"
         
-        # Since we can't test the API without making a real call,
-        # just do basic validation
-        if len(self.api_token.strip()) < 10:
-            return False, "API token appears too short"
-        
-        # Always return False to indicate we can't verify
-        # This prevents confusion in the UI
-        return False, "API token saved but not verified. Authentication will be tested when inviting attendees."
+        try:
+            # Test the API token with GET request to content endpoint
+            response = requests.get(
+                f"{self.API_BASE_URL}/content",
+                headers={
+                    'Authorization': f'Bearer {self.api_token}',
+                    'Accept': 'application/json'
+                },
+                timeout=self.TIMEOUT
+            )
+            
+            if response.status_code == 200:
+                return True, "API token verified successfully"
+            elif response.status_code == 401:
+                return False, "Invalid API token - authentication failed"
+            elif response.status_code == 403:
+                return False, "Access forbidden - check API token permissions"
+            else:
+                return False, f"API test failed with status code: {response.status_code}"
+                
+        except requests.exceptions.Timeout:
+            return False, "Connection timeout - API might be unreachable"
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Eventee API connection error: {e}")
+            return False, f"Connection error: {str(e)}"
     
     def invite_attendee(self, email: str, name: str, company: str = '') -> Tuple[bool, str]:
         """Invite an attendee to Eventee."""
