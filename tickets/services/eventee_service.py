@@ -33,32 +33,17 @@ class EventeeService:
         if not self.api_token:
             return False, "No API token configured"
         
-        try:
-            # Since most endpoints require event ID in the URL,
-            # we can't really test the connection without knowing the event ID
-            # Let's try a simple request to see if we get 401 (unauthorized) vs other errors
-            
-            # Try to access the base API to at least check if token format is correct
-            response = requests.get(
-                self.API_BASE_URL,  # Just the base URL
-                headers=self.headers,
-                timeout=self.TIMEOUT
-            )
-            
-            # Even if we get 404, if we don't get 401, the token is at least formatted correctly
-            if response.status_code == 401:
-                return False, "Invalid API token - authentication failed"
-            elif response.status_code == 403:
-                return False, "Access forbidden - check API token permissions"
-            else:
-                # Token seems valid (we didn't get 401)
-                return True, "API token appears valid (authentication successful)"
-                
-        except requests.exceptions.Timeout:
-            return False, "Connection timeout - API might be unreachable"
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Eventee API connection error: {e}")
-            return False, f"Connection error: {str(e)}"
+        # Check if token is just whitespace
+        if not self.api_token.strip():
+            return False, "API token is empty"
+        
+        # Since we can't test the API without making a real call,
+        # just do basic validation
+        if len(self.api_token.strip()) < 10:
+            return False, "API token appears too short"
+        
+        # Return success since the real test happens when inviting
+        return True, "API token saved. It will be validated when inviting attendees."
     
     def invite_attendee(self, email: str, name: str, company: str = '') -> Tuple[bool, str]:
         """Invite an attendee to Eventee."""
@@ -69,22 +54,32 @@ class EventeeService:
             return False, "Email is required"
         
         try:
-            # According to the API documentation, we just need the Bearer token
-            # The event ID might be associated with the token on Eventee's side
-            # or might need to be passed in the request body
+            # Split name into first and last name
+            name_parts = name.split(" ", 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
             
+            # Use the exact payload structure that worked before
             data = {
-                'email': email,
-                'name': name,
-                'company': company or ''
+                "users": [
+                    {
+                        "firstName": first_name,
+                        "lastName": last_name,
+                        "email": email,
+                    }
+                ]
             }
+            
+            # Add company if provided
+            if company:
+                data["users"][0]["company"] = company
             
             # Log the request for debugging
             logger.info(f"Sending invite request to: {self.API_BASE_URL}/attendee/invite")
             logger.info(f"Request data: {data}")
             
-            # Try the endpoint as documented
-            response = requests.post(
+            # Use PUT method as in the working example
+            response = requests.put(
                 f"{self.API_BASE_URL}/attendee/invite",
                 json=data,
                 headers=self.headers,
@@ -99,8 +94,8 @@ class EventeeService:
             except:
                 pass
             
-            if response.status_code in [200, 201]:
-                return True, "Invitation sent successfully"
+            if response.ok:  # This checks for any 2xx status code
+                return True, f"Invitation sent successfully: {response.text}"
             elif response.status_code == 409:
                 return False, "Attendee already exists"
             elif response.status_code == 401:
