@@ -149,26 +149,41 @@ class PrintingService:
             font_name = ImageFont.load_default()
             font_company = ImageFont.load_default() if company else None
         
-        # Wrap text like in original - using character width
-        wrap_name = textwrap.wrap(name, width=18)
-        wrap_company = textwrap.wrap(company, width=20) if company else []
+        # First check if text needs wrapping
+        def check_text_width(text, font, max_width):
+            """Check if text fits in one line."""
+            bbox = draw.textbbox((0, 0), text, font=font)
+            return bbox[2] - bbox[0] <= max_width
         
-        def get_text_dimensions(lines, font):
-            """Get dimensions of wrapped text."""
-            if not lines:
-                return 0, 0
-            max_width = 0
-            total_height = 0
-            for line in lines:
-                bbox = draw.textbbox((0, 0), line, font=font)
-                width = bbox[2] - bbox[0]
-                height = bbox[3] - bbox[1]
-                max_width = max(max_width, width)
-                total_height += height
-            return max_width, total_height
+        # Only wrap if text is too wide
+        available_width = img.width - 2*margin
+        if check_text_width(name, font_name, available_width):
+            wrap_name = [name]  # Keep on single line
+        else:
+            wrap_name = textwrap.wrap(name, width=18)
+            
+        if company:
+            if check_text_width(company, font_company, available_width):
+                wrap_company = [company]  # Keep on single line
+            else:
+                wrap_company = textwrap.wrap(company, width=20)
+        else:
+            wrap_company = []
         
-        name_w, name_h = get_text_dimensions(wrap_name, font_name)
-        comp_w, comp_h = get_text_dimensions(wrap_company, font_company) if company else (0, 0)
+        def get_text_size(text, font):
+            """Get text size like in original."""
+            lines = text.split('\n')
+            widths = [draw.textbbox((0, 0), line, font=font)[2] for line in lines]
+            metrics = font.getmetrics()
+            heights = [metrics[0] + metrics[1] for line in lines]
+            return max(widths), sum(heights)
+        
+        def txt_size(lines, font):
+            """Get size of wrapped lines."""
+            return get_text_size("\n".join(lines), font)
+        
+        name_w, name_h = txt_size(wrap_name, font_name)
+        comp_w, comp_h = txt_size(wrap_company, font_company) if company else (0, 0)
         
         # Reduce font size until it fits like in original
         while (name_w > img.width - 2*margin or 
@@ -184,18 +199,35 @@ class PrintingService:
                     os.path.join(font_path, "MontserratSemiBold600.ttf"), 
                     int(font_size * 0.70)
                 )
-            name_w, name_h = get_text_dimensions(wrap_name, font_name)
+            
+            # Re-check if wrapping is needed with new font size
+            if check_text_width(name, font_name, available_width):
+                wrap_name = [name]
+            else:
+                wrap_name = textwrap.wrap(name, width=18)
+                
             if company:
-                comp_w, comp_h = get_text_dimensions(wrap_company, font_company)
+                if check_text_width(company, font_company, available_width):
+                    wrap_company = [company]
+                else:
+                    wrap_company = textwrap.wrap(company, width=20)
+            
+            name_w, name_h = txt_size(wrap_name, font_name)
+            if company:
+                comp_w, comp_h = txt_size(wrap_company, font_company)
         
         # Calculate vertical centering like in original
         y = (img.height - (name_h + comp_h)) / 2
         
-        # Draw name lines
+        # Draw name lines - centered horizontally
         for line in wrap_name:
+            # Get exact text width for centering
             bbox = draw.textbbox((0, 0), line, font=font_name)
             line_width = bbox[2] - bbox[0]
-            x = max((img.width - line_width) / 2, margin)
+            # Center horizontally - ensure we're truly centered
+            x = (img.width - line_width) / 2
+            # Make sure we don't go outside margins
+            x = max(x, margin)
             draw.text((x, y), line, fill="black", font=font_name)
             # Use font metrics for line height like in original
             metrics = font_name.getmetrics()
@@ -204,9 +236,13 @@ class PrintingService:
         # Draw company lines if exists
         if company:
             for line in wrap_company:
+                # Get exact text width for centering
                 bbox = draw.textbbox((0, 0), line, font=font_company)
                 line_width = bbox[2] - bbox[0]
-                x = max((img.width - line_width) / 2, margin)
+                # Center horizontally
+                x = (img.width - line_width) / 2
+                # Make sure we don't go outside margins
+                x = max(x, margin)
                 draw.text((x, y), line, fill="black", font=font_company)
                 metrics = font_company.getmetrics()
                 y += metrics[0] + metrics[1]
