@@ -1,17 +1,31 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 REM --- Define characters to use in the SECRET_KEY (including special characters) ---
 set "CHARS=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?`~"
 
-REM --- Generate a random SECRET_KEY with alphanumeric characters (letters, digits, and special characters) ---
+REM --- Initialize SECRET_KEY as empty ---
 set "SECRET_KEY="
+
+REM --- Generate a random SECRET_KEY with alphanumeric characters (letters, digits, and special characters) ---
 for /L %%i in (1,1,50) do (
     set /a "RANDOM_INDEX=!random! %% 94"  REM Random number between 0 and 93 (for 94 characters)
+    set "CHAR="
     for %%c in (%CHARS%) do (
         set /a "COUNTER+=1"
-        if "!COUNTER!"=="!RANDOM_INDEX!" set "SECRET_KEY=!SECRET_KEY!%%c"
+        if "!COUNTER!"=="!RANDOM_INDEX!" (
+            set "CHAR=%%c"
+        )
     )
+    set "SECRET_KEY=!SECRET_KEY!!CHAR!"
+    set COUNTER=0
+)
+
+REM --- Check if SECRET_KEY was generated ---
+if "%SECRET_KEY%"=="" (
+    echo [ERROR] Failed to generate SECRET_KEY.
+    pause
+    exit /b
 )
 
 echo Random SECRET_KEY generated: %SECRET_KEY%
