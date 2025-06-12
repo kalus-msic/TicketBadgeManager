@@ -47,54 +47,48 @@ if not exist "venvTBM\Scripts\activate" (
 REM --- Activate the virtual environment ---
 call venvTBM\Scripts\activate
 
-REM --- Ask user if they want to create a new .env file with random SECRET_KEY ---
-set /p CREATE_ENV="Do you want to automatically generate a basic .env file with a random SECRET_KEY? (y/n): "
-if /i "%CREATE_ENV%"=="y" (
-    REM --- Generate .env file with random SECRET_KEY ---
-    echo [INFO] Creating .env file with a random SECRET_KEY...
+REM --- Automatically generate a new .env file with a random SECRET_KEY ---
+echo [INFO] Creating .env file with a random SECRET_KEY...
 
-    REM --- Generate a random SECRET_KEY ---
-    for /f "delims=" %%x in ('python -c "import secrets; print(secrets.token_urlsafe(50))"') do set "SECRET_KEY=%%x"
+REM --- Generate a random SECRET_KEY ---
+for /f "delims=" %%x in ('python -c "import secrets; print(secrets.token_urlsafe(50))"') do set "SECRET_KEY=%%x"
 
-    REM --- Create .env file ---
-    (echo # ======================== && 
-    echo # Django settings && 
-    echo # ======================== && 
-    echo SECRET_KEY=%SECRET_KEY% && 
-    echo DEBUG=False && 
-    echo ALLOWED_HOSTS=127.0.0.1,localhost,* && 
-    echo # ======================== && 
-    echo # Database && 
-    echo # ======================== && 
-    echo DATABASE_URL=sqlite:///db.sqlite3 && 
-    echo # ======================== && 
-    echo # Eventee API && 
-    echo # ======================== && 
-    echo EVENTEE_API_TOKEN= && 
-    echo # ======================== && 
-    echo # Logging && 
-    echo # ======================== && 
-    echo LOG_LEVEL=INFO && 
-    echo # ======================== && 
-    echo # Security settings && 
-    echo # ======================== && 
-    echo SECURE_SSL_REDIRECT=False && 
-    echo SESSION_COOKIE_SECURE=False && 
-    echo CSRF_COOKIE_SECURE=False && 
-    echo # ======================== && 
-    echo # Authentication && 
-    echo # ======================== && 
-    echo DISABLE_AUTH=True && 
-    echo # ======================== && 
-    echo # Rate limiting && 
-    echo # ======================== && 
-    echo RATELIMIT_ENABLE=True && 
-    echo RATELIMIT_USE_CACHE=default) > .env
+REM --- Create .env file ---
+(echo # ======================== && 
+echo # Django settings && 
+echo # ======================== && 
+echo SECRET_KEY=%SECRET_KEY% && 
+echo DEBUG=False && 
+echo ALLOWED_HOSTS=127.0.0.1,localhost,* && 
+echo # ======================== && 
+echo # Database && 
+echo # ======================== && 
+echo DATABASE_URL=sqlite:///db.sqlite3 && 
+echo # ======================== && 
+echo # Eventee API && 
+echo # ======================== && 
+echo EVENTEE_API_TOKEN= && 
+echo # ======================== && 
+echo # Logging && 
+echo # ======================== && 
+echo LOG_LEVEL=INFO && 
+echo # ======================== && 
+echo # Security settings && 
+echo # ======================== && 
+echo SECURE_SSL_REDIRECT=False && 
+echo SESSION_COOKIE_SECURE=False && 
+echo CSRF_COOKIE_SECURE=False && 
+echo # ======================== && 
+echo # Authentication && 
+echo # ======================== && 
+echo DISABLE_AUTH=True && 
+echo # ======================== && 
+echo # Rate limiting && 
+echo # ======================== && 
+echo RATELIMIT_ENABLE=True && 
+echo RATELIMIT_USE_CACHE=default) > .env
 
-    echo [INFO] .env file created successfully with random SECRET_KEY.
-) else (
-    echo [INFO] .env file was not created. Please create the .env file manually and update SECRET_KEY and ALLOWED_HOSTS.
-)
+echo [INFO] .env file created successfully with random SECRET_KEY.
 
 REM --- Install required packages ---
 echo Installing packages from requirements.txt...
@@ -124,7 +118,7 @@ if errorlevel 1 (
 
 REM --- Final Message ---
 echo Installation was successful.
-echo It is recommended to check and update the following in your .env file:
+echo The .env file has been created. It is recommended to check and update the following in your .env file:
 echo - SECRET_KEY (make sure it is securely set)
 echo - ALLOWED_HOSTS (set appropriate allowed hosts)
 echo - DISABLE_AUTH (set to False to enable authentication, if needed)
