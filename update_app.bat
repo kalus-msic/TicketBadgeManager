@@ -1,37 +1,37 @@
 @echo off
-REM --- Zkontrolujeme aktuálnost git repozitáře ---
-echo Kontroluji aktualizace v repozitari...
+REM --- Check if git repository is up to date ---
+echo Checking for updates in the repository...
 git fetch
 
-REM Zjistíme hash aktuálního commitu a vzdálené větve
+REM Get hash of current commit and remote branch
 for /f "tokens=*" %%i in ('git rev-parse HEAD') do set LOCAL=%%i
 for /f "tokens=*" %%i in ('git rev-parse @{u}') do set REMOTE=%%i
 
 if "%LOCAL%"=="%REMOTE%" (
-    echo Repozitar je aktualni.
+    echo Repository is up to date.
     goto :end
 ) else (
-    echo Nalezena nová verze repozitare.
-    choice /m "Chcete stáhnout aktualizace z Gitu? (Y/N)"
+    echo New version of repository found.
+    choice /m "Do you want to download updates from Git? (Y/N)"
     if errorlevel 2 (
-        echo Aktualizace nebyla provedena.
+        echo Update was not performed.
         goto :end
     ) else (
-        echo Provadim aktualizaci...
+        echo Performing update...
         git pull
     )
 )
 
-REM --- Aktivace virtuálního prostředí a migrace ---
-echo Aktivace virtualniho prostredi...
+REM --- Virtual environment activation and migration ---
+echo Activating virtual environment...
 call venvTBM\Scripts\activate
 
-echo Spoustim makemigrations...
+echo Running makemigrations...
 python manage.py makemigrations
 
-echo Spoustim migrate...
+echo Running migrate...
 python manage.py migrate
 
-echo Hotovo.
+echo Done.
 :end
 pause

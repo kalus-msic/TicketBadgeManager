@@ -131,14 +131,6 @@ if errorlevel 1 (
     exit /b
 )
 
-REM --- Create default superuser if it doesn't exist ---
-echo Checking for default superuser...
-python -c "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TicketBadgeManager.settings'); import django; django.setup(); from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='TBM').exists() or User.objects.create_superuser('TBM', 'tbm@example.com', 'TBM')" 2>nul
-if errorlevel 1 (
-    echo [WARNING] Could not create default user. You may need to create it manually using: python manage.py createsuperuser
-) else (
-    echo Default superuser 'TBM' created or already exists.
-)
 
 REM --- Collect static files ---
 echo Collecting static files...
@@ -158,13 +150,14 @@ echo - EVENTEE_API_TOKEN (add your Eventee API token)
 echo - ALLOWED_HOSTS (set appropriate allowed hosts for production)
 echo - DISABLE_AUTH (set to False to enable authentication in production)
 echo.
-echo Default superuser credentials (if created):
+echo Default user credentials:
 echo   Username: TBM
 echo   Password: TBM
+echo   Note: This is a staff user created during migration
 echo.
 echo To start the development server:
 echo   call venvTBM\Scripts\activate
-echo   python manage.py runserver
+echo   python manage.py runsslserver 0.0.0.0:8000
 echo.
 echo For more information, please refer to the README file.
 pause
