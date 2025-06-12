@@ -1,78 +1,78 @@
 @echo off
 setlocal
 
-REM --- Požadovaná verze Pythonu ---
+REM --- Required Python version ---
 set "REQUIRED_PYTHON=3.11.9"
 set "PYTHON_EXE=python"
 
-REM --- Ověření, že se nacházíme v kořenovém adresáři projektu ---
+REM --- Check if we're in the root project directory ---
 if not exist "manage.py" (
-    echo [CHYBA] Soubor manage.py nebyl nalezen. Spusťte tento skript v kořenovém adresáři projektu.
+    echo [ERROR] manage.py file not found. Run this script from the root project directory.
     pause
     exit /b
 )
 
-REM --- Kontrola, že python je dostupný ---
+REM --- Check if python is available ---
 where %PYTHON_EXE% >nul 2>&1
 if errorlevel 1 (
-    echo [CHYBA] Python nebyl nalezen v PATH. Ujistěte se, že je nainstalován a přidán do PATH.
+    echo [ERROR] Python not found in PATH. Make sure it's installed and added to PATH.
     pause
     exit /b
 )
 
-REM --- Ověření přesné verze Pythonu ---
+REM --- Check the exact version of Python ---
 for /f "delims=" %%v in ('%PYTHON_EXE% --version 2^>^&1') do set "VERSION_OUTPUT=%%v"
-echo Detekována verze: %VERSION_OUTPUT%
+echo Detected version: %VERSION_OUTPUT%
 
 echo %VERSION_OUTPUT% | findstr /C:"Python %REQUIRED_PYTHON%" >nul
 if errorlevel 1 (
-    echo [CHYBA] Verze Pythonu není %REQUIRED_PYTHON%. Nainstalujte správnou verzi.
+    echo [ERROR] Python version is not %REQUIRED_PYTHON%. Install the correct version.
     pause
     exit /b
 )
 
-REM --- Vytvoření virtuálního prostředí, pokud ještě neexistuje ---
+REM --- Create a virtual environment if it doesn't exist ---
 if not exist "venvTBM\Scripts\activate" (
-    echo Virtuální prostředí nebylo nalezeno. Vytvářím virtuální prostředí pomocí %PYTHON_EXE%...
+    echo Virtual environment not found. Creating virtual environment using %PYTHON_EXE%...
     %PYTHON_EXE% -m venv venvTBM
     if errorlevel 1 (
-        echo [CHYBA] Chyba při vytváření virtuálního prostředí.
+        echo [ERROR] Error creating virtual environment.
         pause
         exit /b
     )
 ) else (
-    echo Virtuální prostředí venvTBM nalezeno.
+    echo Virtual environment venvTBM found.
 )
 
-REM --- Aktivace virtuálního prostředí ---
+REM --- Activate the virtual environment ---
 call venvTBM\Scripts\activate
 
-REM --- Instalace požadovaných balíčků ---
-echo Instalace balíčků z requirements.txt...
+REM --- Install required packages ---
+echo Installing packages from requirements.txt...
 pip install -r requirements.txt
 if errorlevel 1 (
-    echo [CHYBA] Chyba při instalaci balíčků. Zkontrolujte requirements.txt.
+    echo [ERROR] Error installing packages. Check requirements.txt.
     pause
     exit /b
 )
 
-REM --- Provedení databázových migrací ---
-echo Provádím makemigrations...
+REM --- Run database migrations ---
+echo Running makemigrations...
 python manage.py makemigrations
 if errorlevel 1 (
-    echo [CHYBA] Chyba při vytváření migrací.
+    echo [ERROR] Error creating migrations.
     pause
     exit /b
 )
 
-echo Provádím migrate...
+echo Running migrate...
 python manage.py migrate
 if errorlevel 1 (
-    echo [CHYBA] Chyba při provádění migrací.
+    echo [ERROR] Error performing migrations.
     pause
     exit /b
 )
 
-echo Instalace byla úspěšná.
-echo Nezapomeňte upravit SECRET_KEY a ALLOWED_HOSTS v souboru settings.py dle README.md.
+echo Installation was successful.
+echo Don't forget to update SECRET_KEY and ALLOWED_HOSTS in the settings.py file according to the README.md.
 pause
