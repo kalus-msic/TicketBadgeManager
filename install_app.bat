@@ -1,17 +1,42 @@
 @echo off
-REM --- Kontrola, zda se nacházíme v kořenovém adresáři projektu ---
+setlocal
+
+REM --- Požadovaná verze Pythonu ---
+set "REQUIRED_PYTHON=3.11.9"
+set "PYTHON_EXE=python3.11"
+
+REM --- Ověření, že se nacházíme v kořenovém adresáři projektu ---
 if not exist "manage.py" (
-    echo Soubor manage.py nebyl nalezen. Spusťte tento skript v kořenovém adresáři projektu.
+    echo [CHYBA] Soubor manage.py nebyl nalezen. Spusťte tento skript v kořenovém adresáři projektu.
+    pause
+    exit /b
+)
+
+REM --- Kontrola, že python3.11 je dostupný ---
+where %PYTHON_EXE% >nul 2>&1
+if errorlevel 1 (
+    echo [CHYBA] Python 3.11 nebyl nalezen v PATH. Ujistěte se, že je nainstalován a přidán do PATH.
+    pause
+    exit /b
+)
+
+REM --- Ověření přesné verze ---
+for /f "delims=" %%v in ('%PYTHON_EXE% --version 2^>^&1') do set "VERSION_OUTPUT=%%v"
+echo Detekována verze: %VERSION_OUTPUT%
+
+echo %VERSION_OUTPUT% | findstr /C:"Python %REQUIRED_PYTHON%" >nul
+if errorlevel 1 (
+    echo [CHYBA] Verze Pythonu není %REQUIRED_PYTHON%. Nainstalujte správnou verzi.
     pause
     exit /b
 )
 
 REM --- Vytvoření virtuálního prostředí, pokud ještě neexistuje ---
 if not exist "venvTBM\Scripts\activate" (
-    echo Virtuální prostředí nebylo nalezeno. Vytvářím virtuální prostředí...
-    python -m venv venvTBM
+    echo Virtuální prostředí nebylo nalezeno. Vytvářím virtuální prostředí pomocí %PYTHON_EXE%...
+    %PYTHON_EXE% -m venv venvTBM
     if errorlevel 1 (
-        echo Chyba při vytváření virtuálního prostředí. Ujistěte se, že máte nainstalovaný Python.
+        echo [CHYBA] Chyba při vytváření virtuálního prostředí.
         pause
         exit /b
     )
@@ -22,11 +47,11 @@ if not exist "venvTBM\Scripts\activate" (
 REM --- Aktivace virtuálního prostředí ---
 call venvTBM\Scripts\activate
 
-REM --- Instalace potřebných balíčků ---
+REM --- Instalace požadovaných balíčků ---
 echo Instalace balíčků z requirements.txt...
 pip install -r requirements.txt
 if errorlevel 1 (
-    echo Chyba při instalaci balíčků. Zkontrolujte requirements.txt.
+    echo [CHYBA] Chyba při instalaci balíčků. Zkontrolujte requirements.txt.
     pause
     exit /b
 )
@@ -35,7 +60,7 @@ REM --- Provedení databázových migrací ---
 echo Provádím makemigrations...
 python manage.py makemigrations
 if errorlevel 1 (
-    echo Chyba při vytváření migrací.
+    echo [CHYBA] Chyba při vytváření migrací.
     pause
     exit /b
 )
@@ -43,11 +68,11 @@ if errorlevel 1 (
 echo Provádím migrate...
 python manage.py migrate
 if errorlevel 1 (
-    echo Chyba při provádění migrací.
+    echo [CHYBA] Chyba při provádění migrací.
     pause
     exit /b
 )
 
 echo Instalace byla úspěšná.
-echo Nezapomeňte upravit SECRET_KEY a ALLOWED_HOSTS v souboru settings.py dle poznámek v README.md.
+echo Nezapomeňte upravit SECRET_KEY a ALLOWED_HOSTS v souboru settings.py dle README.md.
 pause
