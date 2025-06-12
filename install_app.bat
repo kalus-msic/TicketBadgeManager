@@ -47,6 +47,23 @@ if not exist "venvTBM\Scripts\activate" (
 REM --- Activate the virtual environment ---
 call venvTBM\Scripts\activate
 
+REM --- Check if .env exists, if not, create it from .env.example ---
+if not exist ".env" (
+    echo [INFO] .env file not found. Creating .env from .env.example...
+
+    REM --- Copy .env.example to .env ---
+    copy .env.example .env
+
+    REM --- Generate a random SECRET_KEY and replace in .env ---
+    for /f "delims=" %%x in ('python -c "import secrets; print(secrets.token_urlsafe(50))"') do set "SECRET_KEY=%%x"
+    echo SECRET_KEY=%SECRET_KEY% > .env
+
+    REM --- Append other environment variables from .env.example ---
+    for /f "tokens=*" %%i in (.env.example) do (
+        echo %%i >> .env
+    )
+)
+
 REM --- Install required packages ---
 echo Installing packages from requirements.txt...
 pip install -r requirements.txt
