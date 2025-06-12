@@ -122,6 +122,7 @@ if errorlevel 1 (
     exit /b
 )
 
+REM --- Final Message ---
 echo Installation was successful.
 echo It is recommended to check and update the following in your .env file:
 echo - SECRET_KEY (make sure it is securely set)
