@@ -3,7 +3,7 @@ setlocal
 
 REM --- Požadovaná verze Pythonu ---
 set "REQUIRED_PYTHON=3.11.9"
-set "PYTHON_EXE=python3.11"
+set "PYTHON_EXE=python"
 
 REM --- Ověření, že se nacházíme v kořenovém adresáři projektu ---
 if not exist "manage.py" (
@@ -12,15 +12,15 @@ if not exist "manage.py" (
     exit /b
 )
 
-REM --- Kontrola, že python3.11 je dostupný ---
+REM --- Kontrola, že python je dostupný ---
 where %PYTHON_EXE% >nul 2>&1
 if errorlevel 1 (
-    echo [CHYBA] Python 3.11 nebyl nalezen v PATH. Ujistěte se, že je nainstalován a přidán do PATH.
+    echo [CHYBA] Python nebyl nalezen v PATH. Ujistěte se, že je nainstalován a přidán do PATH.
     pause
     exit /b
 )
 
-REM --- Ověření přesné verze ---
+REM --- Ověření přesné verze Pythonu ---
 for /f "delims=" %%v in ('%PYTHON_EXE% --version 2^>^&1') do set "VERSION_OUTPUT=%%v"
 echo Detekována verze: %VERSION_OUTPUT%
 
