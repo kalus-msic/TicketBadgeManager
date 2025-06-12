@@ -11,25 +11,19 @@ if errorlevel 1 (
     exit /b
 )
 
-REM --- Generate SECRET_KEY using PowerShell ---
+REM --- Generate SECRET_KEY using simple batch method ---
 echo Generating SECRET_KEY...
-for /f "delims=" %%i in ('powershell -Command "[System.Web.Security.Membership]::GeneratePassword(50, 10) -replace '\"', ''"') do set "SECRET_KEY=%%i"
+set "CHARS=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+set "SECRET_KEY="
 
-REM --- If PowerShell method fails, use alternative method ---
-if "%SECRET_KEY%"=="" (
-    echo PowerShell method failed, using alternative method...
-    REM Generate using current timestamp and random numbers
-    for /f "tokens=1-3 delims=:." %%a in ('echo %time%') do (
-        set /a "seed=%%a%%b%%c"
-    )
-    set "CHARS=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    set "SECRET_KEY="
-    for /L %%i in (1,1,50) do (
-        set /a "rand=!random! %% 62"
-        for /f %%c in ('cmd /c "echo !CHARS:~%%rand,1!"') do (
-            set "SECRET_KEY=!SECRET_KEY!%%c"
-        )
-    )
+REM Initialize random seed
+set /a "seed=%random%"
+
+REM Generate 50 character key
+for /L %%i in (1,1,50) do (
+    set /a "rand=!random! %% 62"
+    call set "char=%%CHARS:~!rand!,1%%"
+    set "SECRET_KEY=!SECRET_KEY!!char!"
 )
 
 REM --- Final check if SECRET_KEY was generated ---
@@ -73,39 +67,41 @@ REM --- Automatically create the .env file with random SECRET_KEY ---
 echo [INFO] Creating .env file with a random SECRET_KEY...
 
 REM --- Create .env file ---
-(echo # ======================== && 
-echo # Django settings && 
-echo # ======================== && 
-echo SECRET_KEY=%SECRET_KEY% && 
-echo DEBUG=False && 
-echo ALLOWED_HOSTS=127.0.0.1,localhost,* && 
-echo # ======================== && 
-echo # Database && 
-echo # ======================== && 
-echo DATABASE_URL=sqlite:///db.sqlite3 && 
-echo # ======================== && 
-echo # Eventee API && 
-echo # ======================== && 
-echo EVENTEE_API_TOKEN= && 
-echo # ======================== && 
-echo # Logging && 
-echo # ======================== && 
-echo LOG_LEVEL=INFO && 
-echo # ======================== && 
-echo # Security settings && 
-echo # ======================== && 
-echo SECURE_SSL_REDIRECT=False && 
-echo SESSION_COOKIE_SECURE=False && 
-echo CSRF_COOKIE_SECURE=False && 
-echo # ======================== && 
-echo # Authentication && 
-echo # ======================== && 
-echo DISABLE_AUTH=True && 
-echo # ======================== && 
-echo # Rate limiting && 
-echo # ======================== && 
-echo RATELIMIT_ENABLE=True && 
-echo RATELIMIT_USE_CACHE=default) > .env
+(
+echo # ========================
+echo # Django settings
+echo # ========================
+echo SECRET_KEY=%SECRET_KEY%
+echo DEBUG=False
+echo ALLOWED_HOSTS=127.0.0.1,localhost,*
+echo # ========================
+echo # Database
+echo # ========================
+echo DATABASE_URL=sqlite:///db.sqlite3
+echo # ========================
+echo # Eventee API
+echo # ========================
+echo EVENTEE_API_TOKEN=
+echo # ========================
+echo # Logging
+echo # ========================
+echo LOG_LEVEL=INFO
+echo # ========================
+echo # Security settings
+echo # ========================
+echo SECURE_SSL_REDIRECT=False
+echo SESSION_COOKIE_SECURE=False
+echo CSRF_COOKIE_SECURE=False
+echo # ========================
+echo # Authentication
+echo # ========================
+echo DISABLE_AUTH=True
+echo # ========================
+echo # Rate limiting
+echo # ========================
+echo RATELIMIT_ENABLE=True
+echo RATELIMIT_USE_CACHE=default
+) > .env
 
 echo [INFO] .env file created successfully with random SECRET_KEY.
 
