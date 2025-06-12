@@ -1,9 +1,20 @@
 @echo off
 setlocal
 
-REM --- Required Python version ---
-set "REQUIRED_PYTHON=3.11.9"
-set "PYTHON_EXE=python"
+REM --- Define characters to use in the SECRET_KEY (including special characters) ---
+set "CHARS=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?`~"
+
+REM --- Generate a random SECRET_KEY with alphanumeric characters (letters, digits, and special characters) ---
+set "SECRET_KEY="
+for /L %%i in (1,1,50) do (
+    set /a "RANDOM_INDEX=!random! %% 94"  REM Random number between 0 and 93 (for 94 characters)
+    for %%c in (%CHARS%) do (
+        set /a "COUNTER+=1"
+        if "!COUNTER!"=="!RANDOM_INDEX!" set "SECRET_KEY=!SECRET_KEY!%%c"
+    )
+)
+
+echo Random SECRET_KEY generated: %SECRET_KEY%
 
 REM --- Check if we're in the root project directory ---
 if not exist "manage.py" (
@@ -12,29 +23,10 @@ if not exist "manage.py" (
     exit /b
 )
 
-REM --- Check if python is available ---
-where %PYTHON_EXE% >nul 2>&1
-if errorlevel 1 (
-    echo [ERROR] Python not found in PATH. Make sure it's installed and added to PATH.
-    pause
-    exit /b
-)
-
-REM --- Check the exact version of Python ---
-for /f "delims=" %%v in ('%PYTHON_EXE% --version 2^>^&1') do set "VERSION_OUTPUT=%%v"
-echo Detected version: %VERSION_OUTPUT%
-
-echo %VERSION_OUTPUT% | findstr /C:"Python %REQUIRED_PYTHON%" >nul
-if errorlevel 1 (
-    echo [ERROR] Python version is not %REQUIRED_PYTHON%. Install the correct version.
-    pause
-    exit /b
-)
-
 REM --- Create a virtual environment if it doesn't exist ---
 if not exist "venvTBM\Scripts\activate" (
-    echo Virtual environment not found. Creating virtual environment using %PYTHON_EXE%...
-    %PYTHON_EXE% -m venv venvTBM
+    echo Virtual environment not found. Creating virtual environment...
+    python -m venv venvTBM
     if errorlevel 1 (
         echo [ERROR] Error creating virtual environment.
         pause
@@ -47,11 +39,8 @@ if not exist "venvTBM\Scripts\activate" (
 REM --- Activate the virtual environment ---
 call venvTBM\Scripts\activate
 
-REM --- Automatically generate a new .env file with a random SECRET_KEY ---
+REM --- Automatically create the .env file with random SECRET_KEY ---
 echo [INFO] Creating .env file with a random SECRET_KEY...
-
-REM --- Generate a random SECRET_KEY ---
-for /f "delims=" %%x in ('python -c "import secrets; print(secrets.token_urlsafe(50))"') do set "SECRET_KEY=%%x"
 
 REM --- Create .env file ---
 (echo # ======================== && 
