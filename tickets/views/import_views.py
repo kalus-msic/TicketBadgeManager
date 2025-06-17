@@ -14,6 +14,7 @@ from ..decorators import staff_required, import_ratelimit
 from ..utils.error_handlers import handle_view_errors
 from ..utils.validators import validate_csv_file
 from ..utils.auth_utils import get_username_for_log
+from ..utils.import_mappings import get_field_mapping_suggestions, detect_import_profile, IMPORT_PROFILES
 
 
 @staff_required
@@ -149,6 +150,14 @@ def import_mapping(request):
             rows = list(csv_reader)
             delimiter = ','
         
+        # Get field mapping suggestions using the new system
+        suggestions = get_field_mapping_suggestions(csv_reader.fieldnames, 
+                                                     samples={field: [row.get(field) for row in rows[:3] if row.get(field)] 
+                                                             for field in csv_reader.fieldnames})
+        
+        # Detect import profile
+        detected_profile = detect_import_profile(csv_reader.fieldnames)
+        
         columns = []
         for field in csv_reader.fieldnames:
             # Get sample values (up to 3)
@@ -157,13 +166,10 @@ def import_mapping(request):
                 if row.get(field):
                     samples.append(row[field])
             
-            # Try to guess field mapping
-            suggested_field = _suggest_field_mapping(field, samples)
-            
             columns.append({
                 'name': field,
                 'samples': samples,
-                'suggested_field': suggested_field
+                'suggested_field': suggestions.get(field)
             })
         
         # Store CSV data in cache for processing
@@ -183,7 +189,9 @@ def import_mapping(request):
             'delimiter_name': 'comma' if delimiter == ',' else 
                             'semicolon' if delimiter == ';' else
                             'tab' if delimiter == '\t' else
-                            'pipe' if delimiter == '|' else 'other'
+                            'pipe' if delimiter == '|' else 'other',
+            'detected_profile': detected_profile,
+            'profile_name': IMPORT_PROFILES.get(detected_profile, {}).get('name', 'Unknown')
         }
         
         return render(request, 'tickets/import_mapping.html', context)
@@ -287,6 +295,10 @@ def import_execute(request):
                 for csv_field, model_field in field_mapping.items():
                     value = row.get(csv_field, '').strip()
                     if value:
+                        # Special handling for QR code - extract from URL if needed
+                        if model_field == 'qr_code':
+                            from ..utils.text_utils import extract_qr_from_url
+                            value = extract_qr_from_url(value)
                         ticket_data[model_field] = value
                 
                 # Check if ticket exists (by QR code)

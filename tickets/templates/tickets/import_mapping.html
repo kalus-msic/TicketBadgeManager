@@ -12,16 +12,25 @@
             <h5 class="card-title">{% trans "Import Settings" %}</h5>
             
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> 
-                {% trans "Detected delimiter:" %} 
-                <strong>
-                    {% if delimiter_name == 'comma' %}{% trans "Comma" %} (,)
-                    {% elif delimiter_name == 'semicolon' %}{% trans "Semicolon" %} (;)
-                    {% elif delimiter_name == 'tab' %}{% trans "Tab" %}
-                    {% elif delimiter_name == 'pipe' %}{% trans "Pipe" %} (|)
-                    {% else %}{{ delimiter }}
-                    {% endif %}
-                </strong>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-info-circle"></i> 
+                        {% trans "Detected delimiter:" %} 
+                        <strong>
+                            {% if delimiter_name == 'comma' %}{% trans "Comma" %} (,)
+                            {% elif delimiter_name == 'semicolon' %}{% trans "Semicolon" %} (;)
+                            {% elif delimiter_name == 'tab' %}{% trans "Tab" %}
+                            {% elif delimiter_name == 'pipe' %}{% trans "Pipe" %} (|)
+                            {% else %}{{ delimiter }}
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div>
+                        <i class="bi bi-file-earmark-check"></i>
+                        {% trans "Detected format:" %} 
+                        <strong>{{ profile_name }}</strong>
+                    </div>
+                </div>
             </div>
             
             <form method="post" action="{% url 'tickets:import_execute' %}">
