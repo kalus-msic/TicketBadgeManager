@@ -18,28 +18,21 @@
 
                     <!-- CSV Format Info -->
                     <div class="mt-4">
-                        <h5>{% trans "Supported CSV Format:" %}</h5>
-                        <ul class="mb-0">
-                            <li>{% trans "Tested with ti.to export in UTF-8 and goout files." %}</li>
-                            <li>{% trans "The file can use either a comma (,) or semicolon (;) as a delimiter. We recommend using the semicolon (;)." %}</li>
-                            <li>
-                                {% trans "Required columns (if any required field is missing in a row, that row will be skipped during import; you must include at least one of the following variants):" %}
-                                <ul>
-                                    <li><strong>{% trans "Ticket Number:" %}</strong> "Číslo vstupenky", "Ticket Number", or "Unique Ticket URL"</li>
-                                    <li><strong>{% trans "First Name:" %}</strong> "Jméno", "Jméno_x", or "Ticket First Name"</li>
-                                    <li><strong>{% trans "Last Name:" %}</strong> "Příjmení", "Příjmení_x", or "Ticket Last Name"</li>
-                                </ul>
-                            </li>
-                            <li>
-                                {% trans "Optional columns (you can include one of the following variants, if applicable):" %}
-                                <ul>
-                                    <li><strong>{% trans "Company Name:" %}</strong> "Firma", "Field1", or "Ticket Company Name"</li>
-                                    <li><strong>{% trans "Event Name:" %}</strong> "Akce", "Akce_x", or "Event"</li>
-                                    <li><strong>{% trans "Email:" %}</strong> "Email", "E-mail", or "Ticket Email" </li>
-                                    <br>
-                                </ul>
-                            </li>
-                        </ul>
+                        <h5>{% trans "Supported CSV Sources:" %}</h5>
+                        <div class="mb-3">
+                            <p class="mb-2"><strong>{% trans "Supported ticketing platforms:" %}</strong></p>
+                            <ul class="list-unstyled ms-3">
+                                <li><i class="bi bi-check-circle text-success"></i> <strong>ti.to</strong> - {% trans "Automatic URL parsing for Unique Ticket URL column" %}</li>
+                                <li><i class="bi bi-check-circle text-success"></i> <strong>GoOut</strong> - {% trans "Use the merge function below for GoOut exports" %}</li>
+                                <li><i class="bi bi-check-circle text-success"></i> <strong>SimpleShop</strong> - {% trans "Direct CSV import supported" %}</li>
+                                <li><i class="bi bi-check-circle text-success"></i> <strong>{% trans "Custom CSV" %}</strong> - {% trans "Any CSV with required columns" %}</li>
+                            </ul>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle"></i> <strong>{% trans "Note for ti.to imports:" %}</strong><br>
+                            {% trans "When importing from ti.to and using the 'Unique Ticket URL' column for QR codes, the URL will be automatically parsed to extract only the ticket ID." %}<br>
+                            <small class="text-muted">{% trans "Example:" %} https://ti.to/tickets/ti_2014876e27aeb534 → ti_2014876e27aeb534</small>
+                        </div>
                     </div>
 
                     <!-- Universal Import with Mapping -->
@@ -63,43 +56,6 @@
                         </div>
                     </div>
 
-                    <!-- Delete and Replace -->
-                    <div class="card border-danger mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title text-danger">{% trans "Delete All and Import New Data" %}</h5>
-                            <p class="card-text">{% trans "This will delete all existing tickets and their check-in data before importing new data." %}</p>
-                            
-                            <form method="post" action="{% url 'tickets:import_replace_tickets' %}" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label class="form-label">{% trans "Select CSV File" %}</label>
-                                    <input type="file" name="csv_file" class="form-control" accept=".csv" required>
-                                </div>
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('{% trans "Are you sure? This will delete ALL existing data." %}')">
-                                    {% trans "Delete All and Import New Data" %}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Add New Tickets -->
-                    <div class="card border-primary">
-                        <div class="card-body">
-                            <h5 class="card-title">{% trans "Add New Tickets" %}</h5>
-                            <p class="card-text">{% trans "This will add new tickets while keeping existing ones. Duplicate QR codes will be skipped." %}</p>
-                            
-                            <form method="post" action="{% url 'tickets:import_add_tickets' %}" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label class="form-label">{% trans "Select CSV File" %}</label>
-                                    <input type="file" name="csv_file" class="form-control" accept=".csv" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    {% trans "Add New Tickets" %}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
