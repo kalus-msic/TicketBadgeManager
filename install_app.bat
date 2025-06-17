@@ -1,34 +1,36 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM --- Define characters to use in the SECRET_KEY (including special characters) ---
-set "CHARS=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?`~"
-
-REM --- Initialize SECRET_KEY as empty ---
-set "SECRET_KEY="
-
-REM --- Generate a random SECRET_KEY with alphanumeric characters (letters, digits, and special characters) ---
-for /L %%i in (1,1,50) do (
-    set /a "RANDOM_INDEX=!random! %% 94"  REM Random number between 0 and 93 (for 94 characters)
-    set "CHAR="
-    for %%c in (%CHARS%) do (
-        set /a "COUNTER+=1"
-        if "!COUNTER!"=="!RANDOM_INDEX!" (
-            set "CHAR=%%c"
-        )
-    )
-    set "SECRET_KEY=!SECRET_KEY!!CHAR!"
-    set COUNTER=0
+REM --- Check if Python is installed ---
+echo Checking Python installation...
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Python is not installed or not in PATH.
+    echo Please install Python 3.8 or higher and add it to PATH.
+    pause
+    exit /b
 )
 
-REM --- Check if SECRET_KEY was generated ---
+REM --- Generate SECRET_KEY using simple batch method ---
+echo Generating SECRET_KEY...
+set "CHARS=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+set "SECRET_KEY="
+
+REM Generate 50 character key
+for /L %%i in (1,1,50) do (
+    set /a "rand=!random! %% 62"
+    for %%a in (!rand!) do set "char=!CHARS:~%%a,1!"
+    set "SECRET_KEY=!SECRET_KEY!!char!"
+)
+
+REM --- Final check if SECRET_KEY was generated ---
 if "%SECRET_KEY%"=="" (
     echo [ERROR] Failed to generate SECRET_KEY.
     pause
     exit /b
 )
 
-echo Random SECRET_KEY generated: %SECRET_KEY%
+echo Random SECRET_KEY generated successfully.
 
 REM --- Check if we're in the root project directory ---
 if not exist "manage.py" (
@@ -52,44 +54,51 @@ if not exist "venvTBM\Scripts\activate" (
 
 REM --- Activate the virtual environment ---
 call venvTBM\Scripts\activate
+if errorlevel 1 (
+    echo [ERROR] Failed to activate virtual environment.
+    pause
+    exit /b
+)
 
 REM --- Automatically create the .env file with random SECRET_KEY ---
 echo [INFO] Creating .env file with a random SECRET_KEY...
 
 REM --- Create .env file ---
-(echo # ======================== && 
-echo # Django settings && 
-echo # ======================== && 
-echo SECRET_KEY=%SECRET_KEY% && 
-echo DEBUG=False && 
-echo ALLOWED_HOSTS=127.0.0.1,localhost,* && 
-echo # ======================== && 
-echo # Database && 
-echo # ======================== && 
-echo DATABASE_URL=sqlite:///db.sqlite3 && 
-echo # ======================== && 
-echo # Eventee API && 
-echo # ======================== && 
-echo EVENTEE_API_TOKEN= && 
-echo # ======================== && 
-echo # Logging && 
-echo # ======================== && 
-echo LOG_LEVEL=INFO && 
-echo # ======================== && 
-echo # Security settings && 
-echo # ======================== && 
-echo SECURE_SSL_REDIRECT=False && 
-echo SESSION_COOKIE_SECURE=False && 
-echo CSRF_COOKIE_SECURE=False && 
-echo # ======================== && 
-echo # Authentication && 
-echo # ======================== && 
-echo DISABLE_AUTH=True && 
-echo # ======================== && 
-echo # Rate limiting && 
-echo # ======================== && 
-echo RATELIMIT_ENABLE=True && 
-echo RATELIMIT_USE_CACHE=default) > .env
+(
+echo # ========================
+echo # Django settings
+echo # ========================
+echo SECRET_KEY=%SECRET_KEY%
+echo DEBUG=False
+echo ALLOWED_HOSTS=127.0.0.1,localhost,*
+echo # ========================
+echo # Database
+echo # ========================
+echo DATABASE_URL=sqlite:///db.sqlite3
+echo # ========================
+echo # Eventee API
+echo # ========================
+echo EVENTEE_API_TOKEN=
+echo # ========================
+echo # Logging
+echo # ========================
+echo LOG_LEVEL=INFO
+echo # ========================
+echo # Security settings
+echo # ========================
+echo SECURE_SSL_REDIRECT=False
+echo SESSION_COOKIE_SECURE=False
+echo CSRF_COOKIE_SECURE=False
+echo # ========================
+echo # Authentication
+echo # ========================
+echo DISABLE_AUTH=True
+echo # ========================
+echo # Rate limiting
+echo # ========================
+echo RATELIMIT_ENABLE=True
+echo RATELIMIT_USE_CACHE=default
+) > .env
 
 echo [INFO] .env file created successfully with random SECRET_KEY.
 
@@ -119,13 +128,33 @@ if errorlevel 1 (
     exit /b
 )
 
+
+REM --- Collect static files ---
+echo Collecting static files...
+python manage.py collectstatic --noinput
+if errorlevel 1 (
+    echo [WARNING] Error collecting static files. This may not be critical.
+)
+
 REM --- Final Message ---
-echo Installation was successful.
-echo The .env file has been created. It is recommended to check and update the following in your .env file:
-echo - SECRET_KEY (make sure it is securely set)
-echo - ALLOWED_HOSTS (set appropriate allowed hosts)
-echo - DISABLE_AUTH (set to False to enable authentication, if needed)
-echo
-echo Default user "TBM" has been created (username: TBM, password: TBM).
-echo For more information, please refer to the "Installation" section of the README file.
+echo.
+echo ========================================
+echo Installation completed successfully!
+echo ========================================
+echo.
+echo The .env file has been created. It is recommended to check and update the following:
+echo - EVENTEE_API_TOKEN (add your Eventee API token)
+echo - ALLOWED_HOSTS (set appropriate allowed hosts for production)
+echo - DISABLE_AUTH (set to False to enable authentication in production)
+echo.
+echo Default user credentials:
+echo   Username: TBM
+echo   Password: TBM
+echo   Note: This is a staff user created during migration
+echo.
+echo To start the development server:
+echo   call venvTBM\Scripts\activate
+echo   python manage.py runsslserver 0.0.0.0:8000
+echo.
+echo For more information, please refer to the README file.
 pause
