@@ -73,6 +73,15 @@
 
 ## Installation
 
+### Convenience .bat Scripts
+
+To facilitate running and updating the application, we have prepared three `.bat` files that you can place in the project's root folder:
+
+-   **`install_app.bat`** – This script performs the basic installation steps as described in this README. It creates a virtual environment (if it doesn't already exist), installs the required packages, and performs database migrations.
+-   **`start_server.bat`** – This script activates the virtual environment and starts the server with SSL (using the `runsslserver` command). After startup, it automatically opens the default browser to `https://127.0.0.1:8000`.
+-   **`update_app.bat`** – This script checks the repository for updates, and if a new version is found, it will offer to download it. If confirmed, it performs a `git pull`, activates the virtual environment, and runs database migrations (`makemigrations` and `migrate`). If the user declines the update, the script exits without performing migrations.
+
+
 ### Pre-installation Steps
 
 Before running the application, ensure the following prerequisites are met:
