@@ -73,6 +73,19 @@
 
 ## Installation
 
+### Pre-installation Steps
+
+Before running the application, ensure the following prerequisites are met:
+
+- **Python 3.11**: Tested with Python 3.11.9. Version 3.12 might have compatibility issues with some modules. During installation, ensure "Add Python to PATH" is checked. You can download it from [Python 3.11.9](https://www.python.org/downloads/release/python-3119/).
+- **Git**: Install Git, or download the repository as a ZIP file. You can download Git from [Git](https://git-scm.com/downloads/win).
+- **Printers**: Ensure your TSC TDP-225 printers are installed and named correctly as per the [Printer Installation and Setup - TSC TDP-225](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225) section.
+- **Firewall Configuration**: The port on which the application runs (default 8000) must be open on the PC.
+  - **Windows (CMD run as administrator):**
+    ```bash
+    netsh advfirewall firewall add rule name="Django Web Server" protocol=TCP dir=in localport=8000 action=allow profile=private,domain
+    ```
+
 ### Quick Setup (Windows)
 
 1. **Clone the repository:**
