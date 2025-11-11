@@ -137,20 +137,20 @@ Before running the application, ensure the following prerequisites are met:
 
 1. **Create virtual environment:**
    ```bash
-   python -m venv venv
+   python -m venv venvTBM
    ```
 
 2. **Activate virtual environment:**
    
    Windows (CMD):
    ```cmd
-   venv\Scripts\activate
+   venvTBM\Scripts\activate
    ```
    
    Windows (PowerShell):
    ```powershell
    Set-ExecutionPolicy Unrestricted -Scope Process
-   venv\Scripts\Activate.ps1
+   venvTBM\Scripts\Activate.ps1
    ```
 
 3. **Install dependencies:**
