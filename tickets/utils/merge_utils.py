@@ -1,5 +1,5 @@
-import io
 import csv
+import io
 import pandas as pd
 
 
@@ -49,25 +49,22 @@ def read_file_to_dataframe(file_bytes, filename):
     else:
         content = file_bytes.decode('utf-8-sig')
         # Try semicolon first (GoOut default), fall back to comma.
-        # GoOut CSV files may have metadata rows with fewer columns, causing ParserError.
-        # Use csv.reader to handle varying column counts, then find the header.
+        # csv.reader is used for detection because GoOut metadata rows have
+        # fewer columns than the data rows — pd.read_csv would either raise
+        # ParserError or skip data rows depending on on_bad_lines setting.
+        # Shorter rows are padded so all rows are preserved for find_header_row.
         delimiter = ';'
-        reader = csv.reader(io.StringIO(content), delimiter=delimiter)
-        rows = list(reader)
-
-        # Find max columns to pad rows
+        rows = list(csv.reader(io.StringIO(content), delimiter=delimiter))
         max_cols = max(len(row) for row in rows) if rows else 0
-        padded_rows = [row + [''] * (max_cols - len(row)) for row in rows]
-
-        raw = pd.DataFrame(padded_rows, dtype=str)
+        padded = [row + [''] * (max_cols - len(row)) for row in rows]
+        raw = pd.DataFrame(padded, dtype=str)
 
         if len(raw.columns) == 1:
             delimiter = ','
-            reader = csv.reader(io.StringIO(content), delimiter=delimiter)
-            rows = list(reader)
+            rows = list(csv.reader(io.StringIO(content), delimiter=delimiter))
             max_cols = max(len(row) for row in rows) if rows else 0
-            padded_rows = [row + [''] * (max_cols - len(row)) for row in rows]
-            raw = pd.DataFrame(padded_rows, dtype=str)
+            padded = [row + [''] * (max_cols - len(row)) for row in rows]
+            raw = pd.DataFrame(padded, dtype=str)
 
         header_idx = find_header_row(raw.values.tolist())
         return pd.read_csv(
