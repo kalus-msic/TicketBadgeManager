@@ -99,6 +99,7 @@ def import_add_tickets(request):
 
 
 @staff_required
+@import_ratelimit
 @handle_view_errors
 def merge_import(request):
     """GoOut two-file merge import. GET: upload form. POST: detect columns."""
