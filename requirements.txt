@@ -8,3 +8,5 @@ qrcode==7.4.2
 django-crispy-forms==2.1
 crispy-bootstrap5==2024.2
 pywin32==306 ; sys_platform == 'win32'
+pandas>=2.0
+openpyxl>=3.1
