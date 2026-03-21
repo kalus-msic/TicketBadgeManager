@@ -252,7 +252,56 @@ def import_mapping(request):
         }
         
         return render(request, 'tickets/import_mapping.html', context)
-    
+
+    elif request.method == 'GET' and request.GET.get('session_key'):
+        session_key = request.GET.get('session_key')
+        csv_data = cache.get(f'import_{session_key}')
+        if not csv_data:
+            messages.error(
+                request,
+                "Import session expired. Please re-upload the files."
+            )
+            return redirect('tickets:merge_import')
+
+        rows = csv_data['rows']
+        fieldnames = csv_data['fieldnames']
+
+        suggestions = get_field_mapping_suggestions(
+            fieldnames,
+            samples={
+                f: [r.get(f) for r in rows[:3] if r.get(f)]
+                for f in fieldnames
+            }
+        )
+        detected_profile = detect_import_profile(fieldnames)
+        delimiter = csv_data.get('delimiter', ',')
+
+        columns = [
+            {
+                'name': f,
+                'samples': [r.get(f) for r in rows[:3] if r.get(f)],
+                'suggested_field': suggestions.get(f),
+            }
+            for f in fieldnames
+        ]
+
+        context = {
+            'csv_columns': columns,
+            'total_rows': len(rows),
+            'session_key': session_key,
+            'delimiter': delimiter,
+            'delimiter_name': (
+                'comma' if delimiter == ',' else
+                'semicolon' if delimiter == ';' else
+                'tab' if delimiter == '\t' else
+                'pipe' if delimiter == '|' else
+                'other'
+            ),
+            'detected_profile': detected_profile,
+            'profile_name': IMPORT_PROFILES.get(detected_profile, {}).get('name', 'Unknown'),
+        }
+        return render(request, 'tickets/import_mapping.html', context)
+
     return redirect('tickets:import_page')
 
 

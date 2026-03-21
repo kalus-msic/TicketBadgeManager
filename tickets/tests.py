@@ -343,3 +343,50 @@ class MergeImportViewTest(TestCase):
         self.assertRedirects(response, reverse('tickets:merge_import'))
         messages_list = list(response.context['messages'])
         self.assertTrue(any('common' in str(m).lower() or 'No common' in str(m) for m in messages_list))
+
+
+class ImportMappingGetBranchTest(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='staff3', password='pass', is_staff=True
+        )
+        self.client.login(username='staff3', password='pass')
+
+    def _seed_import_cache(self):
+        key = str(uuid.uuid4())
+        cache.set(f'import_{key}', {
+            'fieldnames': ['Číslo objednávky', 'Číslo vstupenky', 'Název organizace', 'Jméno'],
+            'rows': [
+                {'Číslo objednávky': '111', 'Číslo vstupenky': 'VST001', 'Název organizace': 'Firma', 'Jméno': 'Jan'},
+            ],
+            'filename': 'merged_goout.csv',
+            'delimiter': ',',
+        }, 60)
+        return key
+
+    def test_get_with_valid_session_key_renders_mapping(self):
+        key = self._seed_import_cache()
+        response = self.client.get(
+            reverse('tickets:import_mapping') + f'?session_key={key}'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'tickets/import_mapping.html')
+        ctx = response.context
+        self.assertEqual(len(ctx['csv_columns']), 4)
+        self.assertEqual(ctx['total_rows'], 1)
+        self.assertEqual(ctx['session_key'], key)
+        self.assertEqual(ctx['delimiter'], ',')
+        self.assertIn('delimiter_name', ctx)
+        self.assertIn('detected_profile', ctx)
+        self.assertIn('profile_name', ctx)
+
+    def test_get_with_expired_key_redirects_with_error(self):
+        response = self.client.get(
+            reverse('tickets:import_mapping') + '?session_key=expired-key',
+            follow=True,
+        )
+        self.assertRedirects(response, reverse('tickets:merge_import'))
+        msgs = list(response.context['messages'])
+        self.assertTrue(any('expired' in str(m).lower() for m in msgs))
