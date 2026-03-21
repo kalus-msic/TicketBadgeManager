@@ -12,7 +12,8 @@ from ..forms import CsvImportForm
 from ..services.ticket_service import TicketService
 from ..decorators import staff_required, import_ratelimit
 from ..utils.error_handlers import handle_view_errors
-from ..utils.validators import validate_csv_file
+from ..utils.validators import validate_csv_file, validate_merge_file
+from ..utils.merge_utils import read_file_to_dataframe
 from ..utils.auth_utils import get_username_for_log
 from ..utils.import_mappings import get_field_mapping_suggestions, detect_import_profile, IMPORT_PROFILES
 
@@ -98,8 +99,63 @@ def import_add_tickets(request):
 
 
 @staff_required
+@handle_view_errors
 def merge_import(request):
-    """Prepare import with merge options."""
+    """GoOut two-file merge import. GET: upload form. POST: detect columns."""
+    if request.method == 'POST':
+        file1 = request.FILES.get('file1')
+        file2 = request.FILES.get('file2')
+
+        try:
+            validate_merge_file(file1)
+            validate_merge_file(file2)
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect('tickets:merge_import')
+
+        file1.seek(0)
+        file1_bytes = file1.read()
+        file2.seek(0)
+        file2_bytes = file2.read()
+
+        try:
+            df1 = read_file_to_dataframe(file1_bytes, file1.name)
+            df2 = read_file_to_dataframe(file2_bytes, file2.name)
+        except ValueError as e:
+            messages.error(request, str(e))
+            return redirect('tickets:merge_import')
+
+        common_columns = sorted(set(df1.columns) & set(df2.columns))
+        if not common_columns:
+            messages.error(
+                request,
+                f"No common columns found. "
+                f"File 1: {list(df1.columns)}. File 2: {list(df2.columns)}."
+            )
+            return redirect('tickets:merge_import')
+
+        suggested = (
+            'Číslo objednávky'
+            if 'Číslo objednávky' in common_columns
+            else common_columns[0]
+        )
+        session_key = str(uuid.uuid4())
+        cache.set(f'merge_{session_key}', {
+            'file1_bytes': file1_bytes,
+            'file1_name': file1.name,
+            'file2_bytes': file2_bytes,
+            'file2_name': file2.name,
+        }, 3600)
+
+        return render(request, 'tickets/prepare_import.html', {
+            'step': 2,
+            'file1_columns': list(df1.columns),
+            'file2_columns': list(df2.columns),
+            'common_columns': common_columns,
+            'suggested_join_column': suggested,
+            'session_key': session_key,
+        })
+
     return render(request, 'tickets/prepare_import.html')
 
 

@@ -240,3 +240,106 @@ class MergeExecuteViewTest(TestCase):
         for row in csv_data['rows']:
             for val in row.values():
                 self.assertNotEqual(val, 'nan')
+
+
+import io
+from django.test import TestCase, Client
+from django.urls import reverse
+from django.core.cache import cache
+from django.contrib.auth.models import User
+
+
+class MergeImportViewTest(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='staff2', password='pass', is_staff=True
+        )
+        self.client.login(username='staff2', password='pass')
+
+    def test_get_renders_step1(self):
+        response = self.client.get(reverse('tickets:merge_import'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('step', response.context or {})
+
+    def test_post_valid_files_renders_step2(self):
+        left = (
+            "Pořadatel;MSIC\n"
+            "Číslo objednávky;Číslo vstupenky;Příjmení;Jméno\n"
+            "111;VST001;Novák;Jan\n"
+        ).encode('utf-8-sig')
+        right = (
+            "Pořadatel;MSIC\n"
+            "Číslo objednávky;Název organizace;E-mail;Kategorie\n"
+            "111;Firma;jan@example.com;Basic\n"
+        ).encode('utf-8-sig')
+
+        left_file = io.BytesIO(left)
+        left_file.name = 'odbaveni.csv'
+        right_file = io.BytesIO(right)
+        right_file.name = 'transakce.csv'
+
+        response = self.client.post(
+            reverse('tickets:merge_import'),
+            {'file1': left_file, 'file2': right_file},
+        )
+        self.assertEqual(response.status_code, 200)
+        ctx = response.context
+        self.assertEqual(ctx['step'], 2)
+        self.assertIn('Číslo objednávky', ctx['common_columns'])
+        self.assertEqual(ctx['suggested_join_column'], 'Číslo objednávky')
+        self.assertIn('session_key', ctx)
+
+    def test_post_caches_file_bytes(self):
+        left = (
+            "Pořadatel;MSIC\n"
+            "Číslo objednávky;Číslo vstupenky;Příjmení;Jméno\n"
+            "111;VST001;Novák;Jan\n"
+        ).encode('utf-8-sig')
+        right = (
+            "Pořadatel;MSIC\n"
+            "Číslo objednávky;Název organizace;E-mail;Kategorie\n"
+            "111;Firma;jan@example.com;Basic\n"
+        ).encode('utf-8-sig')
+
+        left_file = io.BytesIO(left)
+        left_file.name = 'odbaveni.csv'
+        right_file = io.BytesIO(right)
+        right_file.name = 'transakce.csv'
+
+        response = self.client.post(
+            reverse('tickets:merge_import'),
+            {'file1': left_file, 'file2': right_file},
+        )
+        session_key = response.context['session_key']
+        cached = cache.get(f'merge_{session_key}')
+        self.assertIsNotNone(cached)
+        self.assertIn('file1_bytes', cached)
+        self.assertIn('file2_bytes', cached)
+
+    def test_post_no_common_columns_redirects_with_error(self):
+        left = (
+            "Pořadatel;MSIC\n"
+            "UniqueA;UniqueB;UniqueC;UniqueD\n"
+            "a;b;c;d\n"
+        ).encode('utf-8-sig')
+        right = (
+            "Pořadatel;MSIC\n"
+            "DifferentA;DifferentB;DifferentC;DifferentD\n"
+            "1;2;3;4\n"
+        ).encode('utf-8-sig')
+
+        left_file = io.BytesIO(left)
+        left_file.name = 'file1.csv'
+        right_file = io.BytesIO(right)
+        right_file.name = 'file2.csv'
+
+        response = self.client.post(
+            reverse('tickets:merge_import'),
+            {'file1': left_file, 'file2': right_file},
+            follow=True,
+        )
+        self.assertRedirects(response, reverse('tickets:merge_import'))
+        messages_list = list(response.context['messages'])
+        self.assertTrue(any('common' in str(m).lower() or 'No common' in str(m) for m in messages_list))
