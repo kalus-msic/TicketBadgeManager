@@ -112,3 +112,131 @@ class ReadFileToDfTest(TestCase):
         df = read_file_to_dataframe(self._make_csv_bytes(content), 'test.csv')
         self.assertEqual(df.iloc[0]['Číslo objednávky'], '34302271')
         self.assertNotIn('.0', df.iloc[0]['Číslo objednávky'])
+
+
+import uuid
+from django.test import TestCase, Client
+from django.urls import reverse
+from django.core.cache import cache
+from django.contrib.auth.models import User
+
+
+class MergeExecuteViewTest(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='staff', password='pass', is_staff=True
+        )
+        self.client.login(username='staff', password='pass')
+
+    def _make_pair(self):
+        left = (
+            "Pořadatel;MSIC\n"
+            "Číslo objednávky;Číslo vstupenky;Příjmení;Jméno\n"
+            "111;VST001;Novák;Jan\n"
+            "222;VST002;Dvořák;Eva\n"
+        ).encode('utf-8-sig')
+        right = (
+            "Pořadatel;MSIC\n"
+            "Číslo objednávky;Název organizace;E-mail;Kategorie\n"
+            "111;Firma s.r.o.;jan@example.com;Basic\n"
+            "333;Jiná firma;jiri@example.com;VIP\n"
+        ).encode('utf-8-sig')
+        return left, right
+
+    def _seed_cache(self, file1_bytes, file2_bytes):
+        key = str(uuid.uuid4())
+        cache.set(f'merge_{key}', {
+            'file1_bytes': file1_bytes,
+            'file1_name': 'odbaveni.csv',
+            'file2_bytes': file2_bytes,
+            'file2_name': 'transakce.csv',
+        }, 60)
+        return key
+
+    def test_get_redirects_to_merge_import(self):
+        url = reverse('tickets:merge_execute')
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse('tickets:merge_import'))
+
+    def test_expired_cache_redirects_with_error(self):
+        url = reverse('tickets:merge_execute')
+        response = self.client.post(url, {
+            'session_key': 'nonexistent',
+            'join_column': 'Číslo objednávky',
+            'action': 'import',
+        })
+        self.assertRedirects(response, reverse('tickets:merge_import'))
+
+    def test_download_action_returns_csv(self):
+        left, right = self._make_pair()
+        key = self._seed_cache(left, right)
+        url = reverse('tickets:merge_execute')
+        response = self.client.post(url, {
+            'session_key': key,
+            'join_column': 'Číslo objednávky',
+            'action': 'download',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertIn('attachment', response['Content-Disposition'])
+        self.assertIn('merged_goout.csv', response['Content-Disposition'])
+
+    def test_download_does_not_delete_merge_cache(self):
+        left, right = self._make_pair()
+        key = self._seed_cache(left, right)
+        self.client.post(reverse('tickets:merge_execute'), {
+            'session_key': key,
+            'join_column': 'Číslo objednávky',
+            'action': 'download',
+        })
+        self.assertIsNotNone(cache.get(f'merge_{key}'))
+
+    def test_import_action_creates_import_cache_and_redirects(self):
+        left, right = self._make_pair()
+        key = self._seed_cache(left, right)
+        response = self.client.post(reverse('tickets:merge_execute'), {
+            'session_key': key,
+            'join_column': 'Číslo objednávky',
+            'action': 'import',
+        }, follow=False)
+        self.assertEqual(response.status_code, 302)
+        redirect_url = response['Location']
+        self.assertIn('/import/mapping/', redirect_url)
+        self.assertIn('session_key=', redirect_url)
+
+    def test_import_deletes_merge_cache(self):
+        left, right = self._make_pair()
+        key = self._seed_cache(left, right)
+        self.client.post(reverse('tickets:merge_execute'), {
+            'session_key': key,
+            'join_column': 'Číslo objednávky',
+            'action': 'import',
+        })
+        self.assertIsNone(cache.get(f'merge_{key}'))
+
+    def test_import_cache_has_correct_structure(self):
+        left, right = self._make_pair()
+        key = self._seed_cache(left, right)
+        response = self.client.post(reverse('tickets:merge_execute'), {
+            'session_key': key,
+            'join_column': 'Číslo objednávky',
+            'action': 'import',
+        }, follow=False)
+        redirect_url = response['Location']
+        new_key = redirect_url.split('session_key=')[1]
+        csv_data = cache.get(f'import_{new_key}')
+        self.assertIsNotNone(csv_data)
+        self.assertIn('fieldnames', csv_data)
+        self.assertIn('rows', csv_data)
+        self.assertIn('filename', csv_data)
+        self.assertIn('delimiter', csv_data)
+        # All row values must be strings
+        for row in csv_data['rows']:
+            for val in row.values():
+                self.assertIsInstance(val, str)
+        # No 'nan' values
+        for row in csv_data['rows']:
+            for val in row.values():
+                self.assertNotEqual(val, 'nan')

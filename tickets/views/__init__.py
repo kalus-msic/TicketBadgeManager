@@ -24,6 +24,7 @@ from .search_views import search_tickets_by_name
 from .kiosk_views import kiosk_mode, kiosk_verify
 from .language_views import set_language_custom
 from .bulk_print_views import bulk_print, bulk_print_execute
+from .merge_views import merge_execute
 
 __all__ = [
     'index',
@@ -43,5 +44,6 @@ __all__ = [
     'search_tickets_by_name',
     'kiosk_mode', 'kiosk_verify',
     'set_language_custom',
-    'bulk_print', 'bulk_print_execute'
+    'bulk_print', 'bulk_print_execute',
+    'merge_execute'
 ]

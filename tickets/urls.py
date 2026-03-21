@@ -7,6 +7,7 @@ urlpatterns = [
     # Main routes
     path('', views.index, name='index'),
     path('prepare-import/', views.merge_import, name='merge_import'),
+    path('prepare-import/execute/', views.merge_execute, name='merge_execute'),
     path('scanner/', views.scanner_page, name='scanner'),
     path('verify/', views.verify_ticket, name='verify_ticket'),
     path('tickets/', views.ticket_list, name='ticket_list'),
