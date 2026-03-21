@@ -1,5 +1,6 @@
 import io
 import pandas as pd
+import csv
 
 
 def find_header_row(rows):
@@ -47,24 +48,23 @@ def read_file_to_dataframe(file_bytes, filename):
         )
     else:
         content = file_bytes.decode('utf-8-sig')
-        lines = content.strip().split('\n')
 
-        # Detect delimiter by checking which produces more columns in some row
-        # Try semicolon first (GoOut default)
-        semicolon_max = max((len(line.split(';')) for line in lines), default=0)
-        comma_max = max((len(line.split(',')) for line in lines), default=0)
+        # Try semicolon first (GoOut default), fall back to comma
+        delimiter = ';'
 
-        delimiter = ';' if semicolon_max >= comma_max else ','
+        # Parse with csv module to handle variable column counts
+        lines = list(csv.reader(io.StringIO(content), delimiter=delimiter))
+        raw = pd.DataFrame(lines)
 
-        # Parse manually to preserve all rows regardless of column count
-        rows = []
-        for line in lines:
-            row = line.split(delimiter)
-            rows.append(row)
+        if len(raw.columns) == 1:
+            delimiter = ','
+            lines = list(csv.reader(io.StringIO(content), delimiter=delimiter))
+            raw = pd.DataFrame(lines)
 
-        header_idx = find_header_row(rows)
+        # Convert to string dtype to match pandas behavior
+        raw = raw.astype(str)
 
-        # Now read with pandas using the detected delimiter and header
+        header_idx = find_header_row(raw.values.tolist())
         return pd.read_csv(
             io.StringIO(content), delimiter=delimiter, header=header_idx, dtype=str
         )
