@@ -69,7 +69,7 @@
 
           <p>Both CSV and XLSX formats are accepted. Files may contain GoOut metadata rows at the top — they are handled automatically.</p>
 
-          <form method="post" enctype="multipart/form-data">
+          <form method="post" action="{% url 'tickets:merge_import' %}" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="mb-3">
