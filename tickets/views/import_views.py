@@ -160,6 +160,18 @@ def merge_import(request):
     return render(request, 'tickets/prepare_import.html')
 
 
+def _delimiter_name(delimiter):
+    if delimiter == ',':
+        return 'comma'
+    if delimiter == ';':
+        return 'semicolon'
+    if delimiter == '\t':
+        return 'tab'
+    if delimiter == '|':
+        return 'pipe'
+    return 'other'
+
+
 @staff_required
 @handle_view_errors
 def import_mapping(request):
@@ -243,10 +255,7 @@ def import_mapping(request):
             'total_rows': len(rows),
             'session_key': session_key,
             'delimiter': delimiter,
-            'delimiter_name': 'comma' if delimiter == ',' else 
-                            'semicolon' if delimiter == ';' else
-                            'tab' if delimiter == '\t' else
-                            'pipe' if delimiter == '|' else 'other',
+            'delimiter_name': _delimiter_name(delimiter),
             'detected_profile': detected_profile,
             'profile_name': IMPORT_PROFILES.get(detected_profile, {}).get('name', 'Unknown')
         }
@@ -290,13 +299,7 @@ def import_mapping(request):
             'total_rows': len(rows),
             'session_key': session_key,
             'delimiter': delimiter,
-            'delimiter_name': (
-                'comma' if delimiter == ',' else
-                'semicolon' if delimiter == ';' else
-                'tab' if delimiter == '\t' else
-                'pipe' if delimiter == '|' else
-                'other'
-            ),
+            'delimiter_name': _delimiter_name(delimiter),
             'detected_profile': detected_profile,
             'profile_name': IMPORT_PROFILES.get(detected_profile, {}).get('name', 'Unknown'),
         }
