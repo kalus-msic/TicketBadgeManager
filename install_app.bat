@@ -16,10 +16,13 @@ echo Generating SECRET_KEY...
 set "CHARS=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 set "SECRET_KEY="
 
+REM Initialize random seed
+set /a "seed=%random%"
+
 REM Generate 50 character key
 for /L %%i in (1,1,50) do (
     set /a "rand=!random! %% 62"
-    for %%a in (!rand!) do set "char=!CHARS:~%%a,1!"
+    call set "char=%%CHARS:~!rand!,1%%"
     set "SECRET_KEY=!SECRET_KEY!!char!"
 )
 

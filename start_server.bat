@@ -1,12 +1,12 @@
 @echo off
-REM Aktivace virtuálního prostředí
+REM Virtual environment activation
 call venvTBM\Scripts\activate
 
-REM Spuštění serveru v novém příkazovém okně (neblokující spuštění)
+REM Start server in a new command window (non-blocking execution)
 start cmd /k "python manage.py runsslserver 0.0.0.0:8000"
 
-REM Počká 5 sekund
+REM Wait 5 seconds
 timeout /t 5 /nobreak > nul
 
-REM Otevře výchozí prohlížeč s danou URL
+REM Open default browser with the given URL
 start https://127.0.0.1:8000
