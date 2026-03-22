@@ -2,7 +2,7 @@ from .dashboard_views import index
 from .ticket_views import (
     ticket_list, ticket_detail, ticket_detail_by_qr,
     ticket_create, ticket_edit, ticket_delete,
-    reset_ticket_status, delete_tickets, export_tickets_csv
+    reset_ticket_status, delete_tickets, export_tickets_csv, export_tickets_xlsx
 )
 from .import_views import (
     import_page, import_replace_tickets, import_add_tickets,
@@ -30,7 +30,7 @@ __all__ = [
     'index',
     'ticket_list', 'ticket_detail', 'ticket_detail_by_qr',
     'ticket_create', 'ticket_edit', 'ticket_delete',
-    'reset_ticket_status', 'delete_tickets', 'export_tickets_csv',
+    'reset_ticket_status', 'delete_tickets', 'export_tickets_csv', 'export_tickets_xlsx',
     'import_page', 'import_replace_tickets', 'import_add_tickets', 'merge_import',
     'import_mapping', 'import_execute', 'import_preview',
     'scanner_page', 'scanner_page1', 'scanner_page2', 'verify_ticket',

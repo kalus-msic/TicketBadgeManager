@@ -390,3 +390,54 @@ class ImportMappingGetBranchTest(TestCase):
         self.assertRedirects(response, reverse('tickets:merge_import'))
         msgs = list(response.context['messages'])
         self.assertTrue(any('expired' in str(m).lower() for m in msgs))
+
+
+import io as _io
+from openpyxl import load_workbook as _load_workbook
+from tickets.models import Ticket
+
+
+class ExportXlsxViewTest(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='staff_xlsx', password='pass', is_staff=True
+        )
+        self.client.login(username='staff_xlsx', password='pass')
+
+    def _make_ticket(self):
+        return Ticket.objects.create(
+            qr_code='TEST001',
+            name='Jana Nová',
+            company_name='Firma s.r.o.',
+            status='VALID',
+        )
+
+    def test_returns_200_with_xlsx_content_type(self):
+        response = self.client.get(reverse('tickets:export_tickets_xlsx'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            response['Content-Type']
+        )
+
+    def test_content_disposition_is_attachment(self):
+        response = self.client.get(reverse('tickets:export_tickets_xlsx'))
+        self.assertIn('attachment', response['Content-Disposition'])
+        self.assertIn('.xlsx', response['Content-Disposition'])
+
+    def test_response_is_valid_xlsx_with_correct_data(self):
+        self._make_ticket()
+        response = self.client.get(reverse('tickets:export_tickets_xlsx'))
+        wb = _load_workbook(_io.BytesIO(response.content))
+        ws = wb.active
+        self.assertEqual(ws.cell(1, 1).value, 'QR Code')
+        self.assertEqual(ws.cell(1, 2).value, 'Name')
+        self.assertEqual(ws.cell(2, 1).value, 'TEST001')
+        self.assertEqual(ws.cell(2, 2).value, 'Jana Nová')
+
+    def test_csv_export_still_works(self):
+        response = self.client.get(reverse('tickets:export_tickets_csv'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('text/csv', response['Content-Type'])

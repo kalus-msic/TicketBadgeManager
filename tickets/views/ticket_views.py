@@ -400,3 +400,77 @@ def export_tickets_csv(request):
     )
     
     return response
+
+
+@login_required_ajax
+def export_tickets_xlsx(request):
+    """Export all tickets to XLSX. Uses openpyxl; avoids N+1 via prefetch cache."""
+    import io
+    from django.utils import timezone
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+
+    tickets = Ticket.objects.select_related().prefetch_related('checkin_set').order_by('name')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Tickets'
+
+    headers = [
+        'QR Code', 'Name', 'Company', 'Email', 'Event', 'Status',
+        'Check-in Time', 'Check-in Count', 'Invited to Eventee', 'Created At',
+    ]
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+
+    stats = {'total': 0, 'checked_in': 0, 'not_checked_in': 0}
+
+    for ticket in tickets:
+        stats['total'] += 1
+        checkins = list(ticket.checkin_set.all())  # reads from prefetch cache once
+        checkin = checkins[0] if checkins else None
+        if checkin:
+            stats['checked_in'] += 1
+            checkin_time = checkin.check_in_time.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            stats['not_checked_in'] += 1
+            checkin_time = ''
+
+        ws.append([
+            ticket.qr_code,
+            ticket.name,
+            ticket.company_name or '',
+            ticket.email or '',
+            ticket.event_name or '',
+            ticket.get_status_display(),
+            checkin_time,
+            len(checkins),
+            'Yes' if ticket.invited else 'No',
+            ticket.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        ])
+
+    # Auto-width columns
+    for col in ws.columns:
+        max_len = max((len(str(cell.value or '')) for cell in col), default=0)
+        ws.column_dimensions[col[0].column_letter].width = max_len + 2
+
+    Log.objects.create(
+        event_type='SYSTEM',
+        message=(
+            f'XLSX report exported by {get_username_for_log(request)} — '
+            f'{stats["checked_in"]}/{stats["total"]} checked in'
+        )
+    )
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    filename = f'event_checkins_{timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    response = HttpResponse(
+        buffer.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
