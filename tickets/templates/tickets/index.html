@@ -18,15 +18,15 @@
         <div class="col-md-12">
             <div class="d-grid gap-2 d-md-flex">
                 <a href="{% url 'tickets:scanner1' %}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-qr-code-scan"></i> {% trans "Scan Tickets" %} - {% trans "Printer" %} 1
+                    <i class="bi bi-qr-code-scan"></i> {% trans "Scan Tickets" %} — {% trans "Printer" %} 1
                 </a>
-                <a href="{% url 'tickets:scanner2' %}" class="btn btn-warning btn-lg">
-                    <i class="bi bi-qr-code-scan"></i> {% trans "Scan Tickets" %} - {% trans "Printer" %} 2
+                <a href="{% url 'tickets:scanner2' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-qr-code-scan"></i> {% trans "Scan Tickets" %} — {% trans "Printer" %} 2
                 </a>
-                <a href="{% url 'tickets:ticket_create' %}" class="btn btn-success btn-lg">
+                <a href="{% url 'tickets:ticket_create' %}" class="btn btn-outline-primary btn-lg">
                     <i class="bi bi-plus-circle"></i> {% trans "Create New Ticket" %}
                 </a>
-                <a href="{% url 'tickets:kiosk' %}" class="btn btn-info btn-lg" target="_blank">
+                <a href="{% url 'tickets:kiosk' %}" class="btn btn-outline-secondary btn-lg" target="_blank">
                     <i class="bi bi-display"></i> {% trans "Kiosk Mode" %}
                 </a>
             </div>
@@ -34,57 +34,44 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
+    <div class="row mb-4 g-3">
         <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Total Tickets" %}</h5>
-                    <p class="display-6">{{ total_tickets }}</p>
-                    <div class="progress mt-2" style="height: 25px;">
-                        <div class="progress-bar bg-white" role="progressbar" 
-                             style="width: {{ percentage_checked_in }}%; color: #0d6efd;"
-                             aria-valuenow="{{ percentage_checked_in }}" aria-valuemin="0" aria-valuemax="100">
-                            {{ percentage_checked_in }}%
-                        </div>
-                    </div>
-                </div>
+            <div class="stat-card stat-card--neutral">
+                <div class="stat-card__label">{% trans "Total Tickets" %}</div>
+                <div class="stat-card__value">{{ total_tickets }}</div>
+                <div class="stat-card__sub">{{ percentage_checked_in }}% {% trans "checked in" %}</div>
+                <i class="bi bi-ticket-perforated stat-card__icon"></i>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Remaining" %}</h5>
-                    <p class="display-6">{{ valid_tickets }}</p>
-                    <small class="text-white-50">{% trans "Ready to check-in" %}</small>
-                </div>
+            <div class="stat-card stat-card--success">
+                <div class="stat-card__label">{% trans "Remaining" %}</div>
+                <div class="stat-card__value">{{ valid_tickets }}</div>
+                <div class="stat-card__sub">{% trans "Ready to check-in" %}</div>
+                <i class="bi bi-person-check stat-card__icon"></i>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Checked In" %}</h5>
-                    <p class="display-6">{{ used_tickets }}</p>
-                    <small class="text-white-50">{{ percentage_checked_in }}% {% trans "complete" %}</small>
-                </div>
+            <div class="stat-card stat-card--cyan">
+                <div class="stat-card__label">{% trans "Checked In" %}</div>
+                <div class="stat-card__value">{{ used_tickets }}</div>
+                <div class="stat-card__sub">{{ percentage_checked_in }}% {% trans "complete" %}</div>
+                <i class="bi bi-check-circle stat-card__icon"></i>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Last Hour" %}</h5>
-                    <p class="display-6">
-                        {{ last_hour_checkins }}
-                        {% if checkin_trend == 'up' %}
-                            <i class="bi bi-arrow-up-circle-fill"></i>
-                        {% elif checkin_trend == 'down' %}
-                            <i class="bi bi-arrow-down-circle-fill"></i>
-                        {% else %}
-                            <i class="bi bi-dash-circle-fill"></i>
-                        {% endif %}
-                    </p>
-                    <small class="text-white-50">{% trans "Check-in rate" %}</small>
+            <div class="stat-card stat-card--warning">
+                <div class="stat-card__label">{% trans "Last Hour" %}</div>
+                <div class="stat-card__value">
+                    {{ last_hour_checkins }}
+                    {% if checkin_trend == 'up' %}<i class="bi bi-arrow-up-short text-msic-cyan" style="font-size:1.5rem;"></i>
+                    {% elif checkin_trend == 'down' %}<i class="bi bi-arrow-down-short text-msic-red" style="font-size:1.5rem;"></i>
+                    {% endif %}
                 </div>
+                <div class="stat-card__sub">{% trans "Check-in rate" %}</div>
+                <i class="bi bi-clock-history stat-card__icon"></i>
             </div>
+        </div>
     </div>
 
     <!-- Recent Activity -->

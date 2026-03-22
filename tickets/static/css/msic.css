@@ -1,0 +1,250 @@
+/* ─── MSIC Design System ─────────────────────────────────────────────────── */
+
+:root {
+  /* Brand */
+  --msic-blue:    #004990;
+  --msic-red:     #EE2E27;
+  --msic-cyan:    #00ADD0;
+
+  /* Derived tints (10% opacity on white) */
+  --msic-blue-tint: rgba(0, 73, 144, 0.07);
+  --msic-red-tint:  rgba(238, 46, 39, 0.08);
+  --msic-cyan-tint: rgba(0, 173, 208, 0.08);
+
+  /* Surfaces */
+  --surface-page: #f4f6f9;
+  --surface-card: #ffffff;
+
+  /* Text */
+  --text-primary:   #1a1f2e;
+  --text-secondary: #5a6270;
+  --text-muted:     #9aa1ad;
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.07);
+  --border-card:   rgba(0, 0, 0, 0.09);
+
+  /* Status */
+  --status-success: #1a9e5c;
+  --status-warning: #d97706;
+  --status-danger:  var(--msic-red);
+  --status-info:    var(--msic-cyan);
+}
+
+/* ─── Page background ────────────────────────────────────────────────────── */
+
+body {
+  background-color: var(--surface-page);
+  color: var(--text-primary);
+}
+
+/* ─── Navbar ─────────────────────────────────────────────────────────────── */
+
+.navbar {
+  background-color: var(--msic-blue) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+
+footer {
+  background-color: var(--msic-blue) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ─── Cards ──────────────────────────────────────────────────────────────── */
+
+.card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-subtle);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.875rem 1.25rem;
+}
+
+/* ─── Stat cards ─────────────────────────────────────────────────────────── */
+
+.stat-card {
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: 10px 0 0 10px;
+}
+
+.stat-card--neutral::before { background: var(--msic-blue); }
+.stat-card--success::before { background: var(--status-success); }
+.stat-card--cyan::before    { background: var(--msic-cyan); }
+.stat-card--warning::before { background: var(--status-warning); }
+.stat-card--danger::before  { background: var(--msic-red); }
+
+.stat-card__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.stat-card__sub {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.stat-card__icon {
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.75rem;
+  opacity: 0.12;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+.btn-primary {
+  background-color: var(--msic-blue);
+  border-color: var(--msic-blue);
+  color: #fff;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #003a75;
+  border-color: #003a75;
+  color: #fff;
+}
+
+.btn-outline-primary {
+  color: var(--msic-blue);
+  border-color: var(--msic-blue);
+}
+.btn-outline-primary:hover {
+  background-color: var(--msic-blue);
+  border-color: var(--msic-blue);
+  color: #fff;
+}
+
+.btn-danger {
+  background-color: var(--msic-red);
+  border-color: var(--msic-red);
+}
+.btn-danger:hover {
+  background-color: #c7211b;
+  border-color: #c7211b;
+}
+
+.btn-info {
+  background-color: var(--msic-cyan);
+  border-color: var(--msic-cyan);
+  color: #fff;
+}
+.btn-info:hover {
+  background-color: #008fad;
+  border-color: #008fad;
+  color: #fff;
+}
+
+/* ─── Tables ─────────────────────────────────────────────────────────────── */
+
+.table {
+  color: var(--text-primary);
+}
+
+.table thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.1s;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(0, 73, 144, 0.025);
+}
+
+.table-hover tbody tr:hover > * {
+  background-color: rgba(0, 73, 144, 0.05);
+}
+
+/* ─── Badges / Status ────────────────────────────────────────────────────── */
+
+.badge.bg-success { background-color: var(--status-success) !important; }
+.badge.bg-warning { background-color: var(--status-warning) !important; color: #fff !important; }
+.badge.bg-danger  { background-color: var(--status-danger)  !important; }
+.badge.bg-info    { background-color: var(--status-info)    !important; color: #fff !important; }
+
+/* ─── Forms ──────────────────────────────────────────────────────────────── */
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--msic-blue);
+  box-shadow: 0 0 0 0.2rem rgba(0, 73, 144, 0.15);
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────────────── */
+
+.page-link {
+  color: var(--msic-blue);
+}
+.page-item.active .page-link {
+  background-color: var(--msic-blue);
+  border-color: var(--msic-blue);
+}
+.page-link:hover {
+  color: #003a75;
+}
+
+/* ─── Alerts ─────────────────────────────────────────────────────────────── */
+
+.alert-info {
+  background-color: var(--msic-cyan-tint);
+  border-color: rgba(0, 173, 208, 0.25);
+  color: #006e85;
+}
+
+/* ─── Utility ────────────────────────────────────────────────────────────── */
+
+.text-msic-blue { color: var(--msic-blue); }
+.text-msic-cyan { color: var(--msic-cyan); }
+.text-msic-red  { color: var(--msic-red); }
+
+.bg-msic-blue   { background-color: var(--msic-blue); }
+.bg-msic-cyan   { background-color: var(--msic-cyan); }
+.bg-msic-red    { background-color: var(--msic-red); }

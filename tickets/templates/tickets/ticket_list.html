@@ -52,29 +52,26 @@
     {% endif %}
 
     <!-- Stats Cards -->
-    <div class="row mb-4">
+    <div class="row mb-4 g-3">
         <div class="col-md-4">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Total Tickets" %}</h5>
-                    <h2 class="card-text">{{ total_count }}</h2>
-                </div>
+            <div class="stat-card stat-card--neutral">
+                <div class="stat-card__label">{% trans "Total Tickets" %}</div>
+                <div class="stat-card__value">{{ total_count }}</div>
+                <i class="bi bi-ticket-perforated stat-card__icon"></i>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Valid Tickets" %}</h5>
-                    <h2 class="card-text">{{ valid_count }}</h2>
-                </div>
+            <div class="stat-card stat-card--success">
+                <div class="stat-card__label">{% trans "Valid Tickets" %}</div>
+                <div class="stat-card__value">{{ valid_count }}</div>
+                <i class="bi bi-person-check stat-card__icon"></i>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Used Tickets" %}</h5>
-                    <h2 class="card-text">{{ used_count }}</h2>
-                </div>
+            <div class="stat-card stat-card--cyan">
+                <div class="stat-card__label">{% trans "Used Tickets" %}</div>
+                <div class="stat-card__value">{{ used_count }}</div>
+                <i class="bi bi-check-circle stat-card__icon"></i>
             </div>
         </div>
     </div>

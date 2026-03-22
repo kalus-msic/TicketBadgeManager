@@ -9,10 +9,12 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
     <!-- Bootstrap Icons CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-icons.css' %}">
+    <!-- MSIC Design System -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/msic.css' %}">
 
 </head>
 <body style="min-height: 100vh; display: flex; flex-direction: column;">
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #00498f;">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'tickets:index' %}">{% trans "TicketBadgeManager" %}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -73,7 +75,7 @@
     {% endblock %}
     </main>
 
-    <footer class="d-none d-md-block text-center" style="background-color: #00498f; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.12);">
+    <footer class="d-none d-md-block text-center" style="padding: 8px 0;">
         <span style="color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 0.03em;">
             Vytvořeno pro
             <a href="https://ms-ic.cz/" target="_blank" rel="noopener"
