@@ -67,6 +67,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'tickets.context_processors.language_context',
+                'tickets.context_processors.events_context',
             ],
         },
     },

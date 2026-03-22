@@ -479,3 +479,29 @@ class ExportXlsxViewTest(TestCase):
         response = self.client.get(reverse('tickets:export_tickets_csv'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('text/csv', response['Content-Type'])
+
+
+class EventsContextProcessorTest(TestCase):
+    def setUp(self):
+        from django.test import RequestFactory
+        self.factory = RequestFactory()
+        self.event = Event.objects.create(name="Active", date=date(2026, 6, 1), status='active')
+        Event.objects.create(name="Archived", date=date(2025, 1, 1), status='archived')
+
+    def test_events_list_contains_only_active(self):
+        from tickets.context_processors import events_context
+        request = self.factory.get('/events/')
+        request.resolver_match = None
+        ctx = events_context(request)
+        self.assertEqual(len(ctx['events_list']), 1)
+        self.assertEqual(ctx['events_list'][0].name, "Active")
+        self.assertIsNone(ctx['active_event'])
+
+    def test_active_event_resolved_from_kwargs(self):
+        from tickets.context_processors import events_context
+        from unittest.mock import Mock
+        request = self.factory.get(f'/events/{self.event.pk}/tickets/')
+        request.resolver_match = Mock()
+        request.resolver_match.kwargs = {'event_pk': self.event.pk}
+        ctx = events_context(request)
+        self.assertEqual(ctx['active_event'], self.event)
