@@ -11,8 +11,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-icons.css' %}">
 
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body style="min-height: 100vh; display: flex; flex-direction: column;">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #00498f;">
         <div class="container">
             <a class="navbar-brand" href="{% url 'tickets:index' %}">{% trans "TicketBadgeManager" %}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -68,8 +68,28 @@
         </div>
     {% endif %}
 
+    <main style="flex: 1;">
     {% block content %}
     {% endblock %}
+    </main>
+
+    <footer class="d-none d-md-block text-center" style="background-color: #00498f; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.12);">
+        <span style="color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 0.03em;">
+            Vytvořeno pro
+            <a href="https://ms-ic.cz/" target="_blank" rel="noopener"
+               style="color: rgba(255,255,255,0.85); text-decoration: none; transition: color 0.2s;"
+               onmouseover="this.style.color='#fff'"
+               onmouseout="this.style.color='rgba(255,255,255,0.85)'">MSIC</a>
+            <span style="color: rgba(255,255,255,0.3); margin: 0 6px;">|</span>
+            <a href="https://github.com/kalus-msic/TicketBadgeManager" target="_blank" rel="noopener"
+               style="color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s;"
+               onmouseover="this.style.color='rgba(255,255,255,0.85)'"
+               onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+                <i class="bi bi-github" style="font-size: 0.8rem; margin-right: 3px;"></i>GitHub
+            </a>
+        </span>
+    </footer>
+
     <!-- Bootstrap Bundle JS -->
     <script type="text/javascript" src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
