@@ -23,6 +23,12 @@ msgstr "Tickets"
 msgid "Scanner"
 msgstr "Scanner"
 
+msgid "Scan"
+msgstr "Scan"
+
+msgid "Manage"
+msgstr "Manage"
+
 msgid "Import"
 msgstr "Import"
 
