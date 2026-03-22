@@ -2,6 +2,39 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+class Event(models.Model):
+    STATUS_CHOICES = [
+        ('active', _('Active')),
+        ('archived', _('Archived')),
+    ]
+
+    name = models.CharField(max_length=200)
+    date = models.DateField()
+    description = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Per-event settings
+    eventee_api_token = models.CharField(max_length=255, blank=True, null=True,
+                                         verbose_name="Eventee API Token")
+    required_ticket_fields = models.JSONField(default=list, blank=True,
+                                              verbose_name="Required Ticket Fields")
+    printer_1_name = models.CharField(max_length=255, default="TDP-2251",
+                                       verbose_name="Printer 1 Name")
+    printer_2_name = models.CharField(max_length=255, default="TDP-2252",
+                                       verbose_name="Printer 2 Name")
+    auto_print_on_scan = models.BooleanField(default=True,
+                                              verbose_name="Automatically print labels when scanning")
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = _("Event")
+        verbose_name_plural = _("Events")
+
+    def __str__(self):
+        return f"{self.name} ({self.date})"
+
+
 class Ticket(models.Model):
     STATUS_CHOICES = [
         ('VALID', _('Valid')),
@@ -21,8 +54,9 @@ class Ticket(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='VALID')
     gdpr = models.CharField(max_length=3, choices=GDPR_CHOICES, default='NFO')
     email = models.CharField(max_length=200, null=True, blank=True)
-    event_name = models.CharField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, null=True, blank=True,
+                               related_name='tickets')
     
     # Invited to Eventee via API
     invited = models.BooleanField(default=False)
@@ -60,6 +94,8 @@ class Log(models.Model):
         related_name='logs'
     )
     ticket_qr = models.CharField(max_length=100, null=True, blank=True)
+    event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='logs')
     event_type = models.CharField(max_length=20, choices=EVENT_CHOICES)
     message = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)

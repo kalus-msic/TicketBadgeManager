@@ -392,9 +392,47 @@ class ImportMappingGetBranchTest(TestCase):
         self.assertTrue(any('expired' in str(m).lower() for m in msgs))
 
 
+from datetime import date
+from tickets.models import Event, Ticket, Log
+
+
+class EventModelTest(TestCase):
+    def test_create_event(self):
+        event = Event.objects.create(
+            name="Test Conference",
+            date=date(2026, 6, 15),
+            description="A test event"
+        )
+        self.assertEqual(str(event), "Test Conference (2026-06-15)")
+        self.assertEqual(event.status, 'active')
+        self.assertEqual(event.printer_1_name, 'TDP-2251')
+        self.assertEqual(event.printer_2_name, 'TDP-2252')
+        self.assertTrue(event.auto_print_on_scan)
+
+    def test_ticket_event_fk(self):
+        event = Event.objects.create(name="Test", date=date(2026, 1, 1))
+        ticket = Ticket.objects.create(
+            qr_code="EVT-001", name="Test User", event=event
+        )
+        self.assertEqual(ticket.event, event)
+
+    def test_log_event_fk(self):
+        event = Event.objects.create(name="Test", date=date(2026, 1, 1))
+        log = Log.objects.create(
+            event_type='SYSTEM', message='Test log', event=event
+        )
+        self.assertEqual(log.event, event)
+
+    def test_event_ordering_newest_first(self):
+        e1 = Event.objects.create(name="Old", date=date(2025, 1, 1))
+        e2 = Event.objects.create(name="New", date=date(2026, 1, 1))
+        events = list(Event.objects.all())
+        self.assertEqual(events[0], e2)
+        self.assertEqual(events[1], e1)
+
+
 import io as _io
 from openpyxl import load_workbook as _load_workbook
-from tickets.models import Ticket
 
 
 class ExportXlsxViewTest(TestCase):

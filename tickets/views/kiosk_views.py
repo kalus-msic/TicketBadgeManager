@@ -59,7 +59,7 @@ def kiosk_verify(request):
                 'qr_code': ticket.qr_code,
                 'name': ticket.name,
                 'company_name': ticket.company_name,
-                'event_name': ticket.event_name
+                'event_name': ticket.event.name if ticket.event else ''
             })
             
             if print_success:

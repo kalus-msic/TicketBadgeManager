@@ -185,13 +185,6 @@ class TicketService:
                         ''
                     ).strip()
                     
-                    event_name = (
-                        row.get('Akce_x') or 
-                        row.get('Akce') or 
-                        row.get('Event') or 
-                        ''
-                    ).strip()
-                    
                     email = (
                         row.get('Email') or 
                         row.get('E-mail') or 
@@ -209,7 +202,7 @@ class TicketService:
                         qr_code=qr_code,
                         name=name,
                         company_name=company_name,
-                        event_name=event_name,
+                        # event_name removed; event FK set by caller
                         email=email,
                         status='VALID'
                     )
