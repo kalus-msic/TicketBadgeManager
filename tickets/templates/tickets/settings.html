@@ -116,10 +116,24 @@
                                     <h5 class="card-title">{% trans "Printer Settings" %}</h5>
                                     <form method="post" action="{% url 'tickets:update_printer_settings' %}">
                                         {% csrf_token %}
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="printer_1_name" class="form-label">{% trans "Printer 1 Name" %}</label>
+                                                <input type="text" class="form-control" id="printer_1_name" name="printer_1_name"
+                                                       value="{{ eventee_settings.printer_1_name|default:'TDP-2251' }}">
+                                                <div class="form-text">{% trans "Windows printer name for queue 1" %}</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="printer_2_name" class="form-label">{% trans "Printer 2 Name" %}</label>
+                                                <input type="text" class="form-control" id="printer_2_name" name="printer_2_name"
+                                                       value="{{ eventee_settings.printer_2_name|default:'TDP-2252' }}">
+                                                <div class="form-text">{% trans "Windows printer name for queue 2" %}</div>
+                                            </div>
+                                        </div>
                                         <div class="form-check mb-3">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   id="auto_print_on_scan" 
-                                                   name="auto_print_on_scan" 
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="auto_print_on_scan"
+                                                   name="auto_print_on_scan"
                                                    {% if eventee_settings.auto_print_on_scan %}checked{% endif %}>
                                             <label class="form-check-label" for="auto_print_on_scan">
                                                 {% trans "Automatically print labels when scanning tickets" %}

@@ -87,6 +87,10 @@ class AppSettings(models.Model):
     # Printer settings
     default_printer = models.CharField(max_length=255, blank=True, null=True,
                                      verbose_name="Default Printer")
+    printer_1_name = models.CharField(max_length=255, default="TDP-2251",
+                                      verbose_name="Printer 1 Name")
+    printer_2_name = models.CharField(max_length=255, default="TDP-2252",
+                                      verbose_name="Printer 2 Name")
     auto_print_on_scan = models.BooleanField(default=True,
                                            verbose_name="Automatically print labels when scanning")
     

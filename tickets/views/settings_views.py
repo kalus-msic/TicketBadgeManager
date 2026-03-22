@@ -199,17 +199,22 @@ def update_required_fields(request):
 def update_printer_settings(request):
     """Update printer settings."""
     auto_print = request.POST.get('auto_print_on_scan', '') == 'on'
-    
+    printer_1_name = request.POST.get('printer_1_name', 'TDP-2251').strip() or 'TDP-2251'
+    printer_2_name = request.POST.get('printer_2_name', 'TDP-2252').strip() or 'TDP-2252'
+
     settings_obj = AppSettings.objects.first()
     if not settings_obj:
         settings_obj = AppSettings.objects.create()
-    
+
     settings_obj.auto_print_on_scan = auto_print
+    settings_obj.printer_1_name = printer_1_name
+    settings_obj.printer_2_name = printer_2_name
     settings_obj.save()
-    
+
     Log.objects.create(
         event_type='SYSTEM',
-        message=f'Printer settings updated by {get_username_for_log(request)}: Auto print on scan = {auto_print}'
+        message=f'Printer settings updated by {get_username_for_log(request)}: '
+                f'Auto print = {auto_print}, Printer 1 = {printer_1_name}, Printer 2 = {printer_2_name}'
     )
     
     messages.success(request, 'Printer settings updated successfully')

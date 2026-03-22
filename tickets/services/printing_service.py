@@ -292,9 +292,14 @@ class PrintingService:
     def _send_to_printer(self, image_path: str, printer_queue: str = "1") -> bool:
         """Send image to printer using TSCLIB."""
         try:
-            # Use the specific printer with queue like in original
-            printer_name = f"TDP-225{printer_queue}"
-            
+            # Resolve printer name from DB settings, fall back to default
+            from ..models import AppSettings
+            app_settings = AppSettings.objects.first()
+            if printer_queue == "1":
+                printer_name = (app_settings.printer_1_name if app_settings else None) or "TDP-2251"
+            else:
+                printer_name = (app_settings.printer_2_name if app_settings else None) or "TDP-2252"
+
             # Check if printer exists
             import win32print
             printers = [printer[2] for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL)]
