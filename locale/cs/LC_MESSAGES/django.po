@@ -23,6 +23,12 @@ msgstr "Vstupenky"
 msgid "Scanner"
 msgstr "Skener"
 
+msgid "Scan"
+msgstr "Skenovat"
+
+msgid "Manage"
+msgstr "Správa"
+
 msgid "Import"
 msgstr "Import"
 
@@ -832,9 +838,6 @@ msgstr "Vytiskněte všechny štítky předem pro malé akce. Štítky budou vyt
 msgid "Print All Labels"
 msgstr "Vytisknout všechny štítky"
 
-msgid "Print"
-msgstr "Tisk"
-
 msgid "Bulk Print"
 msgstr "Hromadný tisk"
 
@@ -918,6 +921,3 @@ msgstr "Automaticky tisknout štítky při skenování vstupenek"
 
 msgid "When enabled, labels will be printed automatically after each successful scan. When disabled, only check-in will be performed."
 msgstr "Pokud je povoleno, štítky se vytisknou automaticky po každém úspěšném skenování. Pokud je zakázáno, provede se pouze odbavení."
-
-msgid "Save Settings"
-msgstr "Uložit nastavení"
