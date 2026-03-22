@@ -447,13 +447,17 @@ def export_tickets_xlsx(request):
             checkin_time,
             len(checkins),
             'Yes' if ticket.invited else 'No',
-            ticket.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            ticket.created_at.strftime('%Y-%m-%d %H:%M:%S')
         ])
 
     # Auto-width columns
     for col in ws.columns:
         max_len = max((len(str(cell.value or '')) for cell in col), default=0)
         ws.column_dimensions[col[0].column_letter].width = max_len + 2
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
 
     Log.objects.create(
         event_type='SYSTEM',
@@ -462,10 +466,6 @@ def export_tickets_xlsx(request):
             f'{stats["checked_in"]}/{stats["total"]} checked in'
         )
     )
-
-    buffer = io.BytesIO()
-    wb.save(buffer)
-    buffer.seek(0)
 
     filename = f'event_checkins_{timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
     response = HttpResponse(
