@@ -47,22 +47,22 @@
                 <div class="card-body">
                     <div class="d-flex gap-2 flex-wrap">
                         <!-- View All Tickets -->
-                        <a href="{% url 'tickets:ticket_list' %}" class="btn btn-primary">
+                        <a href="{% url 'tickets:ticket_list' event_pk=active_event.pk %}" class="btn btn-primary">
                             <i class="bi bi-list-ul"></i> View All Tickets
                         </a>
                         
                         <!-- Create New Ticket -->
-                        <a href="{% url 'tickets:ticket_create' %}" class="btn btn-success">
+                        <a href="{% url 'tickets:ticket_create' event_pk=active_event.pk %}" class="btn btn-success">
                             <i class="bi bi-plus-circle"></i> Create New Ticket
                         </a>
                         
                         <!-- Import Tickets -->
-                        <a href="{% url 'tickets:import_page' %}" class="btn btn-info">
+                        <a href="{% url 'tickets:import_page' event_pk=active_event.pk %}" class="btn btn-info">
                             <i class="bi bi-file-earmark-arrow-up"></i> Import Tickets
                         </a>
                         
                         <!-- Scan Tickets -->
-                        <a href="{% url 'tickets:scanner' %}" class="btn btn-secondary">
+                        <a href="{% url 'tickets:scanner' event_pk=active_event.pk %}" class="btn btn-secondary">
                             <i class="bi bi-qr-code-scan"></i> Scan Tickets
                         </a>
                     </div>
@@ -78,7 +78,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Tickets</h5>
-                    <a href="{% url 'tickets:ticket_list' %}" class="btn btn-sm btn-primary">View All</a>
+                    <a href="{% url 'tickets:ticket_list' event_pk=active_event.pk %}" class="btn btn-sm btn-primary">View All</a>
                 </div>
                 <div class="card-body">
                     {% if recent_tickets %}
@@ -103,7 +103,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}" class="btn btn-sm btn-primary">
+                                        <a href="{% url 'tickets:ticket_detail' event_pk=active_event.pk pk=ticket.pk %}" class="btn btn-sm btn-primary">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </td>
@@ -142,7 +142,7 @@
                                     <td>{{ checkin.check_in_time|date:"H:i:s" }}</td>
                                     <td>{{ checkin.ticket.name }}</td>
                                     <td>
-                                        <a href="{% url 'tickets:ticket_detail' checkin.ticket.pk %}">
+                                        <a href="{% url 'tickets:ticket_detail' event_pk=active_event.pk pk=checkin.ticket.pk %}">
                                             {{ checkin.ticket.qr_code }}
                                         </a>
                                     </td>

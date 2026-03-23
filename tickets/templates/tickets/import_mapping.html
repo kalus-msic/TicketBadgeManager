@@ -33,7 +33,7 @@
                 </div>
             </div>
             
-            <form method="post" action="{% url 'tickets:import_execute' %}">
+            <form method="post" action="{% url 'tickets:import_execute' event_pk=active_event.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="session_key" value="{{ session_key }}">
                 
@@ -132,7 +132,7 @@
                 
                 <!-- Action Buttons -->
                 <div class="d-flex justify-content-between">
-                    <a href="{% url 'tickets:import_page' %}" class="btn btn-secondary">
+                    <a href="{% url 'tickets:import_page' event_pk=active_event.pk %}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> {% trans "Back" %}
                     </a>
                     <button type="submit" class="btn btn-primary" id="importBtn">

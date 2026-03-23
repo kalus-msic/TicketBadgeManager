@@ -26,7 +26,7 @@
         </div>
         <div class="col-12">
             <button type="submit" class="btn btn-primary">{% trans "Filter" %}</button>
-            <a href="{% url 'tickets:ticket_log_list' %}" class="btn btn-secondary">{% trans "Reset" %}</a>
+            <a href="{% url 'tickets:ticket_log_list' event_pk=active_event.pk %}" class="btn btn-secondary">{% trans "Reset" %}</a>
         </div>
     </form>
     
@@ -49,7 +49,7 @@
                         {% if log.event_type == 'SYSTEM' %}
                             <span class="text-muted">-</span>
                         {% elif log.ticket %}
-                            <a href="{% url 'tickets:ticket_detail' log.ticket.pk %}">
+                            <a href="{% url 'tickets:ticket_detail' event_pk=active_event.pk pk=log.ticket.pk %}">
                                 {{ log.ticket.qr_code }}
                             </a>
                         {% elif log.ticket_qr %}

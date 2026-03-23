@@ -45,7 +45,7 @@
                             <div class="card border-info">
                                 <div class="card-body">
                                     <h5 class="card-title">{% trans "Eventee API Token" %}</h5>
-                                    <form method="post" action="{% url 'tickets:update_eventee_token' %}">
+                                    <form method="post" action="{% url 'tickets:update_eventee_token' event_pk=active_event.pk %}">
                                         {% csrf_token %}
                                         <div class="mb-3">
                                             <label for="api_token" class="form-label">{% trans "API Token" %}</label>
@@ -83,7 +83,7 @@
                                     <p class="text-muted mb-3">
                                         {% trans "This controls only manual ticket creation/editing. Import validation is fixed according to the settings on the Import page." %}
                                     </p>
-                                    <form method="post" action="{% url 'tickets:update_required_fields' %}">
+                                    <form method="post" action="{% url 'tickets:update_required_fields' event_pk=active_event.pk %}">
                                         {% csrf_token %}
                                         {% for fname, flabel in field_choices %}
                                         <div class="form-check mb-2">  <!-- větší odsazení mezi checkboxy -->
@@ -114,7 +114,7 @@
                             <div class="card border-info">
                                 <div class="card-body">
                                     <h5 class="card-title">{% trans "Printer Settings" %}</h5>
-                                    <form method="post" action="{% url 'tickets:update_printer_settings' %}">
+                                    <form method="post" action="{% url 'tickets:update_printer_settings' event_pk=active_event.pk %}">
                                         {% csrf_token %}
                                         <div class="row mb-3">
                                             <div class="col-md-6">
@@ -159,7 +159,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title text-danger">{% trans "Delete All Data" %}</h5>
                                     <p class="card-text">{% trans "This will delete all tickets and their check-in data. This action cannot be undone." %}</p>
-                                    <form method="post" action="{% url 'tickets:delete_all_data' %}">
+                                    <form method="post" action="{% url 'tickets:delete_all_data' event_pk=active_event.pk %}">
                                         {% csrf_token %}
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
                                             Delete All Data
@@ -175,7 +175,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title text-warning">{% trans "Delete Check-ins" %}</h5>
                                     <p class="card-text">{% trans "This will only delete check-in data and reset all tickets to VALID status. Tickets will remain in the system." %}</p>
-                                    <form method="post" action="{% url 'tickets:delete_checkins' %}">
+                                    <form method="post" action="{% url 'tickets:delete_checkins' event_pk=active_event.pk %}">
                                         {% csrf_token %}
                                         <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#deleteCheckinsModal">
                                             {% trans "Delete Check-ins" %}
@@ -193,7 +193,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title text-info">{% trans "Delete Logs" %}</h5>
                                     <p class="card-text">{% trans "This will delete all log entries. This action cannot be undone." %}</p>
-                                    <form method="post" action="{% url 'tickets:delete_logs' %}">
+                                    <form method="post" action="{% url 'tickets:delete_logs' event_pk=active_event.pk %}">
                                         {% csrf_token %}
                                         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#deleteLogsModal">
                                             {% trans "Delete Logs" %}
@@ -211,7 +211,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">{% trans "Bulk Print Labels" %}</h5>
                                     <p class="card-text">{% trans "Print all labels in advance for small events. Labels will be printed without checking in the tickets." %}</p>
-                                    <a href="{% url 'tickets:bulk_print' %}" class="btn btn-primary">
+                                    <a href="{% url 'tickets:bulk_print' event_pk=active_event.pk %}" class="btn btn-primary">
                                         <i class="bi bi-printer"></i> {% trans "Print All Labels" %}
                                     </a>
                                 </div>
@@ -244,7 +244,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="post" action="{% url 'tickets:delete_all_data' %}" class="d-inline">
+                <form method="post" action="{% url 'tickets:delete_all_data' event_pk=active_event.pk %}" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Delete All Data</button>
                 </form>
@@ -272,7 +272,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="post" action="{% url 'tickets:delete_checkins' %}" class="d-inline">
+                <form method="post" action="{% url 'tickets:delete_checkins' event_pk=active_event.pk %}" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-warning">Delete Check-ins</button>
                 </form>
@@ -299,7 +299,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="post" action="{% url 'tickets:delete_logs' %}" class="d-inline">
+                <form method="post" action="{% url 'tickets:delete_logs' event_pk=active_event.pk %}" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-info">Delete Logs</button>
                 </form>

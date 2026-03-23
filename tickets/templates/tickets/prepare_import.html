@@ -24,7 +24,7 @@
             <span class="text-muted">{{ file2_columns|join:", " }}</span>
           </div>
 
-          <form method="post" action="{% url 'tickets:merge_execute' %}">
+          <form method="post" action="{% url 'tickets:merge_execute' event_pk=active_event.pk %}">
             {% csrf_token %}
             <input type="hidden" name="session_key" value="{{ session_key }}">
 
@@ -52,7 +52,7 @@
           </form>
 
           <div class="mt-3">
-            <a href="{% url 'tickets:merge_import' %}" class="text-muted small">
+            <a href="{% url 'tickets:merge_import' event_pk=active_event.pk %}" class="text-muted small">
               ← Upload different files
             </a>
           </div>
@@ -69,7 +69,7 @@
 
           <p>Both CSV and XLSX formats are accepted. Files may contain GoOut metadata rows at the top — they are handled automatically.</p>
 
-          <form method="post" action="{% url 'tickets:merge_import' %}" enctype="multipart/form-data">
+          <form method="post" action="{% url 'tickets:merge_import' event_pk=active_event.pk %}" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="mb-3">

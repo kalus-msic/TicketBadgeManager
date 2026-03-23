@@ -43,7 +43,7 @@
                             </h5>
                             <p class="card-text">{% trans "Upload any CSV file and map columns to ticket fields. Choose whether to replace, append, or update existing tickets." %}</p>
                             
-                            <form method="post" action="{% url 'tickets:import_mapping' %}" enctype="multipart/form-data">
+                            <form method="post" action="{% url 'tickets:import_mapping' event_pk=active_event.pk %}" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="mb-3">
                                     <label class="form-label">{% trans "Select CSV File" %}</label>
@@ -84,7 +84,7 @@
                     <p>{% trans "Since GoOut does not provide an export containing all the required columns (QR code/Ticket number, First Name, Last Name, and Company Name), you can merge two separate files and link them by Order Number." %}</p>
                     <p>{% trans "Please use the following exports from the GoOut administration:" %}<br><strong>"Přehled prodeje – transakce položkové.xlsx"</strong><br><strong>"Event name – odbavení - Odbavení.csv"</strong></p>
                     <p>{% trans "Click on \"Merge Files\" to combine the documents (right join). Once merged, the file will download automatically. We recommend reviewing the merged file before importing." %}</p>
-                    <form action="{% url 'tickets:merge_import' %}" method="post" enctype="multipart/form-data">
+                    <form action="{% url 'tickets:merge_import' event_pk=active_event.pk %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         <div class="mb-3">

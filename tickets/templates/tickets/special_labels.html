@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const quantity = parseInt(formData.get('quantity'));
         
         try {
-            const response = await fetch("{% url 'tickets:print_special_labels' %}", {
+            const response = await fetch("{% url 'tickets:print_special_labels' event_pk=active_event.pk %}", {
                 method: 'POST',
                 body: formData,
                 headers: {

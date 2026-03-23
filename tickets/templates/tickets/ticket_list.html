@@ -6,11 +6,11 @@
     <div class="row mb-4">
         <div class="col">
             <h1>{% trans "Tickets" %}</h1>
-            <a href="{% url 'tickets:ticket_create' %}" class="btn btn-success">
+            <a href="{% url 'tickets:ticket_create' event_pk=active_event.pk %}" class="btn btn-success">
                 <i class="bi bi-plus-circle"></i> {% trans "Create New Ticket" %}
             </a>
             <div class="btn-group">
-                <a href="{% url 'tickets:export_tickets_xlsx' %}" class="btn btn-outline-primary">
+                <a href="{% url 'tickets:export_tickets_xlsx' event_pk=active_event.pk %}" class="btn btn-outline-primary">
                     <i class="bi bi-file-earmark-excel"></i> {% trans "Export XLSX" %}
                 </a>
                 <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split"
@@ -19,7 +19,7 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li>
-                        <a class="dropdown-item" href="{% url 'tickets:export_tickets_csv' %}">
+                        <a class="dropdown-item" href="{% url 'tickets:export_tickets_csv' event_pk=active_event.pk %}">
                             <i class="bi bi-filetype-csv me-2"></i>{% trans "Export CSV" %}
                         </a>
                     </li>
@@ -47,7 +47,7 @@
             <li>{% trans "Missing names will be set as: Missing Name (Row X)" %}</li>
         </ul>
         {% if import_session_key %}
-        <form method="post" action="{% url 'tickets:import_execute' %}" class="d-inline">
+        <form method="post" action="{% url 'tickets:import_execute' event_pk=active_event.pk %}" class="d-inline">
             {% csrf_token %}
             <input type="hidden" name="session_key" value="{{ import_session_key }}">
             <input type="hidden" name="import_mode" value="{{ import_mode }}">
@@ -110,7 +110,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <a href="{% url 'tickets:ticket_list' %}" class="btn btn-secondary w-100">{% trans "Clear" %}</a>
+                    <a href="{% url 'tickets:ticket_list' event_pk=active_event.pk %}" class="btn btn-secondary w-100">{% trans "Clear" %}</a>
                 </div>
             </form>
         </div>
@@ -137,13 +137,13 @@
                             <tr>
                               <td class="d-flex align-items-center">
                                 <!-- Detail -->
-                                <a href="{% url 'tickets:ticket_detail' ticket.pk %}"
+                                <a href="{% url 'tickets:ticket_detail' event_pk=active_event.pk pk=ticket.pk %}"
                                    class="btn btn-sm btn-outline-primary me-1"
                                    title="{% trans 'View details' %}">
                                   <i class="bi bi-eye"></i>
                                 </a>
                                 <!-- Verify & Print -->
-                                <a href="{% url 'tickets:scanner' %}?qr_code={{ ticket.qr_code }}&printer_queue=1"
+                                <a href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1"
                                    class="btn btn-sm btn-primary"
                                    title="{% trans 'Verify ticket & print label' %}">
                                   <i class="bi bi-ticket"></i>

@@ -115,7 +115,7 @@
             
             <!-- Action Buttons -->
             <div class="d-flex justify-content-between mt-4">
-                <a href="{% url 'tickets:settings' %}" class="btn btn-secondary">
+                <a href="{% url 'tickets:settings' event_pk=active_event.pk %}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> {% trans "Back to Settings" %}
                 </a>
                 <button type="button" class="btn btn-primary" id="printButton" disabled>
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // AJAX print function
     function printLabels(ticketIds, printer) {
-        fetch('{% url "tickets:bulk_print_execute" %}', {
+        fetch('{% url "tickets:bulk_print_execute" event_pk=active_event.pk %}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

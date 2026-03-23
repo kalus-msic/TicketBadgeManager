@@ -29,7 +29,7 @@
                         {% csrf_token %}
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-danger">{% trans "Confirm Delete" %}</button>
-                            <a href="{% url 'tickets:ticket_management' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+                            <a href="{% url 'tickets:ticket_management' event_pk=active_event.pk %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
                         </div>
                     </form>
                 </div>
