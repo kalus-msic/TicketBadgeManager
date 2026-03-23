@@ -13,7 +13,7 @@ from ..services.ticket_service import TicketService
 from ..services.eventee_service import EventeeService
 from ..services.printing_service import PrintingService
 from ..decorators import login_required_ajax, staff_required
-from ..utils.error_handlers import handle_view_errorss
+from ..utils.error_handlers import handle_view_errors
 from ..utils.validators import sanitize_string
 from ..utils.auth_utils import get_username_for_log
 
