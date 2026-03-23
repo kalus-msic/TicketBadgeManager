@@ -26,6 +26,17 @@ class Event(models.Model):
     auto_print_on_scan = models.BooleanField(default=True,
                                               verbose_name="Automatically print labels when scanning")
 
+    PRINT_BACKEND_CHOICES = [
+        ('direct', _('Direct (this server)')),
+        ('webusb', _('WebUSB (browser → USB)')),
+        ('agent', _('Local Agent (browser → agent.exe)')),
+    ]
+
+    print_backend = models.CharField(
+        max_length=20, choices=PRINT_BACKEND_CHOICES, default='direct',
+        verbose_name=_("Print Backend")
+    )
+
     class Meta:
         ordering = ['-date']
         verbose_name = _("Event")

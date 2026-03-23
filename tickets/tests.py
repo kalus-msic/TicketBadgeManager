@@ -628,6 +628,7 @@ class TicketServiceEventTest(TestCase):
 
 
 from tickets.printing.backends.direct import DirectBackend
+from tickets.printing.manager import PrintManager
 
 
 class DirectBackendTest(TestCase):
@@ -662,3 +663,59 @@ class DirectBackendTest(TestCase):
         test_img = Image.new('L', (960, 580), 'white')
         result = backend.print_image(test_img, 'UNKNOWN')
         self.assertEqual(result['status'], 'error')
+
+
+class PrintManagerTest(TestCase):
+    def setUp(self):
+        from datetime import date
+        self.event = Event.objects.create(
+            name="Test Event", date=date(2026, 1, 1), print_backend="direct"
+        )
+
+    def test_get_printer_name_queue_1(self):
+        pm = PrintManager(self.event)
+        self.assertEqual(pm.get_printer_name("1"), "TDP-2251")
+
+    def test_get_printer_name_queue_2(self):
+        pm = PrintManager(self.event)
+        self.assertEqual(pm.get_printer_name("2"), "TDP-2252")
+
+    def test_print_direct_generates_image_and_dispatches(self):
+        self.event.print_backend = "direct"
+        self.event.save()
+        pm = PrintManager(self.event)
+
+        ticket_data = {
+            'name': 'Jan Novak',
+            'company_name': 'MSIC',
+            'qr_code': 'QR123',
+            'event_name': 'Test'
+        }
+
+        with patch.object(pm, '_backend') as mock_backend:
+            mock_backend.print_image.return_value = {'status': 'printed'}
+            result = pm.print_ticket(ticket_data, printer_queue="1")
+
+        self.assertEqual(result['status'], 'printed')
+        mock_backend.print_image.assert_called_once()
+        from PIL import Image
+        call_args = mock_backend.print_image.call_args
+        self.assertIsInstance(call_args[0][0], Image.Image)
+        self.assertEqual(call_args[0][1], "TDP-2251")
+
+    def test_print_webusb_returns_print_required(self):
+        self.event.print_backend = "webusb"
+        self.event.save()
+        pm = PrintManager(self.event)
+
+        ticket_data = {
+            'name': 'Jan Novak',
+            'company_name': '',
+            'qr_code': 'QR456',
+            'event_name': ''
+        }
+
+        result = pm.print_ticket(ticket_data, printer_queue="1")
+        self.assertEqual(result['status'], 'print_required')
+        self.assertEqual(result['backend'], 'webusb')
+        self.assertIn('data', result)
