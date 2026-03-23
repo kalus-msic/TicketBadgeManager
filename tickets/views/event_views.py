@@ -34,19 +34,19 @@ def event_create(request):
         status = request.POST.get('status', 'active')
         if not name or not date_str:
             messages.error(request, _("Name and date are required."))
-            return render(request, 'tickets/event_form.html', {'form_data': request.POST})
+            return render(request, 'tickets/event_form.html', {'form_data': request.POST, 'event': None})
         from datetime import datetime
         try:
             event_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
             messages.error(request, _("Invalid date format. Use YYYY-MM-DD."))
-            return render(request, 'tickets/event_form.html', {'form_data': request.POST})
+            return render(request, 'tickets/event_form.html', {'form_data': request.POST, 'event': None})
         event = Event.objects.create(
             name=name, date=event_date, description=description, status=status,
         )
         messages.success(request, _("Event created successfully."))
         return redirect('tickets:ticket_list', event_pk=event.pk)
-    return render(request, 'tickets/event_form.html')
+    return render(request, 'tickets/event_form.html', {'event': None})
 
 
 @staff_required
