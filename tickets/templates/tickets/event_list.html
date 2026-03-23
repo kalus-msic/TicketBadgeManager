@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Events" %} — {% trans "TicketBadgeManager" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-calendar-event me-2"></i>{% trans "Events" %}</h1>
+        <a href="{% url 'tickets:event_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>{% trans "Create Event" %}
+        </a>
+    </div>
+
+    <div class="mb-3">
+        {% if show_archived %}
+            <a href="{% url 'tickets:event_list' %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye-slash me-1"></i>{% trans "Hide archived" %}
+            </a>
+        {% else %}
+            <a href="{% url 'tickets:event_list' %}?archived=1" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-archive me-1"></i>{% trans "Show archived" %}
+            </a>
+        {% endif %}
+    </div>
+
+    {% if events %}
+    <div class="row g-4">
+        {% for event in events %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100" style="border: 1px solid #dee2e6;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ event.name }}</h5>
+                        {% if event.status == 'archived' %}
+                            <span class="badge bg-secondary">{% trans "Archived" %}</span>
+                        {% else %}
+                            <span class="badge" style="background-color: var(--msic-cyan);">{% trans "Active" %}</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-calendar3 me-1"></i>{{ event.date }}
+                    </p>
+                    {% if event.description %}
+                        <p class="card-text small text-muted">{{ event.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div>
+                            <span class="fw-bold">{{ event.ticket_count }}</span>
+                            <span class="text-muted small">{% trans "tickets" %}</span>
+                        </div>
+                        <div>
+                            <span class="fw-bold">{{ event.checkin_count }}</span>
+                            <span class="text-muted small">{% trans "check-ins" %}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top d-flex justify-content-between">
+                    <a href="{% url 'tickets:ticket_list' event_pk=event.pk %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-ticket-perforated me-1"></i>{% trans "Tickets" %}
+                    </a>
+                    <div>
+                        <a href="{% url 'tickets:event_edit' event_pk=event.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'tickets:event_delete' event_pk=event.pk %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-calendar-x" style="font-size: 3rem; color: #adb5bd;"></i>
+        <p class="mt-3 text-muted">{% trans "No events found." %}</p>
+        <a href="{% url 'tickets:event_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>{% trans "Create your first event" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

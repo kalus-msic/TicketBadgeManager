@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Event" %} — {% trans "TicketBadgeManager" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h1 class="mb-4">
+        <i class="bi bi-exclamation-triangle me-2 text-danger"></i>{% trans "Delete Event" %}
+    </h1>
+
+    <div class="card border-danger">
+        <div class="card-body">
+            <p class="mb-3">
+                {% blocktrans with name=event.name date=event.date %}
+                    Are you sure you want to delete the event <strong>{{ name }}</strong> ({{ date }})?
+                {% endblocktrans %}
+            </p>
+            <p class="text-danger small mb-4">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                {% trans "This will permanently delete the event and all associated tickets, check-ins, and logs." %}
+            </p>
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'tickets:event_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>{% trans "Cancel" %}
+                </a>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>{% trans "Delete Event" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

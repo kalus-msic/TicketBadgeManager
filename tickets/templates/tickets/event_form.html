@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+    {% if event %}{% trans "Edit Event" %}{% else %}{% trans "Create Event" %}{% endif %} — {% trans "TicketBadgeManager" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 700px;">
+    <h1 class="mb-4">
+        {% if event %}
+            <i class="bi bi-pencil-square me-2"></i>{% trans "Edit Event" %}
+        {% else %}
+            <i class="bi bi-plus-circle me-2"></i>{% trans "Create Event" %}
+        {% endif %}
+    </h1>
+
+    <div class="card" style="border: 1px solid #dee2e6;">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name"
+                           value="{{ form_data.name|default:event.name|default:'' }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="date" class="form-label">{% trans "Date" %} <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date" name="date"
+                           value="{{ form_data.date|default:event.date|default:'' }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">{% trans "Description" %}</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{ form_data.description|default:event.description|default:'' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="status" class="form-label">{% trans "Status" %}</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="active" {% if form_data.status|default:event.status|default:'active' == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                        <option value="archived" {% if form_data.status|default:event.status == 'archived' %}selected{% endif %}>{% trans "Archived" %}</option>
+                    </select>
+                </div>
+
+                {% if event %}
+                <hr>
+                <h5 class="mb-3"><i class="bi bi-printer me-2"></i>{% trans "Printer Settings" %}</h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="printer_1_name" class="form-label">{% trans "Printer 1 Name" %}</label>
+                        <input type="text" class="form-control" id="printer_1_name" name="printer_1_name"
+                               value="{{ form_data.printer_1_name|default:event.printer_1_name|default:'TDP-2251' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="printer_2_name" class="form-label">{% trans "Printer 2 Name" %}</label>
+                        <input type="text" class="form-control" id="printer_2_name" name="printer_2_name"
+                               value="{{ form_data.printer_2_name|default:event.printer_2_name|default:'TDP-2252' }}">
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'tickets:event_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>{% trans "Cancel" %}
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>
+                        {% if event %}{% trans "Save Changes" %}{% else %}{% trans "Create Event" %}{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

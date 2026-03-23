@@ -481,6 +481,43 @@ class ExportXlsxViewTest(TestCase):
         self.assertIn('text/csv', response['Content-Type'])
 
 
+class EventCRUDTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user('staff', password='pass', is_staff=True)
+        self.client.login(username='staff', password='pass')
+        self.event = Event.objects.create(name="Test Event", date=date(2026, 6, 15))
+
+    def test_event_list_shows_active_events(self):
+        response = self.client.get('/events/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Test Event")
+
+    def test_event_create(self):
+        response = self.client.post('/events/create/', {
+            'name': 'New Event', 'date': '2026-07-01', 'status': 'active'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Event.objects.filter(name='New Event').exists())
+
+    def test_event_edit(self):
+        response = self.client.post(f'/events/{self.event.pk}/edit/', {
+            'name': 'Updated', 'date': '2026-06-15', 'status': 'active',
+            'printer_1_name': 'TDP-2251', 'printer_2_name': 'TDP-2252',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.name, 'Updated')
+
+    def test_event_delete(self):
+        response = self.client.post(f'/events/{self.event.pk}/delete/')
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Event.objects.filter(pk=self.event.pk).exists())
+
+    def test_index_redirects_to_event_list(self):
+        response = self.client.get('/')
+        self.assertRedirects(response, '/events/')
+
+
 class EventsContextProcessorTest(TestCase):
     def setUp(self):
         from django.test import RequestFactory
