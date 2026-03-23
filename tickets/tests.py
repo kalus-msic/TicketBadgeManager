@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from unittest.mock import MagicMock
+from unittest.mock import patch, MagicMock
 from tickets.utils.validators import validate_merge_file
 from tickets.printing.profiles.tspl import TSPLProfile
 
@@ -625,3 +625,40 @@ class TicketServiceEventTest(TestCase):
         from tickets.models import Log
         log = Log.objects.filter(event=self.event, event_type='CHECKIN').first()
         self.assertIsNotNone(log)
+
+
+from tickets.printing.backends.direct import DirectBackend
+
+
+class DirectBackendTest(TestCase):
+    @patch('tickets.printing.backends.direct.platform')
+    def test_is_available_on_non_windows(self, mock_platform):
+        mock_platform.system.return_value = 'Darwin'
+        backend = DirectBackend()
+        self.assertFalse(backend.is_available())
+
+    @patch('tickets.printing.backends.direct.platform')
+    def test_print_image_returns_printed_status(self, mock_platform):
+        mock_platform.system.return_value = 'Windows'
+        backend = DirectBackend()
+        backend._tsclibrary = MagicMock()
+        backend._printers_available = ['TDP-2251']
+        from PIL import Image
+        test_img = Image.new('L', (960, 580), 'white')
+        result = backend.print_image(test_img, 'TDP-2251')
+        self.assertEqual(result['status'], 'printed')
+        backend._tsclibrary.openportW.assert_called_once_with('TDP-2251')
+        backend._tsclibrary.sendcommandW.assert_any_call('CLS')
+        backend._tsclibrary.printlabelW.assert_called_once_with('1', '1')
+        backend._tsclibrary.closeport.assert_called_once()
+
+    @patch('tickets.printing.backends.direct.platform')
+    def test_print_image_fails_for_unknown_printer(self, mock_platform):
+        mock_platform.system.return_value = 'Windows'
+        backend = DirectBackend()
+        backend._tsclibrary = MagicMock()
+        backend._printers_available = ['TDP-2251']
+        from PIL import Image
+        test_img = Image.new('L', (960, 580), 'white')
+        result = backend.print_image(test_img, 'UNKNOWN')
+        self.assertEqual(result['status'], 'error')
