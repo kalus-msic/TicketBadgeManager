@@ -556,6 +556,52 @@ class EventsContextProcessorTest(TestCase):
         self.assertEqual(ctx['active_event'], self.event)
 
 
+from tickets.printing.profiles.tspl import TSPLProfile
+
+
+class TSPLProfileTest(TestCase):
+    def test_generate_returns_bytes(self):
+        profile = TSPLProfile()
+        result = profile.generate({
+            'name': 'Jan Novak',
+            'company_name': 'MSIC',
+            'qr_code': 'TEST123',
+            'event_name': 'Test Event'
+        })
+        self.assertIsInstance(result, bytes)
+        self.assertGreater(len(result), 0)
+
+    def test_generate_contains_tspl_commands(self):
+        profile = TSPLProfile()
+        result = profile.generate({
+            'name': 'Jan Novak',
+            'company_name': '',
+            'qr_code': 'TEST456',
+            'event_name': ''
+        })
+        # TSPL bitmap command should be present
+        self.assertIn(b'BITMAP', result)
+
+    def test_generate_image_returns_pil_image(self):
+        from PIL import Image
+        profile = TSPLProfile()
+        result = profile.generate_image({
+            'name': 'Jan Novak',
+            'company_name': 'MSIC',
+            'qr_code': 'TEST789',
+            'event_name': 'Test'
+        })
+        self.assertIsInstance(result, Image.Image)
+        # Image should be rotated (height > width after 90deg rotation)
+        self.assertGreater(result.height, result.width)
+
+    def test_generate_test_page(self):
+        profile = TSPLProfile()
+        result = profile.generate_test_page()
+        self.assertIsInstance(result, bytes)
+        self.assertIn(b'BITMAP', result)
+
+
 from tickets.services.ticket_service import TicketService
 
 
