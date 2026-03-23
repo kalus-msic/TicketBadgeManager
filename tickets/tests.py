@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from unittest.mock import patch, MagicMock
 from tickets.utils.validators import validate_merge_file
 from tickets.printing.profiles.tspl import TSPLProfile
+from tickets.printing.backends.direct import DirectBackend
+from tickets.printing.manager import PrintManager
 
 
 class ValidateMergeFileTest(TestCase):
@@ -627,10 +629,6 @@ class TicketServiceEventTest(TestCase):
         self.assertIsNotNone(log)
 
 
-from tickets.printing.backends.direct import DirectBackend
-from tickets.printing.manager import PrintManager
-
-
 class DirectBackendTest(TestCase):
     @patch('tickets.printing.backends.direct.platform')
     def test_is_available_on_non_windows(self, mock_platform):
@@ -719,3 +717,9 @@ class PrintManagerTest(TestCase):
         self.assertEqual(result['status'], 'print_required')
         self.assertEqual(result['backend'], 'webusb')
         self.assertIn('data', result)
+
+    def test_get_printer_name_falls_back_when_empty(self):
+        self.event.printer_1_name = ""
+        self.event.save()
+        pm = PrintManager(self.event)
+        self.assertEqual(pm.get_printer_name("1"), "TDP-2251")

@@ -12,6 +12,7 @@ class PrintManager:
 
     def __init__(self, event):
         self._event = event
+        self._backend_type = event.print_backend
         self._profile = TSPLProfile()
         self._backend = self._resolve_backend()
 
@@ -36,7 +37,7 @@ class PrintManager:
                 For "error": message
         """
         printer_name = self.get_printer_name(printer_queue)
-        backend_type = self._event.print_backend
+        backend_type = self._backend_type
 
         if backend_type == "direct":
             if self._backend is None:
