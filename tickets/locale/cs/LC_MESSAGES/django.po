@@ -1,0 +1,1268 @@
+# Czech translations for TicketBadgeManager
+msgid ""
+msgstr ""
+"Project-Id-Version: TicketBadgeManager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-23 10:49+0000\n"
+"PO-Revision-Date: 2026-03-23 00:00+0000\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
+"<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+
+#: tickets/forms.py:6
+msgid "CSV File"
+msgstr "CSV soubor"
+
+#: tickets/forms.py:12
+msgid "Invite to Eventee"
+msgstr "Pozvat do Eventee"
+
+#: tickets/forms.py:79 tickets/templates/tickets/_ticket_table.html:10
+#: tickets/templates/tickets/bulk_print.html:65
+#: tickets/templates/tickets/event_form.html:24
+#: tickets/templates/tickets/import_mapping.html:95
+#: tickets/templates/tickets/index.html:89
+#: tickets/templates/tickets/ticket_list.html:129
+msgid "Name"
+msgstr "Jméno"
+
+#: tickets/forms.py:80
+msgid "e.g. PRESS, HOST, John Doe"
+msgstr "např. PRESS, HOST, Jan Novák"
+
+#: tickets/forms.py:85 tickets/templates/tickets/_ticket_table.html:11
+#: tickets/templates/tickets/bulk_print.html:66
+#: tickets/templates/tickets/import_mapping.html:101
+#: tickets/templates/tickets/index.html:90
+#: tickets/templates/tickets/ticket_list.html:130
+msgid "Company"
+msgstr "Firma"
+
+#: tickets/forms.py:86
+msgid "Optional"
+msgstr "Nepovinné"
+
+#: tickets/forms.py:92
+msgid "Quantity"
+msgstr "Množství"
+
+#: tickets/forms.py:97
+msgid "Printer 1"
+msgstr "Tiskárna 1"
+
+#: tickets/forms.py:98
+msgid "Printer 2"
+msgstr "Tiskárna 2"
+
+#: tickets/forms.py:100 tickets/templates/base.html:63
+#: tickets/templates/base.html:69 tickets/templates/tickets/bulk_print.html:37
+#: tickets/templates/tickets/bulk_print.html:39
+#: tickets/templates/tickets/bulk_print.html:40
+#: tickets/templates/tickets/index.html:21
+#: tickets/templates/tickets/index.html:24
+msgid "Printer"
+msgstr "Tiskárna"
+
+#: tickets/models.py:7 tickets/templates/tickets/event_form.html:44
+#: tickets/templates/tickets/event_form.html:47
+#: tickets/templates/tickets/event_form.html:50
+#: tickets/templates/tickets/event_list.html:38
+msgid "Active"
+msgstr "Aktivní"
+
+#: tickets/models.py:8 tickets/templates/tickets/event_form.html:45
+#: tickets/templates/tickets/event_form.html:48
+#: tickets/templates/tickets/event_form.html:51
+#: tickets/templates/tickets/event_list.html:36
+msgid "Archived"
+msgstr "Archivováno"
+
+#: tickets/models.py:31
+msgid "Event"
+msgstr "Událost"
+
+#: tickets/models.py:32 tickets/templates/tickets/event_list.html:4
+#: tickets/templates/tickets/event_list.html:9
+msgid "Events"
+msgstr "Události"
+
+#: tickets/models.py:40 tickets/templates/tickets/index.html:128
+#: tickets/templates/tickets/ticket_list.html:107
+msgid "Valid"
+msgstr "Platná"
+
+#: tickets/models.py:41 tickets/templates/tickets/index.html:132
+#: tickets/templates/tickets/ticket_list.html:108
+msgid "Used"
+msgstr "Použitá"
+
+#: tickets/models.py:42 tickets/templates/tickets/ticket_list.html:109
+msgid "Cancelled"
+msgstr "Zrušená"
+
+#: tickets/models.py:46
+msgid "Not Filled Out"
+msgstr "Nevyplněno"
+
+#: tickets/models.py:47
+msgid "Yes"
+msgstr "Ano"
+
+#: tickets/models.py:48
+msgid "No"
+msgstr "Ne"
+
+#: tickets/models.py:78
+msgid "Check-In"
+msgstr "Odbavení"
+
+#: tickets/models.py:79 tickets/templates/tickets/import_mapping.html:58
+msgid "Update"
+msgstr "Aktualizace"
+
+#: tickets/models.py:80
+msgid "Create"
+msgstr "Vytvoření"
+
+#: tickets/models.py:81
+msgid "Delete"
+msgstr "Smazat"
+
+#: tickets/models.py:82 tickets/templates/base.html:93
+msgid "Import"
+msgstr "Import"
+
+#: tickets/models.py:83
+msgid "Print"
+msgstr "Tisk"
+
+#: tickets/models.py:84
+msgid "Bulk Print"
+msgstr "Hromadný tisk"
+
+#: tickets/models.py:85 tickets/templates/tickets/scanner.html:93
+msgid "Error"
+msgstr "Chyba"
+
+#: tickets/models.py:86
+msgid "System"
+msgstr "Systém"
+
+#: tickets/models.py:87
+msgid "Other"
+msgstr "Jiné"
+
+#: tickets/templates/base.html:7 tickets/templates/base.html:19
+#: tickets/templates/tickets/event_confirm_delete.html:4
+#: tickets/templates/tickets/event_form.html:5
+#: tickets/templates/tickets/event_list.html:4
+msgid "TicketBadgeManager"
+msgstr "TicketBadgeManager"
+
+#: tickets/templates/base.html:47
+msgid "All Events"
+msgstr "Všechny události"
+
+#: tickets/templates/base.html:57
+msgid "Scan"
+msgstr "Skenovat"
+
+#: tickets/templates/base.html:79 tickets/templates/tickets/event_list.html:60
+#: tickets/templates/tickets/ticket_list.html:8
+msgid "Tickets"
+msgstr "Vstupenky"
+
+#: tickets/templates/base.html:87
+msgid "Manage"
+msgstr "Správa"
+
+#: tickets/templates/base.html:99
+#: tickets/templates/tickets/special_labels.html:5
+msgid "Special Labels"
+msgstr "Speciální štítky"
+
+#: tickets/templates/base.html:106
+msgid "Kiosk"
+msgstr "Kiosk"
+
+#: tickets/templates/base.html:113 tickets/templates/tickets/log.html:6
+msgid "Logs"
+msgstr "Protokoly"
+
+#: tickets/templates/base.html:120 tickets/templates/tickets/settings.html:12
+msgid "Settings"
+msgstr "Nastavení"
+
+#: tickets/templates/tickets/_ticket_table.html:8
+#: tickets/templates/tickets/index.html:87
+#: tickets/templates/tickets/ticket_list.html:127
+msgid "Actions"
+msgstr "Akce"
+
+#: tickets/templates/tickets/_ticket_table.html:9
+#: tickets/templates/tickets/index.html:88
+#: tickets/templates/tickets/ticket_list.html:128
+msgid "Ticket Number"
+msgstr "Číslo vstupenky"
+
+#: tickets/templates/tickets/_ticket_table.html:12
+#: tickets/templates/tickets/bulk_print.html:67
+#: tickets/templates/tickets/event_form.html:41
+#: tickets/templates/tickets/ticket_list.html:131
+msgid "Status"
+msgstr "Stav"
+
+#: tickets/templates/tickets/_ticket_table.html:13
+#: tickets/templates/tickets/index.html:91
+#: tickets/templates/tickets/ticket_list.html:132
+msgid "Checked-in"
+msgstr "Odbaveno"
+
+#: tickets/templates/tickets/_ticket_table.html:23
+#: tickets/templates/tickets/ticket_list.html:142
+msgid "View details"
+msgstr "Zobrazit detaily"
+
+#: tickets/templates/tickets/_ticket_table.html:29
+#: tickets/templates/tickets/ticket_list.html:148
+msgid "Verify ticket & print label"
+msgstr "Ověřit vstupenku a vytisknout štítek"
+
+#: tickets/templates/tickets/_ticket_table.html:56
+#: tickets/templates/tickets/scanner.html:288
+#: tickets/templates/tickets/ticket_list.html:175
+msgid "No tickets found"
+msgstr "Nenalezeny žádné vstupenky"
+
+#: tickets/templates/tickets/bulk_print.html:4
+#: tickets/templates/tickets/bulk_print.html:8
+#: tickets/templates/tickets/settings.html:212
+msgid "Bulk Print Labels"
+msgstr "Hromadný tisk štítků"
+
+#: tickets/templates/tickets/bulk_print.html:14
+msgid "Warning:"
+msgstr "Upozornění:"
+
+#: tickets/templates/tickets/bulk_print.html:15
+msgid "You have"
+msgstr "Máte"
+
+#: tickets/templates/tickets/bulk_print.html:15
+msgid "tickets. Printing all labels may take a long time."
+msgstr "vstupenek. Tisk všech štítků může trvat dlouho."
+
+#: tickets/templates/tickets/bulk_print.html:21
+msgid "Select Tickets to Print"
+msgstr "Vyberte vstupenky k tisku"
+
+#: tickets/templates/tickets/bulk_print.html:23
+msgid ""
+"Select which tickets you want to print labels for. Labels will be printed "
+"without checking in the tickets."
+msgstr ""
+
+#: tickets/templates/tickets/bulk_print.html:29
+msgid "Filter by status"
+msgstr "Filtrovat podle stavu"
+
+#: tickets/templates/tickets/bulk_print.html:31
+msgid "All tickets"
+msgstr "Všechny vstupenky"
+
+#: tickets/templates/tickets/bulk_print.html:32
+msgid "Valid tickets only"
+msgstr "Pouze platné vstupenky"
+
+#: tickets/templates/tickets/bulk_print.html:33
+msgid "Not printed yet"
+msgstr "Ještě nevytištěno"
+
+#: tickets/templates/tickets/bulk_print.html:47
+msgid "Select All"
+msgstr "Vybrat vše"
+
+#: tickets/templates/tickets/bulk_print.html:50
+msgid "Select None"
+msgstr "Zrušit výběr"
+
+#: tickets/templates/tickets/bulk_print.html:64
+#: tickets/templates/tickets/import_mapping.html:92
+msgid "QR Code"
+msgstr "QR kód"
+
+#: tickets/templates/tickets/bulk_print.html:68
+msgid "Print Status"
+msgstr "Stav tisku"
+
+#: tickets/templates/tickets/bulk_print.html:92
+msgid "Printed"
+msgstr "Vytištěno"
+
+#: tickets/templates/tickets/bulk_print.html:99
+msgid "Not printed"
+msgstr "Nevytištěno"
+
+#: tickets/templates/tickets/bulk_print.html:112
+msgid "Selected tickets:"
+msgstr "Vybrané vstupenky:"
+
+#: tickets/templates/tickets/bulk_print.html:119
+msgid "Back to Settings"
+msgstr "Zpět do nastavení"
+
+#: tickets/templates/tickets/bulk_print.html:122
+msgid "Print Selected Labels"
+msgstr "Vytisknout vybrané štítky"
+
+#: tickets/templates/tickets/bulk_print.html:133
+#: tickets/templates/tickets/special_labels.html:105
+msgid "Printing Labels"
+msgstr "Tisk štítků"
+
+#: tickets/templates/tickets/bulk_print.html:136
+msgid "Please wait while labels are being printed..."
+msgstr "Počkejte prosím, než se vytisknou štítky..."
+
+#: tickets/templates/tickets/bulk_print.html:143
+msgid "Printed:"
+msgstr "Vytisknuto:"
+
+#: tickets/templates/tickets/bulk_print.html:147
+msgid "Do not close this window while printing is in progress."
+msgstr "Nezavírejte toto okno během tisku."
+
+#: tickets/templates/tickets/bulk_print.html:159
+msgid "Print Results"
+msgstr "Výsledky tisku"
+
+#: tickets/templates/tickets/bulk_print.html:166
+msgid "Close"
+msgstr "Zavřít"
+
+#: tickets/templates/tickets/bulk_print.html:168
+msgid "Retry Failed Prints"
+msgstr "Opakovat neúspěšné tisky"
+
+#: tickets/templates/tickets/bulk_print.html:281
+msgid "An error occurred while printing."
+msgstr "Při tisku došlo k chybě."
+
+#: tickets/templates/tickets/bulk_print.html:295
+msgid "Successfully printed"
+msgstr "Úspěšně vytištěno"
+
+#: tickets/templates/tickets/bulk_print.html:295
+#: tickets/templates/tickets/bulk_print.html:305
+msgid "labels"
+msgstr "štítků"
+
+#: tickets/templates/tickets/bulk_print.html:305
+#: tickets/views/bulk_print_views.py:98
+msgid "Failed to print"
+msgstr "Nepodařilo se vytisknout"
+
+#: tickets/templates/tickets/event_confirm_delete.html:4
+#: tickets/templates/tickets/event_confirm_delete.html:9
+#: tickets/templates/tickets/event_confirm_delete.html:31
+msgid "Delete Event"
+msgstr "Smazat událost"
+
+#: tickets/templates/tickets/event_confirm_delete.html:15
+#, python-format
+msgid ""
+"\n"
+"                    Are you sure you want to delete the event "
+"<strong>%(name)s</strong> (%(date)s)?\n"
+"                "
+msgstr ""
+
+#: tickets/templates/tickets/event_confirm_delete.html:21
+msgid ""
+"This will permanently delete the event and all associated tickets, check-"
+"ins, and logs."
+msgstr ""
+
+#: tickets/templates/tickets/event_confirm_delete.html:26
+#: tickets/templates/tickets/event_form.html:76
+#: tickets/templates/tickets/special_labels.html:59
+#: tickets/templates/tickets/ticket_confirm_delete.html:32
+msgid "Cancel"
+msgstr "Zrušit"
+
+#: tickets/templates/tickets/event_form.html:5
+#: tickets/templates/tickets/event_form.html:12
+msgid "Edit Event"
+msgstr "Upravit událost"
+
+#: tickets/templates/tickets/event_form.html:5
+#: tickets/templates/tickets/event_form.html:14
+#: tickets/templates/tickets/event_form.html:80
+#: tickets/templates/tickets/event_list.html:11
+msgid "Create Event"
+msgstr "Vytvořit událost"
+
+#: tickets/templates/tickets/event_form.html:30
+msgid "Date"
+msgstr "Datum"
+
+#: tickets/templates/tickets/event_form.html:36
+msgid "Description"
+msgstr "Popis"
+
+#: tickets/templates/tickets/event_form.html:58
+#: tickets/templates/tickets/settings.html:116
+msgid "Printer Settings"
+msgstr "Nastavení tiskárny"
+
+#: tickets/templates/tickets/event_form.html:62
+#: tickets/templates/tickets/settings.html:121
+msgid "Printer 1 Name"
+msgstr "Název tiskárny 1"
+
+#: tickets/templates/tickets/event_form.html:67
+#: tickets/templates/tickets/settings.html:127
+msgid "Printer 2 Name"
+msgstr "Název tiskárny 2"
+
+#: tickets/templates/tickets/event_form.html:80
+msgid "Save Changes"
+msgstr "Uložit změny"
+
+#: tickets/templates/tickets/event_list.html:18
+msgid "Hide archived"
+msgstr "Skrýt archivované"
+
+#: tickets/templates/tickets/event_list.html:22
+msgid "Show archived"
+msgstr "Zobrazit archivované"
+
+#: tickets/templates/tickets/event_list.html:50
+msgid "tickets"
+msgstr "vstupenky"
+
+#: tickets/templates/tickets/event_list.html:54
+msgid "check-ins"
+msgstr "odbavení"
+
+#: tickets/templates/tickets/event_list.html:78
+msgid "No events found."
+msgstr "Žádné události nenalezeny."
+
+#: tickets/templates/tickets/event_list.html:80
+msgid "Create your first event"
+msgstr "Vytvořte svou první událost"
+
+#: tickets/templates/tickets/import.html:10
+#: tickets/templates/tickets/import_mapping.html:139
+msgid "Import Tickets"
+msgstr "Import vstupenek"
+
+#: tickets/templates/tickets/import.html:15
+#: tickets/templates/tickets/settings.html:19
+msgid "Current Data"
+msgstr "Aktuální data"
+
+#: tickets/templates/tickets/import.html:16
+#, python-format
+msgid "There are currently %(current_ticket_count)s tickets in the database."
+msgstr "V databázi je aktuálně %(current_ticket_count)s vstupenek."
+
+#: tickets/templates/tickets/import.html:21
+msgid "Supported CSV Sources:"
+msgstr "Podporované CSV zdroje:"
+
+#: tickets/templates/tickets/import.html:23
+msgid "Supported ticketing platforms:"
+msgstr "Podporované platformy pro vstupenky:"
+
+#: tickets/templates/tickets/import.html:25
+msgid "Automatic URL parsing for Unique Ticket URL column"
+msgstr "Automatické parsování URL pro sloupec Unique Ticket URL"
+
+#: tickets/templates/tickets/import.html:26
+msgid "Use the merge function below for GoOut exports"
+msgstr "Pro exporty z GoOut použijte funkci sloučení níže"
+
+#: tickets/templates/tickets/import.html:27
+msgid "Direct CSV import supported"
+msgstr "Přímý import CSV je podporován"
+
+#: tickets/templates/tickets/import.html:28
+msgid "Custom CSV"
+msgstr "Vlastní CSV"
+
+#: tickets/templates/tickets/import.html:28
+msgid "Any CSV with required columns"
+msgstr "Jakýkoliv CSV s požadovanými sloupci"
+
+#: tickets/templates/tickets/import.html:32
+msgid "Note for ti.to imports:"
+msgstr "Poznámka k importu z ti.to:"
+
+#: tickets/templates/tickets/import.html:33
+msgid ""
+"When importing from ti.to and using the 'Unique Ticket URL' column for QR "
+"codes, the URL will be automatically parsed to extract only the ticket ID."
+msgstr ""
+
+#: tickets/templates/tickets/import.html:34
+msgid "Example:"
+msgstr "Příklad:"
+
+#: tickets/templates/tickets/import.html:42
+msgid "Smart Import with Column Mapping"
+msgstr "Chytrý import s mapováním sloupců"
+
+#: tickets/templates/tickets/import.html:44
+msgid ""
+"Upload any CSV file and map columns to ticket fields. Choose whether to "
+"replace, append, or update existing tickets."
+msgstr ""
+
+#: tickets/templates/tickets/import.html:49
+msgid "Select CSV File"
+msgstr "Vybrat CSV soubor"
+
+#: tickets/templates/tickets/import.html:53
+msgid "Upload and Configure Import"
+msgstr "Nahrát a konfigurovat import"
+
+#: tickets/templates/tickets/import.html:71
+msgid "GoOut Import file"
+msgstr "GoOut import soubor"
+
+#: tickets/templates/tickets/import.html:84
+msgid ""
+"Since GoOut does not provide an export containing all the required columns "
+"(QR code/Ticket number, First Name, Last Name, and Company Name), you can "
+"merge two separate files and link them by Order Number."
+msgstr ""
+
+#: tickets/templates/tickets/import.html:85
+msgid "Please use the following exports from the GoOut administration:"
+msgstr "Použijte prosím následující exporty ze správy GoOut:"
+
+#: tickets/templates/tickets/import.html:86
+msgid "Click on \\"
+msgstr "Klikněte na \\"
+
+#: tickets/templates/tickets/import.html:91
+msgid "Select First Excel File:"
+msgstr "Vyberte první Excel soubor:"
+
+#: tickets/templates/tickets/import.html:96
+msgid "Select Second Excel File:"
+msgstr "Vyberte druhý Excel soubor:"
+
+#: tickets/templates/tickets/import.html:100
+msgid "Merge Files"
+msgstr "Sloučit soubory"
+
+#: tickets/templates/tickets/import_mapping.html:4
+msgid "Import Mapping"
+msgstr "Mapování importu"
+
+#: tickets/templates/tickets/import_mapping.html:8
+msgid "CSV Import - Column Mapping"
+msgstr "CSV Import - Mapování sloupců"
+
+#: tickets/templates/tickets/import_mapping.html:12
+msgid "Import Settings"
+msgstr "Nastavení importu"
+
+#: tickets/templates/tickets/import_mapping.html:18
+msgid "Detected delimiter:"
+msgstr "Detekovaný oddělovač:"
+
+#: tickets/templates/tickets/import_mapping.html:20
+msgid "Comma"
+msgstr "Čárka"
+
+#: tickets/templates/tickets/import_mapping.html:21
+msgid "Semicolon"
+msgstr "Středník"
+
+#: tickets/templates/tickets/import_mapping.html:22
+msgid "Tab"
+msgstr "Tabulátor"
+
+#: tickets/templates/tickets/import_mapping.html:23
+msgid "Pipe"
+msgstr "Svislá čára"
+
+#: tickets/templates/tickets/import_mapping.html:30
+msgid "Detected format:"
+msgstr "Zjištěný formát:"
+
+#: tickets/templates/tickets/import_mapping.html:42
+msgid "Import Mode"
+msgstr "Režim importu"
+
+#: tickets/templates/tickets/import_mapping.html:46
+msgid "Replace All"
+msgstr "Nahradit vše"
+
+#: tickets/templates/tickets/import_mapping.html:46
+msgid "Delete all existing tickets and import new ones"
+msgstr "Smazat všechny existující vstupenky a importovat nové"
+
+#: tickets/templates/tickets/import_mapping.html:52
+msgid "Append"
+msgstr "Přidat"
+
+#: tickets/templates/tickets/import_mapping.html:52
+msgid "Add new tickets, skip existing ones (by QR code)"
+msgstr "Přidat nové vstupenky, přeskočit existující (podle QR kódu)"
+
+#: tickets/templates/tickets/import_mapping.html:58
+msgid "Update existing tickets, add new ones"
+msgstr "Aktualizovat existující vstupenky, přidat nové"
+
+#: tickets/templates/tickets/import_mapping.html:65
+msgid "Column Mapping"
+msgstr "Mapování sloupců"
+
+#: tickets/templates/tickets/import_mapping.html:66
+msgid "Map CSV columns to ticket fields. QR Code field is required."
+msgstr "Namapujte CSV sloupce na pole vstupenek. Pole QR kód je povinné."
+
+#: tickets/templates/tickets/import_mapping.html:72
+msgid "CSV Column"
+msgstr "CSV sloupec"
+
+#: tickets/templates/tickets/import_mapping.html:73
+msgid "Sample Data"
+msgstr "Ukázka dat"
+
+#: tickets/templates/tickets/import_mapping.html:74
+msgid "Map to Field"
+msgstr "Mapovat na pole"
+
+#: tickets/templates/tickets/import_mapping.html:90
+msgid "-- Skip this column --"
+msgstr "-- Přeskočit tento sloupec --"
+
+#: tickets/templates/tickets/import_mapping.html:98
+msgid "Last Name"
+msgstr "Příjmení"
+
+#: tickets/templates/tickets/import_mapping.html:104
+msgid "Email"
+msgstr "E-mail"
+
+#: tickets/templates/tickets/import_mapping.html:117
+msgid "Import Preview"
+msgstr "Náhled importu"
+
+#: tickets/templates/tickets/import_mapping.html:119
+msgid "Total rows in file:"
+msgstr "Celkem řádků v souboru:"
+
+#: tickets/templates/tickets/import_mapping.html:120
+msgid "Rows to import:"
+msgstr "Řádků k importu:"
+
+#: tickets/templates/tickets/import_mapping.html:124
+msgid "Validation Errors:"
+msgstr "Chyby validace:"
+
+#: tickets/templates/tickets/import_mapping.html:136
+msgid "Back"
+msgstr "Zpět"
+
+#: tickets/templates/tickets/import_mapping.html:169
+msgid "Field"
+msgstr "Pole"
+
+#: tickets/templates/tickets/import_mapping.html:169
+msgid "is mapped multiple times"
+msgstr "je namapováno vícekrát"
+
+#: tickets/templates/tickets/import_mapping.html:177
+msgid "QR Code field is required"
+msgstr "Pole QR kód je povinné"
+
+#: tickets/templates/tickets/import_mapping.html:180
+msgid "Name field is required"
+msgstr "Pole jméno je povinné"
+
+#: tickets/templates/tickets/index.html:4
+#: tickets/templates/tickets/index.html:11
+msgid "Dashboard"
+msgstr "Přehled"
+
+#: tickets/templates/tickets/index.html:12
+msgid "Manage and validate tickets for your event"
+msgstr "Spravujte a ověřujte vstupenky pro vaši akci"
+
+#: tickets/templates/tickets/index.html:21
+#: tickets/templates/tickets/index.html:24
+msgid "Scan Tickets"
+msgstr "Skenovat vstupenky"
+
+#: tickets/templates/tickets/index.html:27
+#: tickets/templates/tickets/ticket_list.html:10
+msgid "Create New Ticket"
+msgstr "Vytvořit novou vstupenku"
+
+#: tickets/templates/tickets/index.html:37
+#: tickets/templates/tickets/ticket_list.html:71
+msgid "Total Tickets"
+msgstr "Celkem vstupenek"
+
+#: tickets/templates/tickets/index.html:39
+msgid "checked in"
+msgstr "odbaveno"
+
+#: tickets/templates/tickets/index.html:45
+msgid "Remaining"
+msgstr "Zbývá"
+
+#: tickets/templates/tickets/index.html:47
+msgid "Ready to check-in"
+msgstr "Připraveno k odbavení"
+
+#: tickets/templates/tickets/index.html:53
+msgid "Checked In"
+msgstr "Odbaveno"
+
+#: tickets/templates/tickets/index.html:55
+msgid "complete"
+msgstr "dokončeno"
+
+#: tickets/templates/tickets/index.html:61
+msgid "Last Hour"
+msgstr "Poslední hodina"
+
+#: tickets/templates/tickets/index.html:68
+msgid "Check-in rate"
+msgstr "Rychlost odbavení"
+
+#: tickets/templates/tickets/index.html:79
+msgid "Recent Check-ins"
+msgstr "Nedávná odbavení"
+
+#: tickets/templates/tickets/index.html:112
+msgid "No recent check-ins"
+msgstr "Žádná nedávná odbavení"
+
+#: tickets/templates/tickets/index.html:124
+msgid "Total"
+msgstr "Celkem"
+
+#: tickets/templates/tickets/kiosk.html:6
+msgid "Event Check-in Kiosk"
+msgstr "Kiosek pro odbavení"
+
+#: tickets/templates/tickets/kiosk.html:66
+msgid "Event Check-in"
+msgstr "Odbavení na akci"
+
+#: tickets/templates/tickets/kiosk.html:71 tickets/views/kiosk_views.py:34
+msgid "Please scan your ticket QR code"
+msgstr "Prosím naskenujte QR kód vaší vstupenky"
+
+#: tickets/templates/tickets/kiosk.html:80
+#: tickets/templates/tickets/kiosk.html:101
+msgid "Ready to scan..."
+msgstr "Připraveno ke skenování..."
+
+#: tickets/templates/tickets/kiosk.html:88
+msgid "Having trouble? Please ask our staff for assistance."
+msgstr "Máte potíže? Požádejte náš personál o pomoc."
+
+#: tickets/templates/tickets/kiosk.html:99
+msgid "Welcome!"
+msgstr "Vítejte!"
+
+#: tickets/templates/tickets/kiosk.html:100
+msgid "Badge is being printed"
+msgstr "Visačka se tiskne"
+
+#: tickets/templates/tickets/kiosk.html:174
+msgid "Please see our staff for assistance"
+msgstr "Prosím obraťte se na náš personál"
+
+#: tickets/templates/tickets/kiosk.html:223
+msgid "Camera access denied."
+msgstr "Přístup ke kameře byl odepřen."
+
+#: tickets/templates/tickets/kiosk.html:224
+msgid "Please allow camera access and refresh the page."
+msgstr "Povolte přístup ke kameře a obnovte stránku."
+
+#: tickets/templates/tickets/log.html:11
+msgid "Ticket ID / QR Code"
+msgstr "ID vstupenky / QR kód"
+
+#: tickets/templates/tickets/log.html:15 tickets/templates/tickets/log.html:40
+msgid "Event Type"
+msgstr "Typ události"
+
+#: tickets/templates/tickets/log.html:17
+msgid "All"
+msgstr "Vše"
+
+#: tickets/templates/tickets/log.html:24
+msgid "Message Search"
+msgstr "Hledat ve zprávách"
+
+#: tickets/templates/tickets/log.html:28
+msgid "Filter"
+msgstr "Filtrovat"
+
+#: tickets/templates/tickets/log.html:29
+msgid "Reset"
+msgstr "Resetovat"
+
+#: tickets/templates/tickets/log.html:38
+msgid "Date/Time"
+msgstr "Datum/čas"
+
+#: tickets/templates/tickets/log.html:39
+msgid "Ticket/Reference"
+msgstr "Vstupenka/Reference"
+
+#: tickets/templates/tickets/log.html:41
+msgid "Message"
+msgstr "Zpráva"
+
+#: tickets/templates/tickets/log.html:80
+msgid "No log entries found."
+msgstr "Nenalezeny žádné záznamy protokolu."
+
+#: tickets/templates/tickets/log.html:91
+msgid "Page navigation"
+msgstr "Navigace stránek"
+
+#: tickets/templates/tickets/log.html:94
+#: tickets/templates/tickets/ticket_list.html:188
+msgid "First"
+msgstr "První"
+
+#: tickets/templates/tickets/log.html:97
+#: tickets/templates/tickets/ticket_list.html:191
+msgid "Previous"
+msgstr "Předchozí"
+
+#: tickets/templates/tickets/log.html:115
+#: tickets/templates/tickets/ticket_list.html:209
+msgid "Next"
+msgstr "Další"
+
+#: tickets/templates/tickets/log.html:118
+#: tickets/templates/tickets/ticket_list.html:212
+msgid "Last"
+msgstr "Poslední"
+
+#: tickets/templates/tickets/scanner.html:9
+msgid "Scan Ticket"
+msgstr "Skenovat vstupenku"
+
+#: tickets/templates/tickets/scanner.html:11
+msgid "Active Scanner"
+msgstr "Aktivní skener"
+
+#: tickets/templates/tickets/scanner.html:23
+msgid "Search VALID tickets by name and press Enter (or use scanner below)"
+msgstr "Hledejte PLATNÉ vstupenky podle jména a stiskněte Enter (nebo použijte skener níže)"
+
+#: tickets/templates/tickets/scanner.html:25
+#: tickets/templates/tickets/ticket_list.html:101
+msgid "Search"
+msgstr "Hledat"
+
+#: tickets/templates/tickets/scanner.html:94
+msgid "QR code is required"
+msgstr "QR kód je povinný"
+
+#: tickets/templates/tickets/scanner.html:305
+msgid "Verify & Print"
+msgstr "Ověřit a tisknout"
+
+#: tickets/templates/tickets/scanner.html:319
+msgid "Search error"
+msgstr "Chyba vyhledávání"
+
+#: tickets/templates/tickets/settings.html:20
+msgid "Application URL:"
+msgstr "URL aplikace:"
+
+#: tickets/templates/tickets/settings.html:21
+msgid "Check server status"
+msgstr "Zkontrolovat stav serveru"
+
+#: tickets/templates/tickets/settings.html:23
+msgid "Tickets:"
+msgstr "Vstupenky:"
+
+#: tickets/templates/tickets/settings.html:24
+msgid "Check-ins:"
+msgstr "Odbavení:"
+
+#: tickets/templates/tickets/settings.html:31
+msgid "Application URL QR Code"
+msgstr "QR kód URL aplikace"
+
+#: tickets/templates/tickets/settings.html:36
+msgid "Scan to open the application"
+msgstr "Naskenujte pro otevření aplikace"
+
+#: tickets/templates/tickets/settings.html:47
+msgid "Eventee API Token"
+msgstr "Eventee API Token"
+
+#: tickets/templates/tickets/settings.html:51
+msgid "API Token"
+msgstr "API Token"
+
+#: tickets/templates/tickets/settings.html:54
+msgid "Enter your Eventee API token."
+msgstr "Zadejte váš Eventee API token."
+
+#: tickets/templates/tickets/settings.html:55
+msgid "You can find it in your Eventee event settings."
+msgstr "Najdete ho v nastavení události v Eventee."
+
+#: tickets/templates/tickets/settings.html:56
+msgid "The token should have permissions to invite attendees."
+msgstr "Token musí mít oprávnění pro pozvání účastníků."
+
+#: tickets/templates/tickets/settings.html:60
+msgid "API Status:"
+msgstr "Stav API:"
+
+#: tickets/templates/tickets/settings.html:62
+msgid "Connected"
+msgstr "Připojeno"
+
+#: tickets/templates/tickets/settings.html:65
+msgid "Not Connected"
+msgstr "Nepřipojeno"
+
+#: tickets/templates/tickets/settings.html:70
+msgid "Save API Token"
+msgstr "Uložit API Token"
+
+#: tickets/templates/tickets/settings.html:82
+msgid "Required ticket fields"
+msgstr "Povinná pole vstupenky"
+
+#: tickets/templates/tickets/settings.html:84
+msgid ""
+"This controls only manual ticket creation/editing. Import validation is "
+"fixed according to the settings on the Import page."
+msgstr ""
+
+#: tickets/templates/tickets/settings.html:102
+msgid "Save"
+msgstr "Uložit"
+
+#: tickets/templates/tickets/settings.html:124
+msgid "Windows printer name for queue 1"
+msgstr "Název tiskárny Windows pro frontu 1"
+
+#: tickets/templates/tickets/settings.html:130
+msgid "Windows printer name for queue 2"
+msgstr "Název tiskárny Windows pro frontu 2"
+
+#: tickets/templates/tickets/settings.html:139
+msgid "Automatically print labels when scanning tickets"
+msgstr "Automaticky tisknout štítky při skenování vstupenek"
+
+#: tickets/templates/tickets/settings.html:142
+msgid ""
+"When enabled, labels will be printed automatically after each successful "
+"scan. When disabled, only check-in will be performed."
+msgstr ""
+
+#: tickets/templates/tickets/settings.html:146
+msgid "Save Settings"
+msgstr "Uložit nastavení"
+
+#: tickets/templates/tickets/settings.html:160
+msgid "Delete All Data"
+msgstr "Smazat všechna data"
+
+#: tickets/templates/tickets/settings.html:161
+msgid ""
+"This will delete all tickets and their check-in data. This action cannot be "
+"undone."
+msgstr ""
+
+#: tickets/templates/tickets/settings.html:176
+#: tickets/templates/tickets/settings.html:181
+msgid "Delete Check-ins"
+msgstr "Smazat odbavení"
+
+#: tickets/templates/tickets/settings.html:177
+msgid ""
+"This will only delete check-in data and reset all tickets to VALID status. "
+"Tickets will remain in the system."
+msgstr ""
+
+#: tickets/templates/tickets/settings.html:194
+#: tickets/templates/tickets/settings.html:199
+msgid "Delete Logs"
+msgstr "Smazat protokoly"
+
+#: tickets/templates/tickets/settings.html:195
+msgid "This will delete all log entries. This action cannot be undone."
+msgstr "Toto smaže všechny záznamy protokolu. Tuto akci nelze vrátit zpět."
+
+#: tickets/templates/tickets/settings.html:213
+msgid ""
+"Print all labels in advance for small events. Labels will be printed without "
+"checking in the tickets."
+msgstr ""
+
+#: tickets/templates/tickets/settings.html:215
+msgid "Print All Labels"
+msgstr "Vytisknout všechny štítky"
+
+#: tickets/templates/tickets/settings.html:328
+msgid "Application is running on port:"
+msgstr "Aplikace běží na portu:"
+
+#: tickets/templates/tickets/settings.html:330
+msgid "Application is NOT running on any port!"
+msgstr "Aplikace NEBĚŽÍ na žádném portu!"
+
+#: tickets/templates/tickets/settings.html:335
+msgid "Application is accessible on the network at:"
+msgstr "Aplikace je přístupná v síti na adrese:"
+
+#: tickets/templates/tickets/settings.html:339
+msgid "All available network addresses:"
+msgstr "Všechny dostupné síťové adresy:"
+
+#: tickets/templates/tickets/settings.html:347
+msgid "Application is not accessible from other devices!"
+msgstr "Aplikace není přístupná z jiných zařízení!"
+
+#: tickets/templates/tickets/settings.html:348
+msgid "Check your firewall or settings.py/.env file (ALLOWED_HOSTS)."
+msgstr "Zkontrolujte firewall nebo soubor settings.py/.env (ALLOWED_HOSTS)."
+
+#: tickets/templates/tickets/special_labels.html:14
+msgid "Print Special Labels"
+msgstr "Tisk speciálních štítků"
+
+#: tickets/templates/tickets/special_labels.html:16
+msgid "Print labels for Press, Host, Staff, etc."
+msgstr "Tisk štítků pro Press, Host, Staff, atd."
+
+#: tickets/templates/tickets/special_labels.html:25
+msgid "Examples: PRESS, HOST, VIP, STAFF, or a person's name"
+msgstr "Příklady: PRESS, HOST, VIP, STAFF, nebo jméno osoby"
+
+#: tickets/templates/tickets/special_labels.html:38
+msgid "Maximum 50 labels per batch"
+msgstr "Maximálně 50 štítků na dávku"
+
+#: tickets/templates/tickets/special_labels.html:51
+msgid ""
+"The printer will pause 0.5 seconds between each label to prevent jamming."
+msgstr ""
+
+#: tickets/templates/tickets/special_labels.html:56
+msgid "Print Labels"
+msgstr "Tisknout štítky"
+
+#: tickets/templates/tickets/special_labels.html:69
+msgid "Quick Print Templates"
+msgstr "Rychlé tiskové šablony"
+
+#: tickets/templates/tickets/special_labels.html:75
+msgid "PRESS"
+msgstr "PRESS"
+
+#: tickets/templates/tickets/special_labels.html:80
+msgid "HOST"
+msgstr "HOST"
+
+#: tickets/templates/tickets/special_labels.html:85
+msgid "VIP"
+msgstr "VIP"
+
+#: tickets/templates/tickets/special_labels.html:90
+msgid "STAFF"
+msgstr "STAFF"
+
+#: tickets/templates/tickets/special_labels.html:114
+#: tickets/templates/tickets/special_labels.html:228
+msgid "Preparing to print..."
+msgstr "Příprava tisku..."
+
+#: tickets/templates/tickets/special_labels.html:164
+msgid "Printing label"
+msgstr "Tisk štítku"
+
+#: tickets/templates/tickets/special_labels.html:164
+msgid "of"
+msgstr "z"
+
+#: tickets/templates/tickets/special_labels.html:183
+#: tickets/templates/tickets/special_labels.html:196
+#: tickets/views/special_label_views.py:84
+msgid "Failed to print labels"
+msgstr "Tisk štítků selhal"
+
+#: tickets/templates/tickets/special_labels.html:204
+#: tickets/templates/tickets/special_labels.html:216
+msgid "Connection error"
+msgstr "Chyba připojení"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:10
+msgid "Delete Ticket"
+msgstr "Smazat vstupenku"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:13
+msgid "Are you sure you want to delete this ticket?"
+msgstr "Opravdu chcete smazat tuto vstupenku?"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:16
+msgid "Ticket Details:"
+msgstr "Detaily vstupenky:"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:17
+msgid "QR Code:"
+msgstr "QR kód:"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:18
+msgid "Name:"
+msgstr "Jméno:"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:19
+msgid "Company:"
+msgstr "Firma:"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:20
+msgid "Status:"
+msgstr "Stav:"
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:25
+msgid ""
+"This action cannot be undone. All related check-in data will also be deleted."
+msgstr ""
+
+#: tickets/templates/tickets/ticket_confirm_delete.html:31
+msgid "Confirm Delete"
+msgstr "Potvrdit smazání"
+
+#: tickets/templates/tickets/ticket_list.html:14
+msgid "Export XLSX"
+msgstr "Exportovat XLSX"
+
+#: tickets/templates/tickets/ticket_list.html:18
+msgid "Toggle Dropdown"
+msgstr "Přepnout rozbalovací nabídku"
+
+#: tickets/templates/tickets/ticket_list.html:23
+msgid "Export CSV"
+msgstr "Exportovat CSV"
+
+#: tickets/templates/tickets/ticket_list.html:34
+msgid "Import Errors"
+msgstr "Chyby importu"
+
+#: tickets/templates/tickets/ticket_list.html:35
+msgid "The following rows had errors during import:"
+msgstr "Při importu nastaly chyby v následujících řádcích:"
+
+#: tickets/templates/tickets/ticket_list.html:44
+msgid ""
+"You can try to import these rows anyway. Missing values will be filled with "
+"placeholders:"
+msgstr ""
+
+#: tickets/templates/tickets/ticket_list.html:46
+msgid "Missing QR codes will be generated as: MISSING_QR_[timestamp]_[row]"
+msgstr "Chybějící QR kódy budou generovány jako: MISSING_QR_[timestamp]_[row]"
+
+#: tickets/templates/tickets/ticket_list.html:47
+msgid "Missing names will be set as: Missing Name (Row X)"
+msgstr "Chybějící jména budou nastavena jako: Missing Name (Row X)"
+
+#: tickets/templates/tickets/ticket_list.html:59
+msgid "Force Import with Errors"
+msgstr "Vynutit import s chybami"
+
+#: tickets/templates/tickets/ticket_list.html:78
+msgid "Valid Tickets"
+msgstr "Platné vstupenky"
+
+#: tickets/templates/tickets/ticket_list.html:85
+msgid "Used Tickets"
+msgstr "Použité vstupenky"
+
+#: tickets/templates/tickets/ticket_list.html:99
+msgid "Search by name, company, or QR code"
+msgstr "Hledat podle jména, firmy nebo QR kódu"
+
+#: tickets/templates/tickets/ticket_list.html:106
+msgid "All Statuses"
+msgstr "Všechny stavy"
+
+#: tickets/templates/tickets/ticket_list.html:113
+msgid "Clear"
+msgstr "Vymazat"
+
+#: tickets/views/bulk_print_views.py:50
+msgid "No tickets selected"
+msgstr "Nebyly vybrány žádné vstupenky"
+
+#: tickets/views/event_views.py:36
+msgid "Name and date are required."
+msgstr "Název a datum jsou povinné."
+
+#: tickets/views/event_views.py:42
+msgid "Invalid date format. Use YYYY-MM-DD."
+msgstr "Neplatný formát data. Použijte RRRR-MM-DD."
+
+#: tickets/views/event_views.py:47
+msgid "Event created successfully."
+msgstr "Událost byla úspěšně vytvořena."
+
+#: tickets/views/event_views.py:64
+msgid "Invalid date format."
+msgstr "Neplatný formát data."
+
+#: tickets/views/event_views.py:71
+msgid "Event updated."
+msgstr "Událost byla aktualizována."
+
+#: tickets/views/event_views.py:82
+msgid "Event deleted."
+msgstr "Událost byla smazána."
+
+#: tickets/views/kiosk_views.py:63
+msgid "Your badge is printing..."
+msgstr "Váš odznak se tiskne..."
+
+#: tickets/views/kiosk_views.py:68
+msgid "Badge printing requires Windows. Please see our staff for your badge."
+msgstr "Tisk odznaku vyžaduje Windows. Pro váš odznak se obraťte na naše pracovníky."
+
+#: tickets/views/kiosk_views.py:72
+msgid "Badge printing failed. Please see our staff for assistance."
+msgstr "Tisk odznaku selhal. Obraťte se na naše pracovníky."
+
+#: tickets/views/kiosk_views.py:103
+#, python-format
+msgid "Welcome %(name)s!"
+msgstr "Vítejte, %(name)s!"
+
+#: tickets/views/special_label_views.py:77
+#, python-format
+msgid "Successfully printed %(success)s labels"
+msgstr "Úspěšně vytištěno %(success)s štítků"
+
+#: tickets/views/special_label_views.py:96
+#, python-format
+msgid "Error printing labels: %(error)s"
+msgstr "Chyba při tisku štítků: %(error)s"

@@ -23,25 +23,33 @@
                 <div class="mb-3">
                     <label for="name" class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="name" name="name"
-                           value="{{ form_data.name|default:event.name|default:'' }}" required>
+                           value="{% if form_data.name %}{{ form_data.name }}{% elif event %}{{ event.name }}{% endif %}" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="date" class="form-label">{% trans "Date" %} <span class="text-danger">*</span></label>
                     <input type="date" class="form-control" id="date" name="date"
-                           value="{{ form_data.date|default:event.date|default:'' }}" required>
+                           value="{% if form_data.date %}{{ form_data.date }}{% elif event %}{{ event.date }}{% endif %}" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="description" class="form-label">{% trans "Description" %}</label>
-                    <textarea class="form-control" id="description" name="description" rows="3">{{ form_data.description|default:event.description|default:'' }}</textarea>
+                    <textarea class="form-control" id="description" name="description" rows="3">{% if form_data.description %}{{ form_data.description }}{% elif event %}{{ event.description }}{% endif %}</textarea>
                 </div>
 
                 <div class="mb-3">
                     <label for="status" class="form-label">{% trans "Status" %}</label>
                     <select class="form-select" id="status" name="status">
-                        <option value="active" {% if form_data.status|default:event.status|default:'active' == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
-                        <option value="archived" {% if form_data.status|default:event.status == 'archived' %}selected{% endif %}>{% trans "Archived" %}</option>
+                        {% if form_data.status %}{% with current_status=form_data.status %}
+                        <option value="active" {% if current_status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                        <option value="archived" {% if current_status == 'archived' %}selected{% endif %}>{% trans "Archived" %}</option>
+                        {% endwith %}{% elif event %}
+                        <option value="active" {% if event.status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                        <option value="archived" {% if event.status == 'archived' %}selected{% endif %}>{% trans "Archived" %}</option>
+                        {% else %}
+                        <option value="active" selected>{% trans "Active" %}</option>
+                        <option value="archived">{% trans "Archived" %}</option>
+                        {% endif %}
                     </select>
                 </div>
 
