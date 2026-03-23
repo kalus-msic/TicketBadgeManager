@@ -11,7 +11,6 @@ IMPORT_PROFILES = {
             'Ticket Last Name': 'last_name',
             'Ticket Email': 'email',
             'Ticket Company Name': 'company_name',
-            'Event': 'event_name',
             'Unique Ticket URL': 'qr_code',
             # Alternative column names (lower priority)
             'Ticket Full Name': 'full_name',  # Special handling needed
@@ -37,7 +36,6 @@ IMPORT_PROFILES = {
             'E-mail (prodej na jméno)': 'email',
             'Název firmy (prodej na jméno)': 'company_name',
             'Společnost (prodej na jméno)': 'company_name',  # Alternative
-            'Položka': 'event_name',
             # Fallback mappings
             'ID vstupenky': 'qr_code',  # If Kód vstupenky not available
             'E-mail': 'email',  # If (prodej na jméno) variant not available
@@ -62,7 +60,6 @@ IMPORT_PROFILES = {
             'Firma': 'company_name',
             'Email': 'email',
             'E-mail': 'email',
-            'Akce': 'event_name',
         }
     },
     
@@ -76,8 +73,6 @@ IMPORT_PROFILES = {
             'Company': 'company_name',
             'Company Name': 'company_name',
             'Email': 'email',
-            'Event': 'event_name',
-            'Event Name': 'event_name',
         }
     }
 }
@@ -206,9 +201,5 @@ def _suggest_field_mapping_enhanced(column_name, samples):
     # Company patterns
     if any(x in column_lower for x in ['company', 'firma', 'organization', 'název firmy', 'společnost']):
         return 'company_name'
-    
-    # Event patterns
-    if column_lower in ['event', 'akce', 'položka', 'event name']:
-        return 'event_name'
     
     return None
