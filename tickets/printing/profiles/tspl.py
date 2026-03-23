@@ -115,6 +115,8 @@ class TSPLProfile(AbstractPrinterProfile):
         while (name_w > img.width - 2 * margin or
                comp_w > img.width - 2 * margin or
                name_h + comp_h > img.height - 2 * margin):
+            if font_size < 8:
+                break  # Guard against infinite loop with pathological input
             font_size -= 1
             font_name = ImageFont.truetype(
                 os.path.join(font_path, "MontserratBold700.ttf"), font_size

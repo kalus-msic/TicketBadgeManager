@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from unittest.mock import MagicMock
 from tickets.utils.validators import validate_merge_file
+from tickets.printing.profiles.tspl import TSPLProfile
 
 
 class ValidateMergeFileTest(TestCase):
@@ -554,9 +555,6 @@ class EventsContextProcessorTest(TestCase):
         request.resolver_match.kwargs = {'event_pk': self.event.pk}
         ctx = events_context(request)
         self.assertEqual(ctx['active_event'], self.event)
-
-
-from tickets.printing.profiles.tspl import TSPLProfile
 
 
 class TSPLProfileTest(TestCase):

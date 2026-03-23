@@ -9,7 +9,11 @@ class AbstractPrinterProfile(ABC):
         """Generate raw byte stream for USB/network transmission.
 
         Args:
-            ticket_data: dict with keys: name, company_name, qr_code, event_name
+            ticket_data: dict with keys:
+                name: Person's name (rendered on label)
+                company_name: Company name (rendered on label)
+                qr_code: QR code value (accepted, not currently rendered)
+                event_name: Event name (accepted, not currently rendered)
 
         Returns:
             Complete byte stream ready to send directly to the printer
@@ -20,6 +24,13 @@ class AbstractPrinterProfile(ABC):
     @abstractmethod
     def generate_image(self, ticket_data: dict) -> 'Image.Image':
         """Generate label image for backends that handle sending themselves.
+
+        Args:
+            ticket_data: dict with keys:
+                name: Person's name (rendered on label)
+                company_name: Company name (rendered on label)
+                qr_code: QR code value (accepted, not currently rendered)
+                event_name: Event name (accepted, not currently rendered)
 
         Returns:
             PIL Image object (rotated, ready for bitmap conversion).
