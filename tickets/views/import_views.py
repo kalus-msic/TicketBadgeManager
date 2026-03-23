@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -7,7 +7,7 @@ from django.http import JsonResponse
 import csv
 import io
 import uuid
-from ..models import Ticket, Log
+from ..models import Ticket, Log, Event
 from ..forms import CsvImportForm
 from ..services.ticket_service import TicketService
 from ..decorators import staff_required, import_ratelimit
@@ -19,90 +19,97 @@ from ..utils.import_mappings import get_field_mapping_suggestions, detect_import
 
 
 @staff_required
-def import_page(request):
+def import_page(request, event_pk):
     """Display import page."""
+    event = get_object_or_404(Event, pk=event_pk)
     form = CsvImportForm()
     return render(request, 'tickets/import.html', {
+        'event': event,
         'form': form,
-        'current_ticket_count': Ticket.objects.count()
+        'current_ticket_count': Ticket.objects.filter(event=event).count()
     })
 
 
 @staff_required
 @import_ratelimit
 @handle_view_errors
-def import_replace_tickets(request):
+def import_replace_tickets(request, event_pk):
     """Import CSV and replace all existing tickets."""
+    event = get_object_or_404(Event, pk=event_pk)
     if request.method == 'POST':
         form = CsvImportForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']
-            
+
             # Validate file
             validate_csv_file(csv_file)
-            
+
             # Read file content
             file_content = csv_file.read().decode('utf-8-sig')
-            
+
             # Import using service
-            results = TicketService.import_tickets_from_csv(file_content, replace_existing=True)
-            
+            results = TicketService.import_tickets_from_csv(file_content, replace_existing=True, event=event)
+
             messages.success(
                 request,
                 f"Successfully imported {results['imported']} tickets. "
                 f"{results['errors']} rows had errors."
             )
-            
+
             Log.objects.create(
+                event=event,
                 event_type='IMPORT',
                 message=f"CSV import (replace) by {get_username_for_log(request)}: "
                        f"{results['imported']} imported, {results['errors']} errors"
             )
-    
-    return redirect('tickets:import_page')
+
+    return redirect('tickets:import_page', event_pk=event_pk)
 
 
 @staff_required
 @import_ratelimit
 @handle_view_errors
-def import_add_tickets(request):
+def import_add_tickets(request, event_pk):
     """Import CSV and add to existing tickets."""
+    event = get_object_or_404(Event, pk=event_pk)
     if request.method == 'POST':
         form = CsvImportForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']
-            
+
             # Validate file
             validate_csv_file(csv_file)
-            
+
             # Read file content
             file_content = csv_file.read().decode('utf-8-sig')
-            
+
             # Import using service
-            results = TicketService.import_tickets_from_csv(file_content, replace_existing=False)
-            
+            results = TicketService.import_tickets_from_csv(file_content, replace_existing=False, event=event)
+
             messages.success(
                 request,
                 f"Successfully imported {results['imported']} tickets. "
                 f"{results['duplicates']} duplicates skipped, "
                 f"{results['errors']} rows had errors."
             )
-            
+
             Log.objects.create(
+                event=event,
                 event_type='IMPORT',
                 message=f"CSV import (add) by {get_username_for_log(request)}: "
                        f"{results['imported']} imported, {results['duplicates']} duplicates, "
                        f"{results['errors']} errors"
             )
-    
-    return redirect('tickets:import_page')
+
+    return redirect('tickets:import_page', event_pk=event_pk)
 
 
 @staff_required
 @import_ratelimit
 @handle_view_errors
-def merge_import(request):
+def merge_import(request, event_pk):
     """GoOut two-file merge import. GET: upload form. POST: detect columns."""
+    event = get_object_or_404(Event, pk=event_pk)
     if request.method == 'POST':
         file1 = request.FILES.get('file1')
         file2 = request.FILES.get('file2')
@@ -112,7 +119,7 @@ def merge_import(request):
             validate_merge_file(file2)
         except Exception as e:
             messages.error(request, str(e))
-            return redirect('tickets:merge_import')
+            return redirect('tickets:merge_import', event_pk=event_pk)
 
         file1.seek(0)
         file1_bytes = file1.read()
@@ -124,7 +131,7 @@ def merge_import(request):
             df2 = read_file_to_dataframe(file2_bytes, file2.name)
         except ValueError as e:
             messages.error(request, str(e))
-            return redirect('tickets:merge_import')
+            return redirect('tickets:merge_import', event_pk=event_pk)
 
         common_columns = sorted(set(df1.columns) & set(df2.columns))
         if not common_columns:
@@ -133,7 +140,7 @@ def merge_import(request):
                 f"No common columns found. "
                 f"File 1: {list(df1.columns)}. File 2: {list(df2.columns)}."
             )
-            return redirect('tickets:merge_import')
+            return redirect('tickets:merge_import', event_pk=event_pk)
 
         suggested = (
             'Číslo objednávky'
@@ -149,6 +156,7 @@ def merge_import(request):
         }, 3600)
 
         return render(request, 'tickets/prepare_import.html', {
+            'event': event,
             'step': 2,
             'file1_columns': list(df1.columns),
             'file2_columns': list(df2.columns),
@@ -157,7 +165,7 @@ def merge_import(request):
             'session_key': session_key,
         })
 
-    return render(request, 'tickets/prepare_import.html')
+    return render(request, 'tickets/prepare_import.html', {'event': event})
 
 
 def _delimiter_name(delimiter):
@@ -174,17 +182,18 @@ def _delimiter_name(delimiter):
 
 @staff_required
 @handle_view_errors
-def import_mapping(request):
+def import_mapping(request, event_pk):
     """Handle CSV upload and show column mapping interface."""
+    event = get_object_or_404(Event, pk=event_pk)
     if request.method == 'POST' and 'csv_file' in request.FILES:
         csv_file = request.FILES['csv_file']
-        
+
         # Validate file
         validate_csv_file(csv_file)
-        
+
         # Read and parse CSV
         file_content = csv_file.read().decode('utf-8-sig')
-        
+
         # Try to detect delimiter
         try:
             # Use csv.Sniffer to detect delimiter
@@ -195,16 +204,16 @@ def import_mapping(request):
         except:
             # Default to comma if detection fails
             delimiter = ','
-        
+
         # Try parsing with detected delimiter
         csv_reader = csv.DictReader(io.StringIO(file_content), delimiter=delimiter)
-        
+
         # Get column names and sample data
         rows = list(csv_reader)
         if not rows:
             messages.error(request, "CSV file is empty")
-            return redirect('tickets:import_page')
-        
+            return redirect('tickets:import_page', event_pk=event_pk)
+
         # If we only got one column, try the other delimiter
         if len(csv_reader.fieldnames) == 1 and delimiter == ',':
             # Try semicolon
@@ -218,15 +227,15 @@ def import_mapping(request):
             csv_reader = csv.DictReader(file_content_io, delimiter=',')
             rows = list(csv_reader)
             delimiter = ','
-        
+
         # Get field mapping suggestions using the new system
-        suggestions = get_field_mapping_suggestions(csv_reader.fieldnames, 
-                                                     samples={field: [row.get(field) for row in rows[:3] if row.get(field)] 
+        suggestions = get_field_mapping_suggestions(csv_reader.fieldnames,
+                                                     samples={field: [row.get(field) for row in rows[:3] if row.get(field)]
                                                              for field in csv_reader.fieldnames})
-        
+
         # Detect import profile
         detected_profile = detect_import_profile(csv_reader.fieldnames)
-        
+
         columns = []
         for field in csv_reader.fieldnames:
             # Get sample values (up to 3)
@@ -234,13 +243,13 @@ def import_mapping(request):
             for i, row in enumerate(rows[:3]):
                 if row.get(field):
                     samples.append(row[field])
-            
+
             columns.append({
                 'name': field,
                 'samples': samples,
                 'suggested_field': suggestions.get(field)
             })
-        
+
         # Store CSV data in cache for processing
         session_key = str(uuid.uuid4())
         cache.set(f'import_{session_key}', {
@@ -249,8 +258,9 @@ def import_mapping(request):
             'filename': csv_file.name,
             'delimiter': delimiter
         }, 3600)  # Cache for 1 hour
-        
+
         context = {
+            'event': event,
             'csv_columns': columns,
             'total_rows': len(rows),
             'session_key': session_key,
@@ -259,7 +269,7 @@ def import_mapping(request):
             'detected_profile': detected_profile,
             'profile_name': IMPORT_PROFILES.get(detected_profile, {}).get('name', 'Unknown')
         }
-        
+
         return render(request, 'tickets/import_mapping.html', context)
 
     elif request.method == 'GET' and request.GET.get('session_key'):
@@ -270,7 +280,7 @@ def import_mapping(request):
                 request,
                 "Import session expired. Please re-upload the files."
             )
-            return redirect('tickets:merge_import')
+            return redirect('tickets:merge_import', event_pk=event_pk)
 
         rows = csv_data['rows']
         fieldnames = csv_data['fieldnames']
@@ -295,6 +305,7 @@ def import_mapping(request):
         ]
 
         context = {
+            'event': event,
             'csv_columns': columns,
             'total_rows': len(rows),
             'session_key': session_key,
@@ -305,96 +316,61 @@ def import_mapping(request):
         }
         return render(request, 'tickets/import_mapping.html', context)
 
-    return redirect('tickets:import_page')
-
-
-def _suggest_field_mapping(column_name, samples):
-    """Try to guess the appropriate field mapping based on column name and data."""
-    column_lower = column_name.lower().strip()
-    
-    # QR Code patterns
-    if any(x in column_lower for x in ['qr', 'code', 'ticket', 'unique']):
-        return 'qr_code'
-    
-    # Email patterns
-    if 'email' in column_lower or 'mail' in column_lower:
-        return 'email'
-    elif samples and '@' in str(samples[0]):
-        return 'email'
-    
-    # Name patterns
-    if any(x in column_lower for x in ['first', 'given', 'forename']):
-        return 'name'
-    elif column_lower in ['name', 'jméno', 'meno']:
-        return 'name'
-    
-    # Last name patterns
-    if any(x in column_lower for x in ['last', 'surname', 'family']):
-        return 'last_name'
-    elif column_lower in ['příjmení', 'priezvisko']:
-        return 'last_name'
-    
-    # Company patterns
-    if any(x in column_lower for x in ['company', 'firma', 'organization', 'org']):
-        return 'company_name'
-    
-    # Event patterns
-    if any(x in column_lower for x in ['event', 'akce', 'událost']):
-        return 'event_name'
-    
-    return None
+    return redirect('tickets:import_page', event_pk=event_pk)
 
 
 @staff_required
 @import_ratelimit
 @handle_view_errors
-def import_execute(request):
+def import_execute(request, event_pk):
     """Execute the import with user-defined mapping."""
+    event = get_object_or_404(Event, pk=event_pk)
     if request.method != 'POST':
-        return redirect('tickets:import_page')
-    
+        return redirect('tickets:import_page', event_pk=event_pk)
+
     session_key = request.POST.get('session_key')
     import_mode = request.POST.get('import_mode', 'replace')
     force_import = request.POST.get('force_import', 'false') == 'true'
-    
+
     # Get cached CSV data
     csv_data = cache.get(f'import_{session_key}')
     if not csv_data:
         messages.error(request, "Import session expired. Please upload the file again.")
-        return redirect('tickets:import_page')
-    
+        return redirect('tickets:import_page', event_pk=event_pk)
+
     # Build field mapping
     field_mapping = {}
     for i, fieldname in enumerate(csv_data['fieldnames']):
         mapping_value = request.POST.get(f'mapping_{i}')
         if mapping_value:
             field_mapping[fieldname] = mapping_value
-    
+
     # Validate required fields
     if 'qr_code' not in field_mapping.values():
         messages.error(request, "QR Code field mapping is required")
-        return redirect('tickets:import_page')
-    
+        return redirect('tickets:import_page', event_pk=event_pk)
+
     if 'name' not in field_mapping.values():
         messages.error(request, "Name field mapping is required")
-        return redirect('tickets:import_page')
-    
+        return redirect('tickets:import_page', event_pk=event_pk)
+
     # Process import
     imported = 0
     errors = 0
     duplicates = 0
     updated = 0
     error_details = []  # Store error details for logging
-    
+
     # Handle replace mode first (outside of row processing)
     if import_mode == 'replace':
-        old_count = Ticket.objects.count()
-        Ticket.objects.all().delete()
+        old_count = Ticket.objects.filter(event=event).count()
+        Ticket.objects.filter(event=event).delete()
         Log.objects.create(
+            event=event,
             event_type='DELETE',
             message=f"Deleted {old_count} tickets before import (replace mode) by {get_username_for_log(request)}"
         )
-    
+
     # Process each row individually (not in atomic transaction)
     for row_num, row in enumerate(csv_data['rows'], start=2):
         try:
@@ -409,7 +385,7 @@ def import_execute(request):
                             from ..utils.text_utils import extract_qr_from_url
                             value = extract_qr_from_url(value)
                         ticket_data[model_field] = value
-                
+
                 # Check if ticket exists (by QR code)
                 qr_code = ticket_data.get('qr_code')
                 if not qr_code:
@@ -422,7 +398,7 @@ def import_execute(request):
                         errors += 1
                         error_details.append(f"Row {row_num}: Missing QR code")
                         continue
-                
+
                 # Check if name exists
                 if not ticket_data.get('name'):
                     if force_import:
@@ -432,9 +408,9 @@ def import_execute(request):
                         errors += 1
                         error_details.append(f"Row {row_num}: Missing name (QR: {qr_code})")
                         continue
-                
+
                 existing_ticket = Ticket.objects.filter(qr_code=qr_code).first()
-                
+
                 if import_mode == 'append' and existing_ticket:
                     duplicates += 1
                     continue
@@ -452,10 +428,10 @@ def import_execute(request):
                         full_name = f"{ticket_data['name']} {ticket_data['last_name']}"
                         ticket_data['name'] = full_name
                         del ticket_data['last_name']
-                    
-                    Ticket.objects.create(**ticket_data)
+
+                    Ticket.objects.create(event=event, **ticket_data)
                     imported += 1
-                    
+
         except Exception as e:
             if force_import and "UNIQUE constraint failed" in str(e):
                 # Handle duplicate QR code in force mode
@@ -463,7 +439,7 @@ def import_execute(request):
                     # Generate alternative QR code
                     original_qr = ticket_data.get('qr_code', '')
                     ticket_data['qr_code'] = f"{original_qr}_DUP_{row_num}"
-                    
+
                     # Try again with modified QR
                     if import_mode == 'update' and existing_ticket:
                         for field, value in ticket_data.items():
@@ -477,8 +453,8 @@ def import_execute(request):
                             full_name = f"{ticket_data['name']} {ticket_data['last_name']}"
                             ticket_data['name'] = full_name
                             del ticket_data['last_name']
-                        
-                        Ticket.objects.create(**ticket_data)
+
+                        Ticket.objects.create(event=event, **ticket_data)
                         imported += 1
                 except Exception as e2:
                     errors += 1
@@ -486,39 +462,40 @@ def import_execute(request):
             else:
                 errors += 1
                 error_details.append(f"Row {row_num}: {str(e)} (QR: {ticket_data.get('qr_code', 'N/A')})")
-    
+
     # Clear cache
     cache.delete(f'import_{session_key}')
-    
+
     # Create main log entry
     log_message = f"CSV import ({import_mode}) by {get_username_for_log(request)}: "
     log_message += f"{imported} imported, {updated} updated, {duplicates} duplicates, {errors} errors"
-    
+
     # Add error details to log if any
     if error_details:
         log_message += "\n\nError details:\n" + "\n".join(error_details[:20])  # Limit to first 20 errors
         if len(error_details) > 20:
             log_message += f"\n... and {len(error_details) - 20} more errors"
-    
+
     Log.objects.create(
+        event=event,
         event_type='IMPORT',
         message=log_message
     )
-    
+
     # Show results with error details
     if errors > 0 and not force_import:
         # Store error details and import data in session for possible retry
         request.session['import_errors'] = error_details
         request.session['import_session_key'] = session_key
         request.session['import_mode'] = import_mode
-        
+
         # Store mapping with indices for form reconstruction
         indexed_mapping = {}
         for i, fieldname in enumerate(csv_data['fieldnames']):
             if fieldname in field_mapping:
                 indexed_mapping[i] = field_mapping[fieldname]
         request.session['import_field_mapping'] = indexed_mapping
-        
+
         # Re-cache the data for a bit longer to allow retry
         cache.set(f'import_{session_key}', csv_data, 300)  # Keep for 5 more minutes
     else:
@@ -527,7 +504,7 @@ def import_execute(request):
         request.session.pop('import_session_key', None)
         request.session.pop('import_mode', None)
         request.session.pop('import_field_mapping', None)
-        
+
     if import_mode == 'replace':
         if errors > 0 and not force_import:
             messages.warning(request, f"Imported {imported} tickets. {errors} rows had errors. You can force import these rows if needed.")
@@ -552,21 +529,22 @@ def import_execute(request):
             messages.success(request, f"Force imported {imported} new tickets and updated {updated} existing ones with placeholders.")
         else:
             messages.success(request, f"Successfully imported {imported} new tickets and updated {updated} existing ones.")
-    
-    return redirect('tickets:ticket_list')
+
+    return redirect('tickets:ticket_list', event_pk=event_pk)
 
 
 @staff_required
-def import_preview(request):
+def import_preview(request, event_pk):
     """AJAX endpoint to preview import results."""
+    event = get_object_or_404(Event, pk=event_pk)
     session_key = request.GET.get('session_key')
     import_mode = request.GET.get('import_mode', 'replace')
-    
+
     # Get cached CSV data
     csv_data = cache.get(f'import_{session_key}')
     if not csv_data:
         return JsonResponse({'error': 'Session expired'}, status=400)
-    
+
     # Build field mapping from request
     field_mapping = {}
     for key, value in request.GET.items():
@@ -574,7 +552,7 @@ def import_preview(request):
             idx = int(key.replace('mapping_', ''))
             if idx < len(csv_data['fieldnames']) and value:
                 field_mapping[csv_data['fieldnames'][idx]] = value
-    
+
     # Preview first 5 rows
     preview_data = []
     for row in csv_data['rows'][:5]:
@@ -583,7 +561,7 @@ def import_preview(request):
             value = row.get(csv_field, '')
             if value:
                 mapped_row[model_field] = value
-        
+
         # Check if would be duplicate
         if 'qr_code' in mapped_row:
             existing = Ticket.objects.filter(qr_code=mapped_row['qr_code']).exists()
@@ -591,9 +569,9 @@ def import_preview(request):
             mapped_row['_action'] = 'skip' if (import_mode == 'append' and existing) else \
                                    'update' if (import_mode == 'update' and existing) else \
                                    'create'
-        
+
         preview_data.append(mapped_row)
-    
+
     return JsonResponse({
         'preview': preview_data,
         'total_existing': Ticket.objects.filter(

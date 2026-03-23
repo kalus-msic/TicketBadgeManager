@@ -1,8 +1,8 @@
 import socket
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from ..models import Log
+from ..models import Log, Event
 from ..services.ticket_service import TicketService
 from ..services.printing_service import PrintingService
 from ..decorators import login_required_ajax, ticket_verify_ratelimit
@@ -11,23 +11,23 @@ from ..utils.validators import sanitize_string
 
 
 @login_required_ajax
-def scanner_page(request, printer_queue='1'):
+def scanner_page(request, event_pk, printer_queue='1'):
     """Display QR code scanner page."""
-    from ..models import AppSettings
-    
+    event = get_object_or_404(Event, pk=event_pk)
+
     host = request.get_host()
-    
+
     # Check if accessed via HTTPS
     is_https = request.is_secure() or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https'
-    
+
     # Get printer queue from URL parameter or use default
     printer_queue = request.GET.get('printer_queue', printer_queue)
-    
-    # Get app settings
-    app_settings = AppSettings.objects.first()
-    auto_print = app_settings.auto_print_on_scan if app_settings else True
-    
+
+    # Get auto print setting from event
+    auto_print = event.auto_print_on_scan
+
     return render(request, 'tickets/scanner.html', {
+        'event': event,
         'host': host,
         'is_https': is_https,
         'mode': request.GET.get('mode', 'verify'),
@@ -37,40 +37,41 @@ def scanner_page(request, printer_queue='1'):
 
 
 @login_required_ajax
-def scanner_page1(request):
+def scanner_page1(request, event_pk):
     """Scanner page with printer queue 1."""
-    return scanner_page(request, printer_queue='1')
+    return scanner_page(request, event_pk, printer_queue='1')
 
 
 @login_required_ajax
-def scanner_page2(request):
+def scanner_page2(request, event_pk):
     """Scanner page with printer queue 2."""
-    return scanner_page(request, printer_queue='2')
+    return scanner_page(request, event_pk, printer_queue='2')
 
 
 @require_http_methods(['POST'])
 @ticket_verify_ratelimit
 @handle_ajax_errors
-def verify_ticket(request):
+def verify_ticket(request, event_pk):
     """Verify ticket and optionally print badge."""
+    event = get_object_or_404(Event, pk=event_pk)
     qr_code = sanitize_string(request.POST.get('qr_code', ''))
     print_badge = request.POST.get('print', 'false').lower() == 'true'
     printer_queue = request.POST.get('printer_queue', '1')
-    
+
     if not qr_code:
         return JsonResponse({
             'success': False,
             'message': 'QR code is required'
         })
-    
+
     # Verify ticket using service
-    success, message, ticket = TicketService.verify_ticket(qr_code)
-    
+    success, message, ticket = TicketService.verify_ticket(qr_code, event=event)
+
     response_data = {
         'success': success,
         'message': message
     }
-    
+
     if ticket:
         response_data['ticket'] = {
             'id': ticket.id,
@@ -79,23 +80,24 @@ def verify_ticket(request):
             'company': ticket.company_name or '',
             'status': ticket.get_status_display()
         }
-        
+
         # Print badge if requested and verification successful
         if success and print_badge:
             printing_service = PrintingService()
-            
+
             print_success = printing_service.print_ticket({
                 'qr_code': ticket.qr_code,
                 'name': ticket.name,
                 'company_name': ticket.company_name,
                 'event_name': ticket.event.name if ticket.event else ''
-            }, printer_queue)
-            
+            }, printer_queue, event=event)
+
             if print_success:
                 # Log successful print
                 Log.objects.create(
                     ticket=ticket,
                     ticket_qr=ticket.qr_code,
+                    event=event,
                     event_type='PRINT',
                     message=f"Label printed successfully on Scanner {printer_queue} (Printer: TDP-225{printer_queue})"
                 )
@@ -109,26 +111,28 @@ def verify_ticket(request):
                         f'TSC thermal printers require Windows with TSCLIB.dll library.'
                     )
                     response_data['print_warning'] = error_msg + ' The ticket was checked in successfully.'
-                    
+
                     # Log the print failure
                     Log.objects.create(
                         ticket=ticket,
                         ticket_qr=ticket.qr_code,
+                        event=event,
                         event_type='ERROR',
                         message=f"Print failed from Scanner {printer_queue}: {error_msg}"
                     )
                 else:
                     error_msg = 'Label printing failed - please check printer connection and configuration.'
                     response_data['print_warning'] = error_msg + ' The ticket was checked in successfully.'
-                    
+
                     # Log the print failure
                     Log.objects.create(
                         ticket=ticket,
                         ticket_qr=ticket.qr_code,
+                        event=event,
                         event_type='ERROR',
                         message=f"Print failed from Scanner {printer_queue}: {error_msg}"
                     )
-    
+
     return JsonResponse(response_data)
 
 
@@ -136,7 +140,7 @@ def verify_ticket(request):
 def check_server_status(request):
     """Check if server is running and get local IP."""
     import platform
-    
+
     try:
         # Get local IP - better method that works on all platforms
         local_ip = None
@@ -150,7 +154,7 @@ def check_server_status(request):
             # Fallback to hostname method
             hostname = socket.gethostname()
             local_ip = socket.gethostbyname(hostname)
-        
+
         # Get actual port from the request
         # When using runsslserver, the port is in HTTP_HOST
         host_header = request.META.get('HTTP_HOST', '')
@@ -159,12 +163,12 @@ def check_server_status(request):
         else:
             # Fallback to SERVER_PORT or default
             port = request.META.get('SERVER_PORT', '8000')
-        
+
         # Additional check - get the actual port we're listening on
         actual_port = request.get_port()
         if actual_port:
             port = str(actual_port)
-        
+
         # Check if server is accessible locally
         port_open = False
         try:
@@ -175,7 +179,7 @@ def check_server_status(request):
             port_open = result == 0
         except:
             pass
-        
+
         # Check if accessible from network (using actual local IP)
         accessible = False
         if port_open and local_ip:
@@ -187,7 +191,7 @@ def check_server_status(request):
                 accessible = result == 0
             except:
                 accessible = False
-        
+
         # Get all network interfaces for more info
         all_ips = []
         if platform.system() == "Windows":
@@ -207,7 +211,7 @@ def check_server_status(request):
                                 all_ips.append(ip)
             except:
                 all_ips = [local_ip] if local_ip else []
-        
+
         return JsonResponse({
             'port_open': port_open,
             'accessible': accessible,
