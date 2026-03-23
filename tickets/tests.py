@@ -115,10 +115,12 @@ class ReadFileToDfTest(TestCase):
 
 
 import uuid
+from datetime import date
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.cache import cache
 from django.contrib.auth.models import User
+from tickets.models import Event
 
 
 class MergeExecuteViewTest(TestCase):
@@ -129,6 +131,7 @@ class MergeExecuteViewTest(TestCase):
             username='staff', password='pass', is_staff=True
         )
         self.client.login(username='staff', password='pass')
+        self.event = Event.objects.create(name="Test Event", date=date(2026, 1, 1))
 
     def _make_pair(self):
         left = (
@@ -155,24 +158,27 @@ class MergeExecuteViewTest(TestCase):
         }, 60)
         return key
 
+    def _reverse(self, name, **kwargs):
+        return reverse(name, kwargs={'event_pk': self.event.pk, **kwargs})
+
     def test_get_redirects_to_merge_import(self):
-        url = reverse('tickets:merge_execute')
+        url = self._reverse('tickets:merge_execute')
         response = self.client.get(url)
-        self.assertRedirects(response, reverse('tickets:merge_import'))
+        self.assertRedirects(response, self._reverse('tickets:merge_import'))
 
     def test_expired_cache_redirects_with_error(self):
-        url = reverse('tickets:merge_execute')
+        url = self._reverse('tickets:merge_execute')
         response = self.client.post(url, {
             'session_key': 'nonexistent',
             'join_column': 'Číslo objednávky',
             'action': 'import',
         })
-        self.assertRedirects(response, reverse('tickets:merge_import'))
+        self.assertRedirects(response, self._reverse('tickets:merge_import'))
 
     def test_download_action_returns_csv(self):
         left, right = self._make_pair()
         key = self._seed_cache(left, right)
-        url = reverse('tickets:merge_execute')
+        url = self._reverse('tickets:merge_execute')
         response = self.client.post(url, {
             'session_key': key,
             'join_column': 'Číslo objednávky',
@@ -186,7 +192,7 @@ class MergeExecuteViewTest(TestCase):
     def test_download_does_not_delete_merge_cache(self):
         left, right = self._make_pair()
         key = self._seed_cache(left, right)
-        self.client.post(reverse('tickets:merge_execute'), {
+        self.client.post(self._reverse('tickets:merge_execute'), {
             'session_key': key,
             'join_column': 'Číslo objednávky',
             'action': 'download',
@@ -196,7 +202,7 @@ class MergeExecuteViewTest(TestCase):
     def test_import_action_creates_import_cache_and_redirects(self):
         left, right = self._make_pair()
         key = self._seed_cache(left, right)
-        response = self.client.post(reverse('tickets:merge_execute'), {
+        response = self.client.post(self._reverse('tickets:merge_execute'), {
             'session_key': key,
             'join_column': 'Číslo objednávky',
             'action': 'import',
@@ -209,7 +215,7 @@ class MergeExecuteViewTest(TestCase):
     def test_import_deletes_merge_cache(self):
         left, right = self._make_pair()
         key = self._seed_cache(left, right)
-        self.client.post(reverse('tickets:merge_execute'), {
+        self.client.post(self._reverse('tickets:merge_execute'), {
             'session_key': key,
             'join_column': 'Číslo objednávky',
             'action': 'import',
@@ -219,7 +225,7 @@ class MergeExecuteViewTest(TestCase):
     def test_import_cache_has_correct_structure(self):
         left, right = self._make_pair()
         key = self._seed_cache(left, right)
-        response = self.client.post(reverse('tickets:merge_execute'), {
+        response = self.client.post(self._reverse('tickets:merge_execute'), {
             'session_key': key,
             'join_column': 'Číslo objednávky',
             'action': 'import',
@@ -242,13 +248,6 @@ class MergeExecuteViewTest(TestCase):
                 self.assertNotEqual(val, 'nan')
 
 
-import io
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.core.cache import cache
-from django.contrib.auth.models import User
-
-
 class MergeImportViewTest(TestCase):
 
     def setUp(self):
@@ -257,9 +256,13 @@ class MergeImportViewTest(TestCase):
             username='staff2', password='pass', is_staff=True
         )
         self.client.login(username='staff2', password='pass')
+        self.event = Event.objects.create(name="Test Event", date=date(2026, 1, 1))
+
+    def _reverse(self, name, **kwargs):
+        return reverse(name, kwargs={'event_pk': self.event.pk, **kwargs})
 
     def test_get_renders_step1(self):
-        response = self.client.get(reverse('tickets:merge_import'))
+        response = self.client.get(self._reverse('tickets:merge_import'))
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('step', response.context or {})
 
@@ -281,7 +284,7 @@ class MergeImportViewTest(TestCase):
         right_file.name = 'transakce.csv'
 
         response = self.client.post(
-            reverse('tickets:merge_import'),
+            self._reverse('tickets:merge_import'),
             {'file1': left_file, 'file2': right_file},
         )
         self.assertEqual(response.status_code, 200)
@@ -309,7 +312,7 @@ class MergeImportViewTest(TestCase):
         right_file.name = 'transakce.csv'
 
         response = self.client.post(
-            reverse('tickets:merge_import'),
+            self._reverse('tickets:merge_import'),
             {'file1': left_file, 'file2': right_file},
         )
         session_key = response.context['session_key']
@@ -336,11 +339,11 @@ class MergeImportViewTest(TestCase):
         right_file.name = 'file2.csv'
 
         response = self.client.post(
-            reverse('tickets:merge_import'),
+            self._reverse('tickets:merge_import'),
             {'file1': left_file, 'file2': right_file},
             follow=True,
         )
-        self.assertRedirects(response, reverse('tickets:merge_import'))
+        self.assertRedirects(response, self._reverse('tickets:merge_import'))
         messages_list = list(response.context['messages'])
         self.assertTrue(any('common' in str(m).lower() or 'No common' in str(m) for m in messages_list))
 
@@ -353,6 +356,10 @@ class ImportMappingGetBranchTest(TestCase):
             username='staff3', password='pass', is_staff=True
         )
         self.client.login(username='staff3', password='pass')
+        self.event = Event.objects.create(name="Test Event", date=date(2026, 1, 1))
+
+    def _reverse(self, name, **kwargs):
+        return reverse(name, kwargs={'event_pk': self.event.pk, **kwargs})
 
     def _seed_import_cache(self):
         key = str(uuid.uuid4())
@@ -369,7 +376,7 @@ class ImportMappingGetBranchTest(TestCase):
     def test_get_with_valid_session_key_renders_mapping(self):
         key = self._seed_import_cache()
         response = self.client.get(
-            reverse('tickets:import_mapping') + f'?session_key={key}'
+            self._reverse('tickets:import_mapping') + f'?session_key={key}'
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'tickets/import_mapping.html')
@@ -384,10 +391,10 @@ class ImportMappingGetBranchTest(TestCase):
 
     def test_get_with_expired_key_redirects_with_error(self):
         response = self.client.get(
-            reverse('tickets:import_mapping') + '?session_key=expired-key',
+            self._reverse('tickets:import_mapping') + '?session_key=expired-key',
             follow=True,
         )
-        self.assertRedirects(response, reverse('tickets:merge_import'))
+        self.assertRedirects(response, self._reverse('tickets:merge_import'))
         msgs = list(response.context['messages'])
         self.assertTrue(any('expired' in str(m).lower() for m in msgs))
 
@@ -443,6 +450,10 @@ class ExportXlsxViewTest(TestCase):
             username='staff_xlsx', password='pass', is_staff=True
         )
         self.client.login(username='staff_xlsx', password='pass')
+        self.event = Event.objects.create(name="Test Event", date=date(2026, 1, 1))
+
+    def _reverse(self, name, **kwargs):
+        return reverse(name, kwargs={'event_pk': self.event.pk, **kwargs})
 
     def _make_ticket(self):
         return Ticket.objects.create(
@@ -450,10 +461,11 @@ class ExportXlsxViewTest(TestCase):
             name='Jana Nová',
             company_name='Firma s.r.o.',
             status='VALID',
+            event=self.event,
         )
 
     def test_returns_200_with_xlsx_content_type(self):
-        response = self.client.get(reverse('tickets:export_tickets_xlsx'))
+        response = self.client.get(self._reverse('tickets:export_tickets_xlsx'))
         self.assertEqual(response.status_code, 200)
         self.assertIn(
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -461,13 +473,13 @@ class ExportXlsxViewTest(TestCase):
         )
 
     def test_content_disposition_is_attachment(self):
-        response = self.client.get(reverse('tickets:export_tickets_xlsx'))
+        response = self.client.get(self._reverse('tickets:export_tickets_xlsx'))
         self.assertIn('attachment', response['Content-Disposition'])
         self.assertIn('.xlsx', response['Content-Disposition'])
 
     def test_response_is_valid_xlsx_with_correct_data(self):
         self._make_ticket()
-        response = self.client.get(reverse('tickets:export_tickets_xlsx'))
+        response = self.client.get(self._reverse('tickets:export_tickets_xlsx'))
         wb = _load_workbook(_io.BytesIO(response.content))
         ws = wb.active
         self.assertEqual(ws.cell(1, 1).value, 'QR Code')
@@ -476,7 +488,7 @@ class ExportXlsxViewTest(TestCase):
         self.assertEqual(ws.cell(2, 2).value, 'Jana Nová')
 
     def test_csv_export_still_works(self):
-        response = self.client.get(reverse('tickets:export_tickets_csv'))
+        response = self.client.get(self._reverse('tickets:export_tickets_csv'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('text/csv', response['Content-Type'])
 
