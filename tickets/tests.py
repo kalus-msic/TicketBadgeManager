@@ -542,3 +542,30 @@ class EventsContextProcessorTest(TestCase):
         request.resolver_match.kwargs = {'event_pk': self.event.pk}
         ctx = events_context(request)
         self.assertEqual(ctx['active_event'], self.event)
+
+
+from tickets.services.ticket_service import TicketService
+
+
+class TicketServiceEventTest(TestCase):
+    def setUp(self):
+        self.event = Event.objects.create(name="Test", date=date(2026, 1, 1))
+        self.other_event = Event.objects.create(name="Other", date=date(2026, 2, 1))
+        Ticket.objects.create(qr_code="TICKET-ALICE-001", name="Alice", event=self.event)
+        Ticket.objects.create(qr_code="TICKET-BOB-002", name="Bob", event=self.other_event)
+
+    def test_get_statistics_scoped_to_event(self):
+        stats = TicketService.get_statistics(self.event)
+        self.assertEqual(stats['total'], 1)
+
+    def test_search_tickets_scoped_to_event(self):
+        results = TicketService.search_tickets(search_query='', event=self.event)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].name, 'Alice')
+
+    def test_verify_ticket_creates_log_with_event(self):
+        success, msg, ticket = TicketService.verify_ticket("TICKET-ALICE-001", self.event)
+        self.assertTrue(success)
+        from tickets.models import Log
+        log = Log.objects.filter(event=self.event, event_type='CHECKIN').first()
+        self.assertIsNotNone(log)

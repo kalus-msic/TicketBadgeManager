@@ -61,7 +61,7 @@ class PrintingService:
         else:
             logger.info(f"Running on {platform.system()} - TSC printer support not available")
     
-    def print_ticket(self, ticket_data: dict, printer_queue: str = "1") -> bool:
+    def print_ticket(self, ticket_data: dict, printer_queue: str = "1", event=None) -> bool:
         """Print a ticket with the given data."""
         if platform.system() != "Windows":
             os_name = platform.system()
@@ -90,7 +90,7 @@ class PrintingService:
             image_path = self._generate_ticket_image(ticket_data)
             
             # Print the image
-            success = self._send_to_printer(image_path, printer_queue)
+            success = self._send_to_printer(image_path, printer_queue, event=event)
             
             # Clean up
             if os.path.exists(image_path):
@@ -289,16 +289,14 @@ class PrintingService:
         
         return lines if lines else [text]  # Return at least the original text
     
-    def _send_to_printer(self, image_path: str, printer_queue: str = "1") -> bool:
+    def _send_to_printer(self, image_path: str, printer_queue: str = "1", event=None) -> bool:
         """Send image to printer using TSCLIB."""
         try:
-            # Resolve printer name from DB settings, fall back to default
-            from ..models import AppSettings
-            app_settings = AppSettings.objects.first()
-            if printer_queue == "1":
-                printer_name = (app_settings.printer_1_name if app_settings else None) or "TDP-2251"
+            # Resolve printer name from event, fall back to default
+            if event:
+                printer_name = event.printer_1_name if printer_queue == "1" else event.printer_2_name
             else:
-                printer_name = (app_settings.printer_2_name if app_settings else None) or "TDP-2252"
+                printer_name = f"TDP-225{printer_queue}"
 
             # Check if printer exists
             import win32print

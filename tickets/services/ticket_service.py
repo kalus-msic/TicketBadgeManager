@@ -15,12 +15,15 @@ class TicketService:
     """Service for handling ticket-related business logic."""
     
     @staticmethod
-    def search_tickets(search_query: str = '', status_filter: str = '') -> List[Ticket]:
+    def search_tickets(search_query: str = '', status_filter: str = '', event=None) -> List[Ticket]:
         """Search tickets with optimized queries."""
         tickets = Ticket.objects.select_related().prefetch_related(
             Prefetch('checkin_set', queryset=CheckIn.objects.order_by('-check_in_time'))
         )
-        
+
+        if event is not None:
+            tickets = tickets.filter(event=event)
+
         if search_query:
             # For diacritics-insensitive search, we need to search all tickets
             # and filter in Python
@@ -61,7 +64,7 @@ class TicketService:
         ).first()
     
     @staticmethod
-    def verify_ticket(qr_code: str) -> Tuple[bool, str, Optional[Ticket]]:
+    def verify_ticket(qr_code: str, event=None) -> Tuple[bool, str, Optional[Ticket]]:
         """Verify ticket and perform check-in if valid."""
         try:
             ticket = TicketService.get_ticket_by_qr(qr_code)
@@ -70,27 +73,30 @@ class TicketService:
                 Log.objects.create(
                     ticket_qr=qr_code,
                     event_type='ERROR',
+                    event=event,
                     message=f'Ticket not found: {qr_code}'
                 )
                 return False, "Ticket not found", None
-            
+
             if ticket.status == 'USED':
                 last_checkin = ticket.checkin_set.last()
                 Log.objects.create(
                     ticket=ticket,
                     event_type='ERROR',
+                    event=event,
                     message='Attempted to use already used ticket'
                 )
                 return False, f"Already used at {last_checkin.check_in_time if last_checkin else 'unknown time'}", ticket
-            
+
             if ticket.status == 'CANCELLED':
                 Log.objects.create(
                     ticket=ticket,
                     event_type='ERROR',
+                    event=event,
                     message='Attempted to use cancelled ticket'
                 )
                 return False, "Ticket is cancelled", ticket
-            
+
             # Perform check-in
             with transaction.atomic():
                 ticket.status = 'USED'
@@ -99,6 +105,7 @@ class TicketService:
                 Log.objects.create(
                     ticket=ticket,
                     event_type='CHECKIN',
+                    event=event,
                     message='Successful check-in'
                 )
             
@@ -111,7 +118,7 @@ class TicketService:
             return False, "System error during verification", None
     
     @staticmethod
-    def import_tickets_from_csv(file_content: str, replace_existing: bool = False) -> Dict[str, int]:
+    def import_tickets_from_csv(file_content: str, replace_existing: bool = False, event=None) -> Dict[str, int]:
         """Import tickets from CSV content."""
         results = {
             'imported': 0,
@@ -127,9 +134,13 @@ class TicketService:
         
         with transaction.atomic():
             if replace_existing:
-                Ticket.objects.all().delete()
+                if event:
+                    Ticket.objects.filter(event=event).delete()
+                else:
+                    Ticket.objects.all().delete()
                 Log.objects.create(
                     event_type='SYSTEM',
+                    event=event,
                     message='All existing tickets deleted for import'
                 )
             
@@ -202,9 +213,9 @@ class TicketService:
                         qr_code=qr_code,
                         name=name,
                         company_name=company_name,
-                        # event_name removed; event FK set by caller
                         email=email,
-                        status='VALID'
+                        status='VALID',
+                        event=event,
                     )
                     
                     results['imported'] += 1
@@ -216,6 +227,7 @@ class TicketService:
         
         Log.objects.create(
             event_type='SYSTEM',
+            event=event,
             message=f"CSV import completed: {results['imported']} imported, "
                    f"{results['errors']} errors, {results['duplicates']} duplicates"
         )
@@ -223,49 +235,52 @@ class TicketService:
         return results
     
     @staticmethod
-    def get_statistics() -> Dict[str, int]:
+    def get_statistics(event=None) -> Dict[str, int]:
         """Get ticket statistics with optimized queries."""
         from django.db.models import Count, Q
         from django.db.models.functions import TruncHour, TruncDate
         from django.utils import timezone
         from datetime import timedelta
-        
-        stats = Ticket.objects.aggregate(
+
+        ticket_qs = Ticket.objects.filter(event=event) if event else Ticket.objects.all()
+        checkin_qs = CheckIn.objects.filter(ticket__event=event) if event else CheckIn.objects
+
+        stats = ticket_qs.aggregate(
             total=Count('id'),
             valid=Count('id', filter=Q(status='VALID')),
             used=Count('id', filter=Q(status='USED')),
             cancelled=Count('id', filter=Q(status='CANCELLED'))
         )
-        
-        stats['checkins'] = CheckIn.objects.count()
+
+        stats['checkins'] = checkin_qs.count()
         stats['percentage_checked_in'] = round(
             (stats['used'] / stats['total'] * 100) if stats['total'] > 0 else 0, 1
         )
-        
+
         # Check-ins by hour for last 24 hours
         last_24h = timezone.now() - timedelta(hours=24)
         stats['checkins_by_hour'] = list(
-            CheckIn.objects
+            checkin_qs
             .filter(check_in_time__gte=last_24h)
             .annotate(hour=TruncHour('check_in_time'))
             .values('hour')
             .annotate(count=Count('id'))
             .order_by('hour')
         )
-        
+
         # Recent check-ins rate (last hour vs previous hour)
         last_hour = timezone.now() - timedelta(hours=1)
         prev_hour = timezone.now() - timedelta(hours=2)
-        
-        last_hour_count = CheckIn.objects.filter(check_in_time__gte=last_hour).count()
-        prev_hour_count = CheckIn.objects.filter(
+
+        last_hour_count = checkin_qs.filter(check_in_time__gte=last_hour).count()
+        prev_hour_count = checkin_qs.filter(
             check_in_time__gte=prev_hour,
             check_in_time__lt=last_hour
         ).count()
-        
+
         stats['last_hour_checkins'] = last_hour_count
         stats['checkin_trend'] = 'up' if last_hour_count > prev_hour_count else (
             'down' if last_hour_count < prev_hour_count else 'stable'
         )
-        
+
         return stats

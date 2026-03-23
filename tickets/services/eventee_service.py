@@ -2,20 +2,24 @@ import logging
 import requests
 from typing import Dict, Optional, Tuple
 from django.conf import settings
-from ..models import AppSettings
 
 logger = logging.getLogger(__name__)
 
 
 class EventeeService:
     """Service for handling Eventee API interactions."""
-    
+
     API_BASE_URL = "https://api.eventee.co/public/v1"
     TIMEOUT = 30  # seconds
-    
-    def __init__(self):
-        self.settings = AppSettings.objects.first()
-        self.api_token = self.settings.eventee_api_token if self.settings else None
+
+    def __init__(self, event=None):
+        if event:
+            self.api_token = event.eventee_api_token
+        else:
+            # Fallback during migration period
+            from ..models import AppSettings
+            settings_obj = AppSettings.objects.first()
+            self.api_token = settings_obj.eventee_api_token if settings_obj else None
     
     @property
     def headers(self) -> Dict[str, str]:
@@ -152,15 +156,17 @@ class EventeeService:
     def update_api_token(self, token: str) -> bool:
         """Update API token in settings."""
         try:
-            if not self.settings:
-                self.settings = AppSettings.objects.create(eventee_api_token=token)
+            from ..models import AppSettings
+            settings_obj = AppSettings.objects.first()
+            if not settings_obj:
+                AppSettings.objects.create(eventee_api_token=token)
             else:
-                self.settings.eventee_api_token = token
-                self.settings.save()
-            
+                settings_obj.eventee_api_token = token
+                settings_obj.save()
+
             self.api_token = token
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to update API token: {e}")
             return False
