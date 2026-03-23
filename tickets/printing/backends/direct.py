@@ -96,6 +96,9 @@ class DirectBackend(AbstractBackend):
         img.thumbnail((self.PWIDTH * self.DOT, self.PHEIGHT * self.DOT), PILImage.LANCZOS)
         width, height = img.size
 
+        if width < 248:
+            raise ValueError(f"Image too small after thumbnail: {width}x{height}")
+
         img = img.convert("L")
         data = list(img.getdata())
 
