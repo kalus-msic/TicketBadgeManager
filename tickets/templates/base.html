@@ -16,13 +16,39 @@
 <body style="min-height: 100vh; display: flex; flex-direction: column;">
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'tickets:index' %}">{% trans "TicketBadgeManager" %}</a>
+            <a class="navbar-brand" href="{% url 'tickets:event_list' %}">{% trans "TicketBadgeManager" %}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             {% with url_name=request.resolver_match.url_name %}
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
+                    {% if active_event %}
+
+                    <!-- Event switcher dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-calendar-event me-1"></i>{{ active_event.name }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% for e in events_list %}
+                            <li>
+                                <a class="dropdown-item {% if e.pk == active_event.pk %}active{% endif %}"
+                                   href="{% url 'tickets:ticket_list' event_pk=e.pk %}">
+                                    <i class="bi bi-calendar3 me-1"></i>{{ e.name }}
+                                    <small class="text-muted ms-1">{{ e.date }}</small>
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'tickets:event_list' %}">
+                                    <i class="bi bi-list me-2"></i>{% trans "All Events" %}
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
 
                     <!-- Skenovat -->
                     <li class="nav-item dropdown">
@@ -33,13 +59,13 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item {% if url_name == 'scanner1' %}active{% endif %}"
-                                   href="{% url 'tickets:scanner1' %}">
+                                   href="{% url 'tickets:scanner1' event_pk=active_event.pk %}">
                                     <i class="bi bi-printer me-2"></i>{% trans "Printer" %} 1
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item {% if url_name == 'scanner2' %}active{% endif %}"
-                                   href="{% url 'tickets:scanner2' %}">
+                                   href="{% url 'tickets:scanner2' event_pk=active_event.pk %}">
                                     <i class="bi bi-printer me-2"></i>{% trans "Printer" %} 2
                                 </a>
                             </li>
@@ -49,7 +75,7 @@
                     <!-- Tickets -->
                     <li class="nav-item">
                         <a class="nav-link {% if url_name == 'ticket_list' %}active{% endif %}"
-                           href="{% url 'tickets:ticket_list' %}">
+                           href="{% url 'tickets:ticket_list' event_pk=active_event.pk %}">
                             <i class="bi bi-ticket-perforated me-1"></i>{% trans "Tickets" %}
                         </a>
                     </li>
@@ -63,41 +89,43 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item {% if url_name == 'import_page' %}active{% endif %}"
-                                   href="{% url 'tickets:import_page' %}">
+                                   href="{% url 'tickets:import_page' event_pk=active_event.pk %}">
                                     <i class="bi bi-upload me-2"></i>{% trans "Import" %}
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item {% if url_name == 'special_labels' %}active{% endif %}"
-                                   href="{% url 'tickets:special_labels' %}">
+                                   href="{% url 'tickets:special_labels' event_pk=active_event.pk %}">
                                     <i class="bi bi-tags me-2"></i>{% trans "Special Labels" %}
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item {% if url_name == 'kiosk' %}active{% endif %}"
-                                   href="{% url 'tickets:kiosk' %}" target="_blank">
+                                   href="{% url 'tickets:kiosk' event_pk=active_event.pk %}" target="_blank">
                                     <i class="bi bi-display me-2"></i>{% trans "Kiosk" %}
                                     <i class="bi bi-box-arrow-up-right ms-1" style="font-size:0.7rem; opacity:0.6;"></i>
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item {% if url_name == 'ticket_log_list' %}active{% endif %}"
-                                   href="{% url 'tickets:ticket_log_list' %}">
+                                   href="{% url 'tickets:ticket_log_list' event_pk=active_event.pk %}">
                                     <i class="bi bi-journal-text me-2"></i>{% trans "Logs" %}
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item {% if url_name == 'settings' %}active{% endif %}"
-                                   href="{% url 'tickets:settings' %}">
+                                   href="{% url 'tickets:settings' event_pk=active_event.pk %}">
                                     <i class="bi bi-gear me-2"></i>{% trans "Settings" %}
                                 </a>
                             </li>
                         </ul>
                     </li>
 
+                    {% endif %}{# end if active_event #}
                 </ul>
+
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         {% include 'includes/language_switcher.html' %}
