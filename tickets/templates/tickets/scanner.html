@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 {% block content %}
-<div class="container mt-4" id="webusb-page-root" data-print-backend="{{ event.print_backend }}" data-event-pk="{{ active_event.pk }}">
+<div class="container mt-4" id="webusb-page-root" data-print-backend="{{ active_event.print_backend }}" data-event-pk="{{ active_event.pk }}">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
@@ -125,7 +125,7 @@ function verifyTicket(qrCode, printBadge = false, verifyBadge = true) {
     .then(data => {
         console.log('Verify response:', data);  // Debug log
         // Delegate client-side printing to PrintManager
-        if (data.print_backend) {
+        if (data.print_backend && window.PrintManager) {
             PrintManager.handle(data);
         }
         const resultDiv = document.getElementById('result');
