@@ -10,7 +10,7 @@ from .import_views import (
 )
 from .scanner_views import (
     scanner_page, scanner_page1, scanner_page2,
-    verify_ticket, check_server_status
+    verify_ticket, check_server_status, print_confirm
 )
 from .settings_views import (
     settings, delete_all_data, delete_checkins,
@@ -35,7 +35,7 @@ __all__ = [
     'import_page', 'import_replace_tickets', 'import_add_tickets', 'merge_import',
     'import_mapping', 'import_execute', 'import_preview',
     'scanner_page', 'scanner_page1', 'scanner_page2', 'verify_ticket',
-    'check_server_status',
+    'check_server_status', 'print_confirm',
     'settings', 'delete_all_data', 'delete_checkins',
     'update_eventee_token', 'update_required_fields', 'update_printer_settings',
     'ticket_log_list', 'delete_logs',

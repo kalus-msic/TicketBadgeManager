@@ -162,6 +162,49 @@ def verify_ticket(request, event_pk):
 
 
 @login_required_ajax
+@require_http_methods(['POST'])
+@handle_ajax_errors
+def print_confirm(request, event_pk):
+    """Confirm print result from client-side backend (WebUSB/Agent)."""
+    import json
+    event = get_object_or_404(Event, pk=event_pk)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+
+    ticket_id = data.get('ticket_id')
+    success = data.get('success', False)
+    printer_queue = data.get('printer_queue', '1')
+    error_msg = data.get('error', '')
+
+    ticket = None
+    if ticket_id:
+        from ..models import Ticket
+        ticket = Ticket.objects.filter(pk=ticket_id, event=event).first()
+
+    if success:
+        Log.objects.create(
+            ticket=ticket,
+            ticket_qr=ticket.qr_code if ticket else '',
+            event=event,
+            event_type='PRINT',
+            message=f"Label printed via {event.print_backend} on queue {printer_queue}"
+        )
+    else:
+        Log.objects.create(
+            ticket=ticket,
+            ticket_qr=ticket.qr_code if ticket else '',
+            event=event,
+            event_type='ERROR',
+            message=f"Print failed via {event.print_backend}: {error_msg}"
+        )
+
+    return JsonResponse({'success': True})
+
+
+@login_required_ajax
 def check_server_status(request):
     """Check if server is running and get local IP."""
     import platform

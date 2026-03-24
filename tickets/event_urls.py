@@ -20,6 +20,7 @@ urlpatterns = [
     path('scanner1/', views.scanner_page1, name='scanner1'),
     path('scanner2/', views.scanner_page2, name='scanner2'),
     path('verify/', views.verify_ticket, name='verify_ticket'),
+    path('print-confirm/', views.print_confirm, name='print_confirm'),
 
     # Import
     path('import/', views.import_page, name='import_page'),

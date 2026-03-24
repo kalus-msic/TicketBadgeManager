@@ -766,3 +766,44 @@ class ScannerPrintBackendTest(TestCase):
         return User.objects.create_user(
             'staff', 'staff@test.com', 'pass', is_staff=True
         )
+
+
+class PrintConfirmTest(TestCase):
+    def setUp(self):
+        from datetime import date
+        self.event = Event.objects.create(
+            name="Test", date=date(2026, 1, 1), print_backend="webusb"
+        )
+        self.ticket = Ticket.objects.create(
+            qr_code="CONF001", name="Test", event=self.event
+        )
+
+    def test_confirm_creates_log(self):
+        self.client.force_login(self._create_staff_user())
+        response = self.client.post(
+            f'/events/{self.event.pk}/print-confirm/',
+            '{"ticket_id": ' + str(self.ticket.pk) + ', "success": true, "printer_queue": "1"}',
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Log.objects.filter(
+            ticket=self.ticket, event_type='PRINT'
+        ).exists())
+
+    def test_confirm_failure_creates_error_log(self):
+        self.client.force_login(self._create_staff_user())
+        response = self.client.post(
+            f'/events/{self.event.pk}/print-confirm/',
+            '{"ticket_id": ' + str(self.ticket.pk) + ', "success": false, "error": "USB disconnected"}',
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Log.objects.filter(
+            ticket=self.ticket, event_type='ERROR'
+        ).exists())
+
+    def _create_staff_user(self):
+        from django.contrib.auth.models import User
+        return User.objects.create_user(
+            'staff', 'staff@test.com', 'pass', is_staff=True
+        )
