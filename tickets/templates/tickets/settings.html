@@ -116,18 +116,33 @@
                                     <h5 class="card-title">{% trans "Printer Settings" %}</h5>
                                     <form method="post" action="{% url 'tickets:update_printer_settings' event_pk=active_event.pk %}">
                                         {% csrf_token %}
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="printer_1_name" class="form-label">{% trans "Printer 1 Name" %}</label>
-                                                <input type="text" class="form-control" id="printer_1_name" name="printer_1_name"
-                                                       value="{{ eventee_settings.printer_1_name|default:'TDP-2251' }}">
-                                                <div class="form-text">{% trans "Windows printer name for queue 1" %}</div>
+                                        <div class="mb-3">
+                                            <label for="print_backend" class="form-label">{% trans "Print Backend" %}</label>
+                                            <select class="form-select" id="print_backend" name="print_backend">
+                                                {% for value, label in event.PRINT_BACKEND_CHOICES %}
+                                                <option value="{{ value }}" {% if event.print_backend == value %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <div class="form-text">
+                                                {% trans "Direct: prints from this server via TSCLIB.dll (offline mode). WebUSB: prints from browser via USB. Agent: prints via local agent app." %}
                                             </div>
-                                            <div class="col-md-6">
-                                                <label for="printer_2_name" class="form-label">{% trans "Printer 2 Name" %}</label>
-                                                <input type="text" class="form-control" id="printer_2_name" name="printer_2_name"
-                                                       value="{{ eventee_settings.printer_2_name|default:'TDP-2252' }}">
-                                                <div class="form-text">{% trans "Windows printer name for queue 2" %}</div>
+                                        </div>
+                                        <div id="printer-names-section">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="printer_1_name" class="form-label">{% trans "Printer 1 Name" %}</label>
+                                                    <input type="text" class="form-control" id="printer_1_name" name="printer_1_name"
+                                                           value="{{ eventee_settings.printer_1_name|default:'TDP-2251' }}">
+                                                    <div class="form-text">{% trans "Windows printer name for queue 1" %}</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="printer_2_name" class="form-label">{% trans "Printer 2 Name" %}</label>
+                                                    <input type="text" class="form-control" id="printer_2_name" name="printer_2_name"
+                                                           value="{{ eventee_settings.printer_2_name|default:'TDP-2252' }}">
+                                                    <div class="form-text">{% trans "Windows printer name for queue 2" %}</div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="form-check mb-3">
@@ -146,6 +161,17 @@
                                             {% trans "Save Settings" %}
                                         </button>
                                     </form>
+                                    <script>
+                                    (function() {
+                                        const backendSelect = document.getElementById('print_backend');
+                                        const namesSection = document.getElementById('printer-names-section');
+                                        function togglePrinterNames() {
+                                            namesSection.style.display = backendSelect.value === 'webusb' ? 'none' : '';
+                                        }
+                                        backendSelect.addEventListener('change', togglePrinterNames);
+                                        togglePrinterNames();
+                                    })();
+                                    </script>
                                 </div>
                             </div>
                         </div>
@@ -162,7 +188,7 @@
                                     <form method="post" action="{% url 'tickets:delete_all_data' event_pk=active_event.pk %}">
                                         {% csrf_token %}
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
-                                            Delete All Data
+                                            {% trans "Delete All Data" %}
                                         </button>
                                     </form>
                                 </div>
