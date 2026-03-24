@@ -60,6 +60,8 @@ class DirectBackend(AbstractBackend):
     def print_image(self, img, printer_name: str) -> dict:
         """Send PIL image to printer via TSCLIB.dll API calls."""
         if not self._tsclibrary:
+            if platform.system() != "Windows":
+                return {'status': 'error', 'message': 'TSC thermal printers require Windows with TSCLIB.dll.'}
             return {'status': 'error', 'message': 'TSCLIB.dll not loaded'}
 
         if printer_name not in self._printers_available:
