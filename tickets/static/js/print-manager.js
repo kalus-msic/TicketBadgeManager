@@ -53,6 +53,7 @@
     }
 
     function showPairButton() {
+        if (!window.WebUSBBackend) { console.error('WebUSB backend not loaded'); return; }
         const queue = _getQueue();
         window.WebUSBBackend.pairDevice(queue).then(device => {
             setStatus('ready', device.productName);
@@ -76,6 +77,7 @@
         const nextAttempt = (attempt || 0) + 1;
         if (nextAttempt > 3) {
             _pending = null;
+            setStatus('error', printerName || '', 'Max retry attempts reached');
             return;
         }
         _pending = { ..._pending, attempt: nextAttempt };
@@ -110,7 +112,10 @@
         const eventPk = _getEventPk();
 
         savePending({ base64Data, printerName, queue, ticketId, eventPk, attempt: 0 });
-        await window.WebUSBBackend.print(base64Data, printerName, queue, ticketId, eventPk);
+        if (!window.WebUSBBackend) { setStatus('error', printerName, 'WebUSB backend not loaded'); return; }
+        await window.WebUSBBackend.print(base64Data, printerName, queue, ticketId, eventPk).catch(e => {
+            console.error('PrintManager: print delegation failed', e);
+        });
     }
 
     // --- Init on page load ---
@@ -126,8 +131,15 @@
             gearPanel.style.display = 'none';
         }
         if (backend === 'webusb') {
+            if (!window.WebUSBBackend) {
+                setStatus('error', '', 'WebUSB backend not loaded');
+                return;
+            }
             window.WebUSBBackend.initStatusCheck(_getQueue()).then(({ state, printerName }) => {
                 setStatus(state, printerName);
+            }).catch(e => {
+                console.error('PrintManager: initStatusCheck failed', e);
+                setStatus('error', '', 'Printer status check failed');
             });
         }
     });
