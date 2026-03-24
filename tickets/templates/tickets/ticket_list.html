@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row mb-4">
         <div class="col">
             <h1>{% trans "Tickets" %}</h1>
@@ -142,12 +142,30 @@
                                    title="{% trans 'View details' %}">
                                   <i class="bi bi-eye"></i>
                                 </a>
-                                <!-- Verify & Print -->
-                                <a href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1"
-                                   class="btn btn-sm btn-primary"
-                                   title="{% trans 'Verify ticket & print label' %}">
-                                  <i class="bi bi-ticket"></i>
-                                </a>
+                                <!-- Verify & Print Dropdown -->
+                                <div class="btn-group">
+                                    <a href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1&print=true"
+                                       class="btn btn-sm btn-primary"
+                                       title="{% trans 'Verify ticket & print label' %}">
+                                      <i class="bi bi-ticket"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="visually-hidden">{% trans "Toggle Dropdown" %}</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1&verify=true&print=false">
+                                                <i class="bi bi-check-circle me-2"></i>{% trans "Verify Ticket" %}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1&verify=false&print=true">
+                                                <i class="bi bi-printer me-2"></i>{% trans "Print Label" %}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                               </td>
                               <td>{{ ticket.qr_code }}</td>
                               <td>{{ ticket.name }}</td>

@@ -1,9 +1,10 @@
 
 {% extends 'base.html' %}
 {% load i18n %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <!-- Ostatní nastavení -->
@@ -142,6 +143,52 @@
                                                     <input type="text" class="form-control" id="printer_2_name" name="printer_2_name"
                                                            value="{{ eventee_settings.printer_2_name|default:'TDP-2252' }}">
                                                     <div class="form-text">{% trans "Windows printer name for queue 2" %}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="webusb-pairing-section">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">{% trans "Queue 1 Printer" %}</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text" id="webusb-q1-status">—</span>
+                                                        <button type="button" class="btn btn-outline-primary"
+                                                                onclick="WebUSBBackend.pairDevice('1').then(d => { document.getElementById('webusb-q1-status').textContent = d.productName; }).catch(() => {})">
+                                                            {% trans "Pair Queue 1" %}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">{% trans "Queue 2 Printer" %}</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text" id="webusb-q2-status">—</span>
+                                                        <button type="button" class="btn btn-outline-primary"
+                                                                onclick="WebUSBBackend.pairDevice('2').then(d => { document.getElementById('webusb-q2-status').textContent = d.productName; }).catch(() => {})">
+                                                            {% trans "Pair Queue 2" %}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Zadig driver guide (collapsible) -->
+                                            <div class="mb-3" id="webusb-zadig-section">
+                                                <button class="btn btn-outline-secondary btn-sm" type="button"
+                                                        data-bs-toggle="collapse" data-bs-target="#zadigGuide">
+                                                    {% trans "WinUSB driver installation (Zadig)" %}
+                                                </button>
+                                                <div class="collapse mt-2" id="zadigGuide">
+                                                    <div class="card card-body small">
+                                                        <p class="mb-1"><strong>{% trans "Required for WebUSB on Windows" %}</strong></p>
+                                                        <ol class="mb-2">
+                                                            <li>{% trans "Download Zadig" %} (zadig.akeo.ie)</li>
+                                                            <li>{% trans "Open Zadig → Options → List All Devices" %}</li>
+                                                            <li>{% trans "Select TSC TDP-225x from the list" %}</li>
+                                                            <li>{% trans "Select WinUSB driver and click Install" %}</li>
+                                                        </ol>
+                                                        <p class="text-warning mb-0">
+                                                            <i class="bi bi-exclamation-triangle"></i>
+                                                            {% trans "Warning: WinUSB is mutually exclusive with Direct backend (TSCLIB.dll). After installing WinUSB, Direct printing on this machine will stop working." %}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

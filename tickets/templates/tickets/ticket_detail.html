@@ -1,64 +1,65 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">Ticket Details</h3>
+                    <h3 class="mb-0">{% trans "Ticket Details" %}</h3>
                     <div>
                         <a href="{% url 'tickets:ticket_edit' event_pk=active_event.pk pk=ticket.pk %}" class="btn btn-primary">
-                            <i class="bi bi-pencil"></i> Edit
+                            <i class="bi bi-pencil"></i> {% trans "Edit" %}
                         </a>
                         <a href="{% url 'tickets:ticket_delete' event_pk=active_event.pk pk=ticket.pk %}" class="btn btn-danger">
-                            <i class="bi bi-trash"></i> Delete
+                            <i class="bi bi-trash"></i> {% trans "Delete" %}
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">QR Code:</div>
+                        <div class="col-md-4 fw-bold">{% trans "QR Code" %}:</div>
                         <div class="col-md-8">{{ ticket.qr_code }}</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Name:</div>
+                        <div class="col-md-4 fw-bold">{% trans "Name" %}:</div>
                         <div class="col-md-8">{{ ticket.name }}</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Company:</div>
+                        <div class="col-md-4 fw-bold">{% trans "Company" %}:</div>
                         <div class="col-md-8">{{ ticket.company_name }}</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Email:</div>
+                        <div class="col-md-4 fw-bold">{% trans "Email" %}:</div>
                         <div class="col-md-8">{{ ticket.email }}</div>
                     </div>
                     <!-- Nový řádek pro zobrazení hodnoty invited -->
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Invited to Eventee:</div>
+                        <div class="col-md-4 fw-bold">{% trans "Invited to Eventee" %}:</div>
                         <div class="col-md-8">
                             {% if ticket.invited %}
-                                <span class="badge bg-success">Yes</span>
+                                <span class="badge bg-success">{% trans "Yes" %}</span>
                             {% else %}
-                                <span class="badge bg-secondary">No</span>
+                                <span class="badge bg-secondary">{% trans "No" %}</span>
                             {% endif %}
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-4 fw-bold">{% trans "Status" %}:</div>
                         <div class="col-md-8">
                             <span class="badge 
                                 {% if ticket.status == 'VALID' %}bg-success
                                 {% elif ticket.status == 'USED' %}bg-warning
                                 {% elif ticket.status == 'CANCELLED' %}bg-danger
                                 {% endif %}">
-                                {{ ticket.status }}
+                                {{ ticket.get_status_display }}
                             </span>
                         </div>
                     </div>
                     
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Created:</div>
+                        <div class="col-md-4 fw-bold">{% trans "Created" %}:</div>
                         <div class="col-md-8">{{ ticket.created_at|date:"Y-m-d H:i:s" }}</div>
                     </div>
                 </div>
@@ -67,7 +68,7 @@
             <!-- Logs -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h4 class="mb-0">Logs</h4>
+                    <h4 class="mb-0">{% trans "Logs" %}</h4>
                 </div>
                 <div class="card-body">
                     {% if ticket.logs.all %}
@@ -75,9 +76,9 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Date/Time</th>
-                                        <th>Event Type</th>
-                                        <th>Message</th>
+                                        <th>{% trans "Date/Time" %}</th>
+                                        <th>{% trans "Event Type" %}</th>
+                                        <th>{% trans "Message" %}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -92,7 +93,7 @@
                             </table>
                         </div>
                     {% else %}
-                        <p class="text-center mb-0">No log entries available</p>
+                        <p class="text-center mb-0">{% trans "No log entries available" %}</p>
                     {% endif %}
                 </div>
             </div>
@@ -102,7 +103,7 @@
             <!-- QR Code Display -->
             <div class="card">
                 <div class="card-header">
-                    <h4 class="mb-0">QR Code</h4>
+                    <h4 class="mb-0">{% trans "QR Code" %}</h4>
                 </div>
                 <div class="card-body text-center">
                     <img src="{% url 'tickets:generate_qr_code' ticket.pk %}" 
@@ -114,7 +115,7 @@
             <!-- Quick Actions -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h4 class="mb-0">Quick Actions</h4>
+                    <h4 class="mb-0">{% trans "Quick Actions" %}</h4>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
@@ -123,15 +124,32 @@
                             {% csrf_token %}
                             <input type="hidden" name="ticket_ids" value="{{ ticket.id }}">
                             <button type="submit" class="btn btn-success w-100">
-                                <i class="bi bi-arrow-clockwise"></i> Reset status to default
+                                <i class="bi bi-arrow-clockwise"></i> {% trans "Reset status to default" %}
                             </button>
                         </form>
                         {% endif %}
-                        <a href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1" class="btn btn-primary">
-                            <i class="bi bi-ticket"></i> Verify Ticket and print label
-                        </a>
+                        <div class="btn-group w-100">
+                            <a href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1&print=true" class="btn btn-primary">
+                                <i class="bi bi-ticket"></i> {% trans "Verify Ticket and print label" %}
+                            </a>
+                            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">{% trans "Toggle Dropdown" %}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1&verify=true&print=false">
+                                        <i class="bi bi-check-circle me-2"></i>{% trans "Verify Ticket" %}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'tickets:scanner' event_pk=active_event.pk %}?qr_code={{ ticket.qr_code }}&printer_queue=1&verify=false&print=true">
+                                        <i class="bi bi-printer me-2"></i>{% trans "Print Label" %}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                         <a href="{% url 'tickets:ticket_list' event_pk=active_event.pk %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to Tickets
+                            <i class="bi bi-arrow-left"></i> {% trans "Back to Tickets" %}
                         </a>
                     </div>
                 </div>
