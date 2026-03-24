@@ -1,10 +1,11 @@
+import json
 import socket
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from ..models import Log, Event
+from ..models import Log, Event, Ticket
 from ..services.ticket_service import TicketService
-from ..decorators import login_required_ajax, ticket_verify_ratelimit
+from ..decorators import login_required_ajax, staff_required, ticket_verify_ratelimit
 from ..utils.error_handlers import handle_ajax_errors
 from ..utils.validators import sanitize_string
 
@@ -161,12 +162,12 @@ def verify_ticket(request, event_pk):
     return JsonResponse(response_data)
 
 
-@login_required_ajax
 @require_http_methods(['POST'])
+@ticket_verify_ratelimit
+@staff_required
 @handle_ajax_errors
 def print_confirm(request, event_pk):
     """Confirm print result from client-side backend (WebUSB/Agent)."""
-    import json
     event = get_object_or_404(Event, pk=event_pk)
 
     try:
@@ -176,12 +177,11 @@ def print_confirm(request, event_pk):
 
     ticket_id = data.get('ticket_id')
     success = data.get('success', False)
-    printer_queue = data.get('printer_queue', '1')
-    error_msg = data.get('error', '')
+    printer_queue = sanitize_string(str(data.get('printer_queue', '1')))[:10]
+    error_msg = sanitize_string(str(data.get('error', '')))[:500]
 
     ticket = None
     if ticket_id:
-        from ..models import Ticket
         ticket = Ticket.objects.filter(pk=ticket_id, event=event).first()
 
     if success:

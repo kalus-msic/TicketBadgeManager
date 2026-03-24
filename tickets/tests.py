@@ -802,8 +802,45 @@ class PrintConfirmTest(TestCase):
             ticket=self.ticket, event_type='ERROR'
         ).exists())
 
+    def test_unauthenticated_returns_401(self):
+        from django.conf import settings
+        if getattr(settings, 'DISABLE_AUTH', False):
+            self.skipTest('DISABLE_AUTH=True: auth enforcement skipped in this environment')
+        response = self.client.post(
+            f'/events/{self.event.pk}/print-confirm/',
+            '{"success": true}',
+            content_type='application/json'
+        )
+        self.assertIn(response.status_code, [401, 302, 403])
+
+    def test_malformed_json_returns_400(self):
+        self.client.force_login(self._create_staff_user())
+        response = self.client.post(
+            f'/events/{self.event.pk}/print-confirm/',
+            'not json',
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_unknown_ticket_id_logs_without_ticket_fk(self):
+        self.client.force_login(self._create_staff_user())
+        response = self.client.post(
+            f'/events/{self.event.pk}/print-confirm/',
+            '{"ticket_id": 99999, "success": true}',
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        # Log created but without ticket FK
+        log = Log.objects.filter(event=self.event, event_type='PRINT').last()
+        self.assertIsNotNone(log)
+        self.assertIsNone(log.ticket)
+
     def _create_staff_user(self):
         from django.contrib.auth.models import User
-        return User.objects.create_user(
-            'staff', 'staff@test.com', 'pass', is_staff=True
+        user, _ = User.objects.get_or_create(
+            username='staff_confirm',
+            defaults={'email': 'staff@test.com', 'is_staff': True}
         )
+        user.is_staff = True
+        user.save()
+        return user
