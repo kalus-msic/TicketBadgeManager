@@ -141,7 +141,7 @@
             if (isProcessing) return;
             isProcessing = true;
             
-            fetch('{% url "tickets:kiosk_verify" event_pk=active_event.pk %}', {
+            fetch('{% url "tickets:kiosk_verify" event_pk=event.pk %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken,
