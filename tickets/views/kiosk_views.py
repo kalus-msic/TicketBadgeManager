@@ -14,8 +14,12 @@ from ..utils.auth_utils import get_username_for_log
 def kiosk_mode(request, event_pk):
     """Display kiosk mode for self-service check-in."""
     event = get_object_or_404(Event, pk=event_pk)
+    printer_queue = request.GET.get('printer_queue', '1')
     # Kiosk mode doesn't require authentication
-    return render(request, 'tickets/kiosk.html', {'event': event})
+    return render(request, 'tickets/kiosk.html', {
+        'event': event,
+        'printer_queue': printer_queue,
+    })
 
 
 @require_http_methods(['POST'])
@@ -104,6 +108,7 @@ def kiosk_verify(request, event_pk):
 
     if ticket and success:
         response_data['ticket'] = {
+            'id': ticket.id,
             'name': ticket.name,
             'company': ticket.company_name or '',
         }

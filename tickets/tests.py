@@ -857,3 +857,52 @@ class PrintConfirmTest(TestCase):
         user.is_staff = True
         user.save()
         return user
+
+
+class KioskWebUSBTest(TestCase):
+    def setUp(self):
+        from datetime import date
+        self.event = Event.objects.create(
+            name="Kiosk Event", date=date(2026, 1, 1),
+            print_backend="webusb"
+        )
+        self.ticket = Ticket.objects.create(
+            qr_code="KIOSK001", name="Kiosk User",
+            company_name="Kiosk Co", event=self.event,
+            status='VALID'
+        )
+
+    def test_kiosk_mode_passes_printer_queue_in_context(self):
+        """kiosk_mode view must pass printer_queue to template context."""
+        response = self.client.get(
+            reverse('tickets:kiosk', kwargs={'event_pk': self.event.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('printer_queue', response.context)
+
+    def test_kiosk_page_has_webusb_attrs(self):
+        """Kiosk page renders required WebUSB attributes."""
+        response = self.client.get(
+            reverse('tickets:kiosk', kwargs={'event_pk': self.event.pk})
+        )
+        self.assertContains(response, 'id="webusb-page-root"')
+        self.assertContains(response, 'data-print-backend=')
+        self.assertContains(response, 'id="webusb-status-bar"')
+        self.assertContains(response, 'print-manager.js')
+        self.assertContains(response, 'webusb-backend.js')
+
+    def test_kiosk_verify_response_includes_ticket_id(self):
+        """kiosk_verify response must include ticket.id for WebUSB print-confirm."""
+        ticket = Ticket.objects.filter(event=self.event, status='VALID').first()
+        if not ticket:
+            self.skipTest('No valid ticket available')
+        response = self.client.post(
+            reverse('tickets:kiosk_verify', kwargs={'event_pk': self.event.pk}),
+            {'qr_code': ticket.qr_code, 'printer_queue': '1'},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        if data.get('success'):
+            self.assertIn('ticket', data)
+            self.assertIn('id', data['ticket'])
+            self.assertEqual(data['ticket']['id'], ticket.id)

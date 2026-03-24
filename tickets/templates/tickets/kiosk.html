@@ -1,9 +1,10 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% load i18n %}{% trans "Event Check-in Kiosk" %}</title>
+    <title>{% trans "Event Check-in Kiosk" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}">
@@ -61,17 +62,26 @@
     </style>
 </head>
 <body>
-    <div class="kiosk-container">
+    <div class="kiosk-container" id="webusb-page-root" data-print-backend="{{ event.print_backend }}" data-event-pk="{{ event.pk }}">
         <h1 class="mb-4">
             <i class="bi bi-calendar-check"></i> {% trans "Event Check-in" %}
         </h1>
         
+        <!-- WebUSB printer status bar (JS shows/hides based on data-print-backend) -->
+        <div id="webusb-status-bar" class="mb-2 py-1 px-2 rounded small bg-light text-start d-flex align-items-center" style="display:none!important;">
+            <!-- Populated by print-manager.js -->
+        </div>
+        <!-- WebUSB gear panel -->
+        <div id="webusb-gear-panel" class="mb-2 py-1 px-2 rounded small bg-light text-start">
+            <button class="btn btn-sm btn-outline-secondary me-1" onclick="PrintManager.showPairButton()">Změnit tiskárnu</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="WebUSBBackend.clearPairedInfo(document.getElementById('printer_queue').value); PrintManager.setStatus('unpaired', '')">Odpárovat</button>
+        </div>
         <div class="card shadow-lg">
             <div class="card-body p-5">
                 <h3 class="mb-4">{% trans "Please scan your ticket QR code" %}</h3>
                 
                 <!-- Printer selection (hidden, can be set via URL parameter) -->
-                <input type="hidden" id="printer_queue" value="1">
+                <input type="hidden" id="printer_queue" value="{{ printer_queue }}">
                 
                 <!-- Result display -->
                 <div id="result" class="result-container mb-4">
@@ -92,6 +102,8 @@
     </div>
 
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/print-manager.js' %}"></script>
+    <script src="{% static 'js/webusb-backend.js' %}"></script>
     <script src="{% static 'js/html5-qrcode.min.js' %}"></script>
     <script>
         // Translations
@@ -143,7 +155,11 @@
             .then(response => response.json())
             .then(data => {
                 const resultDiv = document.getElementById('result');
-                
+                // Delegate client-side printing to PrintManager
+                if (data.print_backend && window.PrintManager) {
+                    PrintManager.handle(data);
+                }
+
                 if (data.success) {
                     successSound.play().catch(e => console.log('Sound failed'));
                     resultDiv.innerHTML = `
