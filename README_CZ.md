@@ -39,14 +39,14 @@ Aplikace umožňuje:
 
 Testováno na tiskárně **TSC TDP-225**.
 
-Funguje zatím jen na Windows – využívá win32print.
+Direct tisk (TSCLIB.dll) funguje pouze na Windows. WebUSB tisk funguje na Windows, macOS i Linuxu v Chromium prohlížečích.
 
 ## Ukázka aplikace
 
 ![Ukázka aplikace](TicketBadgeManager_intro.gif)
 
 ## Před samotným spuštěním aplikace
-- Nainstalovaný Python 3.11 – otestováno na 3.11; s verzí 3.12 byl problém s některými moduly – [Python 3.11.9](https://www.python.org/downloads/release/python-3119/). Při instalaci nezapomeňte zaškrtnout „Add Python to PATH“.
+- Nainstalovaný Python 3.11+ – otestováno na 3.11 a 3.12. Při instalaci nezapomeňte zaškrtnout „Add Python to PATH”.
 - Nainstalovaný Git, nebo možnost stáhnout repozitář jako ZIP – [Git](https://git-scm.com/downloads/win).
 - Nainstalované tiskárny – správný název podle [Instalace a nastavení tiskáren - TSC TDP-225](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225).
 - Správně nastavený firewall – na PC, kde běží aplikace, musí být otevřen port, na kterém aplikace běží (výchozí 8000).
@@ -62,7 +62,7 @@ netsh advfirewall firewall add rule name="Django Web Server" protocol=TCP dir=in
 Pro usnadnění spouštění a aktualizací aplikace jsme připravili tři .bat soubory, které můžete umístit do kořenové složky projektu:
 
 - **install_app.bat** – Tento skript provede základní instalační kroky podle tohoto README. Vytvoří virtuální prostředí (pokud ještě neexistuje), nainstaluje požadované balíčky a provede databázové migrace.
-- **start_server.bat** – Tento skript aktivuje virtuální prostředí a spustí server s SSL (příkaz `runsslserver`). Po spuštění se automaticky otevře výchozí prohlížeč na adrese `https://127.0.0.1:8000`.
+- **start_server.bat** – Tento skript aktivuje virtuální prostředí a spustí server s SSL (příkaz `runserver_plus`). Po spuštění se automaticky otevře výchozí prohlížeč na adrese `https://127.0.0.1:8000`.
 - **update_app.bat** – Tento skript zkontroluje aktuálnost repozitáře, a pokud je nalezena nová verze, nabídne vám její stažení. V případě potvrzení provede `git pull`, aktivuje virtuální prostředí a spustí databázové migrace (`makemigrations` a `migrate`). Pokud uživatel aktualizaci zamítne, skript se ukončí bez provedení migrací.
 
 ## Jak spustit aplikaci manuálně
@@ -167,7 +167,7 @@ ALLOWED_HOSTS = ['127.0.0.1', '192.x.x.x']
 ### 11. Spusťte server
 
 ```bash
-python manage.py runsslserver 0.0.0.0:8000
+python manage.py runserver_plus 0.0.0.0:8000 --cert-file %TEMP%\tbm.crt
 ```
 
 Pokud při spuštění serveru narazíte na chybu, zkontrolujte, zda používáte správnou verzi Pythonu, na které byla aplikace testována (v našem případě **3.11.9**). Verzi Pythonu si můžete ověřit příkazem:

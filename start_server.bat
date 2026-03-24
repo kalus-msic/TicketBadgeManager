@@ -3,7 +3,7 @@ REM Virtual environment activation
 call venvTBM\Scripts\activate
 
 REM Start server in a new command window (non-blocking execution)
-start cmd /k "python manage.py runsslserver 0.0.0.0:8000"
+start cmd /k "python manage.py runserver_plus 0.0.0.0:8000 --cert-file %TEMP%\tbm.crt"
 
 REM Wait 5 seconds
 timeout /t 5 /nobreak > nul

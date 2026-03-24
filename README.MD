@@ -1,6 +1,6 @@
 # TicketBadgeManager
 
-[Česká verze](README_CZ.md) | English
+[Česká verze](README_CZ.md) | English | [Changelog](CHANGELOG.md)
 
 ## Table of Contents
 
@@ -27,6 +27,7 @@
 - [Security Features](#security-features)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [Changelog](#changelog)
 - [License](#license)
 
 ## Features
@@ -54,8 +55,8 @@
 
 ## Requirements
 
-- **Python 3.11** (tested with 3.11.9)
-- **Windows OS** (for printer functionality)
+- **Python 3.11+** (tested with 3.11 and 3.12)
+- **Windows OS** (for Direct/TSCLIB printer mode) or any OS with Chromium (for WebUSB printer mode)
 - **TSC TDP-225** thermal printer (or compatible)
 - **Git** (or download as ZIP)
 
@@ -78,7 +79,7 @@
 To facilitate running and updating the application, we have prepared three `.bat` files that you can place in the project's root folder:
 
 -   **`install_app.bat`** – This script performs the basic installation steps as described in this README. It creates a virtual environment (if it doesn't already exist), installs the required packages, and performs database migrations.
--   **`start_server.bat`** – This script activates the virtual environment and starts the server with SSL (using the `runsslserver` command). After startup, it automatically opens the default browser to `https://127.0.0.1:8000`.
+-   **`start_server.bat`** – This script activates the virtual environment and starts the server with SSL (using the `runserver_plus` command). After startup, it automatically opens the default browser to `https://127.0.0.1:8000`.
 -   **`update_app.bat`** – This script checks the repository for updates, and if a new version is found, it will offer to download it. If confirmed, it performs a `git pull`, activates the virtual environment, and runs database migrations (`makemigrations` and `migrate`). If the user declines the update, the script exits without performing migrations.
 
 
@@ -86,7 +87,7 @@ To facilitate running and updating the application, we have prepared three `.bat
 
 Before running the application, ensure the following prerequisites are met:
 
-- **Python 3.11**: Tested with Python 3.11.9. Version 3.12 might have compatibility issues with some modules. During installation, ensure "Add Python to PATH" is checked. You can download it from [Python 3.11.9](https://www.python.org/downloads/release/python-3119/).
+- **Python 3.11+**: Tested with Python 3.11.9 and 3.12. During installation, ensure "Add Python to PATH" is checked.
 - **Git**: Install Git, or download the repository as a ZIP file. You can download Git from [Git](https://git-scm.com/downloads/win).
 - **Printers**: Ensure your TSC TDP-225 printers are installed and named correctly as per the [Printer Installation and Setup - TSC TDP-225](https://github.com/kalus-msic/TicketBadgeManager/tree/main?tab=readme-ov-file#instalace-a-nastaven%C3%AD-tisk%C3%A1ren---tsc-tdp-225) section.
 - **Firewall Configuration**: The port on which the application runs (default 8000) must be open on the PC.
@@ -164,31 +165,24 @@ Before running the application, ensure the following prerequisites are met:
    ```
    Edit `.env` file with your settings.
 
-5. **Create necessary directories:**
-   ```bash
-   mkdir logs
-   mkdir temp
-   mkdir locale
-   ```
-
-6. **Run migrations:**
+5. **Run migrations:**
    ```bash
    python manage.py migrate
    ```
 
-7. **Compile translations:**
+6. **Compile translations:**
    ```bash
    python manage.py compilemessages
    ```
 
-8. **Create superuser (optional):**
+7. **Create superuser (optional):**
    ```bash
    python manage.py createsuperuser
    ```
 
-9. **Start server:**
+8. **Start server:**
    ```bash
-   python manage.py runsslserver 0.0.0.0:8000
+   python manage.py runserver_plus 0.0.0.0:8000 --cert-file %TEMP%\tbm.crt
    ```
 
 ### Development Setup (macOS/Linux)
@@ -278,9 +272,9 @@ The application supports English and Czech languages:
 
 ### Starting the Server
 
-1. **With SSL (required for QR scanning):**
+1. **With SSL (required for QR scanning and WebUSB on network):**
    ```bash
-   python manage.py runsslserver 0.0.0.0:8000
+   python manage.py runserver_plus 0.0.0.0:8000 --cert-file %TEMP%\tbm.crt
    ```
 
 2. **Without SSL (local development only):**
@@ -547,6 +541,10 @@ Check `logs/tickets.log` for detailed error information.
 3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
+
+## Changelog
+
+See the [CHANGELOG.md](CHANGELOG.md) file for a detailed list of changes in each version.
 
 ## License
 

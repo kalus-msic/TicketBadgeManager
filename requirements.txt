@@ -1,6 +1,8 @@
 Django==5.2.12
 Pillow==10.4.0
-django-sslserver==0.22
+django-extensions>=3.2
+werkzeug>=3.0
+pyOpenSSL>=24.0
 requests==2.32.5
 python-dotenv==1.0.0
 django-ratelimit==4.1.0
