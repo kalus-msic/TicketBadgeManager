@@ -102,7 +102,7 @@
     // --- Response handler (called from verifyTicket) ---
 
     async function handle(data) {
-        if (!data || data.print_backend !== 'webusb') return;
+        if (!data || data.print_backend !== 'webusb' || !data.print_data) return;
         const base64Data = data.print_data;
         const printerName = data.print_printer;
         const queue = _getQueue();
