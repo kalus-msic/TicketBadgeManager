@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4" id="webusb-page-root" data-print-backend="{{ event.print_backend }}" data-event-pk="{{ active_event.pk }}">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
@@ -9,6 +9,15 @@
                     <h2 class="mb-0">{% trans "Scan Ticket" %}</h2>
                     <!-- Přidaná informace o čísle skeneru -->
                     <p class="mb-0 mt-2 text-muted">{% trans "Active Scanner" %}: #{{ printer_queue }}</p>
+                </div>
+                <!-- WebUSB printer status bar (JS shows/hides based on data-print-backend) -->
+                <div id="webusb-status-bar" class="px-3 py-2 border-bottom bg-light d-flex align-items-center small" style="display:none!important;">
+                    <!-- Populated by print-manager.js -->
+                </div>
+                <!-- WebUSB gear panel -->
+                <div id="webusb-gear-panel" class="px-3 py-2 border-bottom bg-light small">
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="PrintManager.showPairButton()">Změnit tiskárnu</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="WebUSBBackend.clearPairedInfo(document.getElementById('printer_queue').value); PrintManager.setStatus('unpaired', '')">Odpárovat</button>
                 </div>
                 <div class="card-body">
                     <!-- Skrytý input pro printer_queue -->
@@ -38,6 +47,8 @@
     </div>
 </div>
 
+<script src="{% static 'js/print-manager.js' %}"></script>
+<script src="{% static 'js/webusb-backend.js' %}"></script>
 <script src="{% static 'js/html5-qrcode.min.js' %}"></script>
 <script>
 let currentQrCode = null;
@@ -83,7 +94,7 @@ function updateGDPR(choice) {
     });
 }
 
-function verifyTicket(qrCode, printBadge = false) {
+function verifyTicket(qrCode, printBadge = false, verifyBadge = true) {
     currentQrCode = qrCode;
     
     if (!qrCode) {
@@ -106,12 +117,17 @@ function verifyTicket(qrCode, printBadge = false) {
         body: new URLSearchParams({
             'qr_code': qrCode,
             'print': printBadge ? 'true' : 'false',
+            'verify': verifyBadge ? 'true' : 'false',
             'printer_queue': document.getElementById('printer_queue').value
         })
     })
     .then(response => response.json())
     .then(data => {
         console.log('Verify response:', data);  // Debug log
+        // Delegate client-side printing to PrintManager
+        if (data.print_backend) {
+            PrintManager.handle(data);
+        }
         const resultDiv = document.getElementById('result');
         
         // Show print warning if exists
@@ -167,7 +183,7 @@ function verifyTicket(qrCode, printBadge = false) {
                     </div>
                     <div class="col-6">
                         ${data.ticket && (data.ticket.id || data.ticket.qr_code) ? `
-                            <a href="${data.ticket.id ? `/tickets/${data.ticket.id}/` : `/tickets/detail/?qr_code=${encodeURIComponent(data.ticket.qr_code)}`}" class="btn btn-primary w-100">
+                            <a href="${data.ticket.id ? `/events/{{ active_event.pk }}/tickets/${data.ticket.id}/` : `/events/{{ active_event.pk }}/tickets/detail/?qr_code=${encodeURIComponent(data.ticket.qr_code)}`}" class="btn btn-primary w-100">
                                 View Ticket details
                             </a>
                         ` : ''}
@@ -203,13 +219,19 @@ function checkForQrCodeInUrl() {
     const qrCodeFromUrl = urlParams.get('qr_code');
     // Získáme printer_queue z URL nebo použijeme hodnotu z hidden inputu
     const printerQueue = urlParams.get('printer_queue') || document.getElementById('printer_queue').value;
+    
+    // Get print flag from URL, default to true for backward compatibility
+    const printParam = urlParams.get('print');
+    const shouldPrint = printParam === null ? true : (printParam === 'true');
+
+    // Get verify flag from URL, default to true
+    const verifyParam = urlParams.get('verify');
+    const shouldVerify = verifyParam === null ? true : (verifyParam === 'true');
 
     // Pokud je v URL QR kód, nastavíme hodnotu printer_queue do hidden inputu
     if (qrCodeFromUrl) {
         document.getElementById('printer_queue').value = printerQueue;
-        // When coming from "Verify & Print" button, print should be true
-        const shouldPrint = true;
-        verifyTicket(qrCodeFromUrl, shouldPrint);
+        verifyTicket(qrCodeFromUrl, shouldPrint, shouldVerify);
     } else {
         initializeScanner();
     }

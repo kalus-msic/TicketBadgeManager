@@ -761,6 +761,19 @@ class ScannerPrintBackendTest(TestCase):
         # On non-Windows, direct backend will return error but won't have print_backend key
         self.assertNotIn('print_backend', data)
 
+    def test_scanner_page_has_webusb_attrs(self):
+        """Scanner page renders required WebUSB data attributes and element IDs."""
+        self.client.force_login(self._create_staff_user())
+        response = self.client.get(
+            reverse('tickets:scanner', kwargs={'event_pk': self.event.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="webusb-page-root"')
+        self.assertContains(response, 'data-print-backend=')
+        self.assertContains(response, 'id="webusb-status-bar"')
+        self.assertContains(response, 'print-manager.js')
+        self.assertContains(response, 'webusb-backend.js')
+
     def _create_staff_user(self):
         from django.contrib.auth.models import User
         return User.objects.create_user(
