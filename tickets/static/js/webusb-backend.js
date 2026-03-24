@@ -65,8 +65,9 @@
 
         if (found === null) {
             console.warn('WebUSB: no bulk OUT endpoint found on interface 0');
+        } else {
+            _endpointCache[key] = found;
         }
-        _endpointCache[key] = found;
         return found;
     }
 
@@ -177,6 +178,8 @@
             const endpointNumber = _getBulkOutEndpoint(device);
             if (endpointNumber === null) {
                 console.error('WebUSB: cannot print — no bulk OUT endpoint');
+                window.PrintManager.setStatus('error', device.productName, 'No bulk OUT endpoint found');
+                await _postPrintConfirm(eventPk, ticketId, queue, false, 'No bulk OUT endpoint found');
                 try { await device.close(); } catch {}
                 return;
             }
