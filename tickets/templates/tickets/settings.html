@@ -208,15 +208,31 @@
                                             {% trans "Save Settings" %}
                                         </button>
                                     </form>
+                                    <script src="{% static 'js/webusb-backend.js' %}"></script>
                                     <script>
                                     (function() {
                                         const backendSelect = document.getElementById('print_backend');
                                         const namesSection = document.getElementById('printer-names-section');
+                                        const webusbSection = document.getElementById('webusb-pairing-section');
+
                                         function togglePrinterNames() {
-                                            namesSection.style.display = backendSelect.value === 'webusb' ? 'none' : '';
+                                            const isWebusb = backendSelect.value === 'webusb';
+                                            namesSection.style.display = isWebusb ? 'none' : '';
+                                            webusbSection.style.display = isWebusb ? '' : 'none';
                                         }
                                         backendSelect.addEventListener('change', togglePrinterNames);
                                         togglePrinterNames();
+
+                                        // Populate paired device names from localStorage
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            if (typeof WebUSBBackend === 'undefined') return;
+                                            const q1 = WebUSBBackend.getPairedInfo('1');
+                                            const q2 = WebUSBBackend.getPairedInfo('2');
+                                            const q1el = document.getElementById('webusb-q1-status');
+                                            const q2el = document.getElementById('webusb-q2-status');
+                                            if (q1el && q1) q1el.textContent = q1.name;
+                                            if (q2el && q2) q2el.textContent = q2.name;
+                                        });
                                     })();
                                     </script>
                                 </div>
