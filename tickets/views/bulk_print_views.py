@@ -127,7 +127,6 @@ def bulk_print_execute(request, event_pk):
                         'name': ticket.name
                     })
                 elif result['status'] == 'print_required':
-                    failed_count += 1
                     logger.warning(f"Unexpected print_required in direct loop for ticket {ticket.id}")
                     results['failed'].append({
                         'id': ticket.id,
