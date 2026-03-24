@@ -48,6 +48,8 @@ def kiosk_verify(request, event_pk):
     if ticket:
         if success:
             # Print badge for successful verification
+            print_success = False
+            print_dispatched = False
             from tickets.printing import PrintManager
             pm = PrintManager(event)
             result = pm.print_ticket({
@@ -65,18 +67,24 @@ def kiosk_verify(request, event_pk):
                 response_data['print_backend'] = result['backend']
                 response_data['print_data'] = result['data']
                 response_data['print_printer'] = result['printer']
-                print_success = True  # Will be handled client-side
+                print_dispatched = True  # Will be handled client-side
             else:
                 response_data['print_warning'] = result.get(
                     'message', _('Badge printing failed.')
                 )
-                print_success = False
+
+            if print_success:
+                print_status_msg = 'badge printed'
+            elif print_dispatched:
+                print_status_msg = 'badge sent to client'
+            else:
+                print_status_msg = 'print failed'
 
             Log.objects.create(
                 ticket=ticket,
                 event=event,
                 event_type='CHECKIN',
-                message=f'Kiosk check-in from IP {client_ip}, badge {"printed" if print_success else "print failed"}'
+                message=f'Kiosk check-in from IP {client_ip}, {print_status_msg}'
             )
         else:
             Log.objects.create(

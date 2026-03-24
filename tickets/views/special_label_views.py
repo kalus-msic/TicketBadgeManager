@@ -40,6 +40,9 @@ def print_special_labels(request, event_pk):
     from tickets.printing import PrintManager
     pm = PrintManager(event)
 
+    # Determine printer queue from selected printer name
+    printer_queue = "1" if printer_name == event.printer_1_name else "2"
+
     success_count = 0
     failed_count = 0
 
@@ -54,7 +57,7 @@ def print_special_labels(request, event_pk):
             }
 
             # Print the label
-            result = pm.print_ticket(label_data)
+            result = pm.print_ticket(label_data, printer_queue)
             if result['status'] in ('printed', 'print_required'):
                 success_count += 1
             else:

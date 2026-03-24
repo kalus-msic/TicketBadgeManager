@@ -142,6 +142,11 @@ def verify_ticket(request, event_pk):
             response_data['print_backend'] = result['backend']
             response_data['print_data'] = result['data']
             response_data['print_printer'] = result['printer']
+            Log.objects.create(
+                ticket=ticket, ticket_qr=ticket.qr_code, event=event,
+                event_type='PRINT',
+                message=f"Badge sent to {result['backend']} client (Scanner {printer_queue}, Printer: {result['printer']})"
+            )
         else:
             response_data['print_warning'] = result.get(
                 'message', 'Label printing failed'

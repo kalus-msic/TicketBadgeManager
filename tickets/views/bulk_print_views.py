@@ -1,5 +1,8 @@
+import logging
 import time
 from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
 from django.shortcuts import render, get_object_or_404
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods
@@ -73,6 +76,18 @@ def bulk_print_execute(request, event_pk):
                     'ticket_name': ticket.name,
                     **result
                 })
+            for job in print_jobs:
+                if job.get('status') == 'error':
+                    Log.objects.create(
+                        event=event,
+                        event_type='ERROR',
+                        message=f"Print job generation failed for ticket {job['ticket_id']}: {job.get('message', 'unknown')}"
+                    )
+            Log.objects.create(
+                event=event,
+                event_type='SYSTEM',
+                message=f'Bulk print ({event.print_backend}): {len(print_jobs)} jobs sent to client for printing'
+            )
             return JsonResponse({
                 'success': True,
                 'print_backend': event.print_backend,
@@ -110,6 +125,14 @@ def bulk_print_execute(request, event_pk):
                     results['printed'].append({
                         'id': ticket.id,
                         'name': ticket.name
+                    })
+                elif result['status'] == 'print_required':
+                    failed_count += 1
+                    logger.warning(f"Unexpected print_required in direct loop for ticket {ticket.id}")
+                    results['failed'].append({
+                        'id': ticket.id,
+                        'name': ticket.name,
+                        'error': result.get('message', _('Unexpected print_required in direct mode'))
                     })
                 else:
                     results['failed'].append({
