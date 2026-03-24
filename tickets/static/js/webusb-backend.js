@@ -52,18 +52,12 @@
 
         let found = null;
         try {
-            const ifaces = device.configuration.interfaces;
-            for (const iface of ifaces) {
-                for (const alt of iface.alternates) {
-                    for (const ep of alt.endpoints) {
-                        if (ep.direction === 'out' && ep.type === 'bulk') {
-                            found = ep.endpointNumber;
-                            break;
-                        }
-                    }
-                    if (found !== null) break;
+            const endpoints = device.configuration.interfaces[0].alternates[0].endpoints;
+            for (const ep of endpoints) {
+                if (ep.direction === 'out' && ep.type === 'bulk') {
+                    found = ep.endpointNumber;
+                    break;
                 }
-                if (found !== null) break;
             }
         } catch (e) {
             console.warn('WebUSB: failed to iterate endpoints', e);
@@ -200,6 +194,9 @@
             if (e.name === 'NotFoundError') {
                 // Device was unplugged mid-session — preserve localStorage entry
                 window.PrintManager.setStatus('disconnected', info.name || printerName);
+            } else if (e.name === 'SecurityError') {
+                // SecurityError on device.open() = Windows usbprint.sys driver conflict
+                window.PrintManager.setStatus('driver_conflict', info.name || printerName);
             } else {
                 window.PrintManager.setStatus('error', info.name || printerName, e.message);
                 await _postPrintConfirm(eventPk, ticketId, queue, false, e.message);
