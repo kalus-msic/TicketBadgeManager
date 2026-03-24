@@ -5,7 +5,6 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods
 
 from ..models import Ticket, Log, Event
-from ..services.printing_service import PrintingService
 from ..decorators import staff_required
 from ..utils.auth_utils import get_username_for_log
 
@@ -53,6 +52,35 @@ def bulk_print_execute(request, event_pk):
         # Get selected tickets scoped to event
         tickets = Ticket.objects.filter(event=event, id__in=ticket_ids)
 
+        # Determine printer queue based on selection
+        printer_queue = '2' if printer == 'Printer 2' else '1'
+
+        from tickets.printing import PrintManager
+        pm = PrintManager(event)
+
+        # If backend is not direct, return all print data for JS
+        if event.print_backend != 'direct':
+            print_jobs = []
+            for ticket in tickets:
+                result = pm.print_ticket({
+                    'qr_code': ticket.qr_code,
+                    'name': ticket.name,
+                    'company_name': ticket.company_name or '',
+                    'event_name': ticket.event.name if ticket.event else ''
+                }, printer_queue)
+                print_jobs.append({
+                    'ticket_id': ticket.id,
+                    'ticket_name': ticket.name,
+                    **result
+                })
+            return JsonResponse({
+                'success': True,
+                'print_backend': event.print_backend,
+                'print_jobs': print_jobs,
+                'total': len(print_jobs)
+            })
+
+        # Direct backend — print server-side
         results = {
             'success': True,
             'printed': [],
@@ -60,24 +88,16 @@ def bulk_print_execute(request, event_pk):
             'total': len(ticket_ids)
         }
 
-        # Initialize printing service
-        printing_service = PrintingService()
-
-        # Determine printer queue based on selection
-        printer_queue = '2' if printer == 'Printer 2' else '1'
-
-        # Print each ticket with delay
         for ticket in tickets:
             try:
-                # Print the ticket
-                print_success = printing_service.print_ticket({
+                result = pm.print_ticket({
                     'qr_code': ticket.qr_code,
                     'name': ticket.name,
                     'company_name': ticket.company_name or '',
                     'event_name': ticket.event.name if ticket.event else ''
-                }, printer_queue, event=event)
+                }, printer_queue)
 
-                if print_success:
+                if result['status'] == 'printed':
                     # Log successful print
                     Log.objects.create(
                         ticket=ticket,
@@ -95,7 +115,7 @@ def bulk_print_execute(request, event_pk):
                     results['failed'].append({
                         'id': ticket.id,
                         'name': ticket.name,
-                        'error': _('Failed to print')
+                        'error': result.get('message', _('Failed to print'))
                     })
 
                 # Add delay between prints

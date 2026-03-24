@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from ..models import Log, Event
 from ..services.ticket_service import TicketService
-from ..services.printing_service import PrintingService
 from ..decorators import login_required_ajax, ticket_verify_ratelimit
 from ..utils.error_handlers import handle_ajax_errors
 from ..utils.validators import sanitize_string
@@ -56,6 +55,7 @@ def verify_ticket(request, event_pk):
     event = get_object_or_404(Event, pk=event_pk)
     qr_code = sanitize_string(request.POST.get('qr_code', ''))
     print_badge = request.POST.get('print', 'false').lower() == 'true'
+    verify_badge = request.POST.get('verify', 'true').lower() == 'true'
     printer_queue = request.POST.get('printer_queue', '1')
 
     if not qr_code:
@@ -64,74 +64,94 @@ def verify_ticket(request, event_pk):
             'message': 'QR code is required'
         })
 
-    # Verify ticket using service
-    success, message, ticket = TicketService.verify_ticket(qr_code, event=event)
+    # Get ticket first
+    ticket = TicketService.get_ticket_by_qr(qr_code)
+    if not ticket:
+        Log.objects.create(
+            ticket_qr=qr_code,
+            event_type='ERROR',
+            event=event,
+            message=f'Ticket not found: {qr_code}'
+        )
+        return JsonResponse({
+            'success': False,
+            'message': 'Ticket not found'
+        })
+
+    success = True
+    message = ""
+
+    # Perform verification if requested
+    if verify_badge:
+        success, message, _ = TicketService.verify_ticket(qr_code, event=event)
+    else:
+        message = "Status check"
+        # If not verifying, we just return current status info
+        if ticket.status == 'USED':
+            message = "Ticket already used"
+        elif ticket.status == 'CANCELLED':
+            message = "Ticket cancelled"
+        else:
+            message = "Ticket is valid"
 
     response_data = {
         'success': success,
-        'message': message
-    }
-
-    if ticket:
-        response_data['ticket'] = {
+        'message': message,
+        'ticket': {
             'id': ticket.id,
             'qr_code': ticket.qr_code,
             'name': ticket.name,
             'company': ticket.company_name or '',
             'status': ticket.get_status_display()
         }
+    }
 
-        # Print badge if requested and verification successful
-        if success and print_badge:
-            printing_service = PrintingService()
+    # Print badge if requested
+    # If verify_badge is False, we print regardless of status (unless it's CANCELLED maybe?)
+    # If verify_badge is True, we only print if verification was successful
+    should_print = False
+    if print_badge:
+        if verify_badge:
+            should_print = success
+        else:
+            # Print only mode - print regardless of USED status, but maybe not if CANCELLED
+            should_print = ticket.status != 'CANCELLED'
+            if ticket.status == 'CANCELLED':
+                response_data['print_warning'] = "Cannot print label for cancelled ticket"
 
-            print_success = printing_service.print_ticket({
-                'qr_code': ticket.qr_code,
-                'name': ticket.name,
-                'company_name': ticket.company_name,
-                'event_name': ticket.event.name if ticket.event else ''
-            }, printer_queue, event=event)
+    if should_print:
+        from tickets.printing import PrintManager
+        pm = PrintManager(event)
+        result = pm.print_ticket({
+            'qr_code': ticket.qr_code,
+            'name': ticket.name,
+            'company_name': ticket.company_name,
+            'event_name': ticket.event.name if ticket.event else ''
+        }, printer_queue)
 
-            if print_success:
-                # Log successful print
-                Log.objects.create(
-                    ticket=ticket,
-                    ticket_qr=ticket.qr_code,
-                    event=event,
-                    event_type='PRINT',
-                    message=f"Label printed successfully on Scanner {printer_queue} (Printer: TDP-225{printer_queue})"
-                )
-                response_data['print_success'] = True
-            else:
-                import platform
-                if platform.system() != "Windows":
-                    os_name = platform.system()
-                    error_msg = (
-                        f'Label printing failed on {os_name}. '
-                        f'TSC thermal printers require Windows with TSCLIB.dll library.'
-                    )
-                    response_data['print_warning'] = error_msg + ' The ticket was checked in successfully.'
-
-                    # Log the print failure
-                    Log.objects.create(
-                        ticket=ticket,
-                        ticket_qr=ticket.qr_code,
-                        event=event,
-                        event_type='ERROR',
-                        message=f"Print failed from Scanner {printer_queue}: {error_msg}"
-                    )
-                else:
-                    error_msg = 'Label printing failed - please check printer connection and configuration.'
-                    response_data['print_warning'] = error_msg + ' The ticket was checked in successfully.'
-
-                    # Log the print failure
-                    Log.objects.create(
-                        ticket=ticket,
-                        ticket_qr=ticket.qr_code,
-                        event=event,
-                        event_type='ERROR',
-                        message=f"Print failed from Scanner {printer_queue}: {error_msg}"
-                    )
+        if result['status'] == 'printed':
+            Log.objects.create(
+                ticket=ticket, ticket_qr=ticket.qr_code, event=event,
+                event_type='PRINT',
+                message=f"Label printed on Scanner {printer_queue} "
+                        f"(Printer: {pm.get_printer_name(printer_queue)})"
+            )
+            response_data['print_success'] = True
+        elif result['status'] == 'print_required':
+            # Client-side printing — send data to JS
+            response_data['print_backend'] = result['backend']
+            response_data['print_data'] = result['data']
+            response_data['print_printer'] = result['printer']
+        else:
+            response_data['print_warning'] = result.get(
+                'message', 'Label printing failed'
+            )
+            Log.objects.create(
+                ticket=ticket, ticket_qr=ticket.qr_code, event=event,
+                event_type='ERROR',
+                message=f"Print failed from Scanner {printer_queue}: "
+                        f"{result.get('message', 'unknown error')}"
+            )
 
     return JsonResponse(response_data)
 

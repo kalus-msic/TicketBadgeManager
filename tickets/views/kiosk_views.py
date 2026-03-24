@@ -6,7 +6,6 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.utils.translation import gettext as _
 from ..models import Ticket, CheckIn, Log, Event
 from ..services.ticket_service import TicketService
-from ..services.printing_service import PrintingService
 from ..utils.validators import sanitize_string
 from ..utils.error_handlers import handle_ajax_errors
 from ..utils.auth_utils import get_username_for_log
@@ -49,28 +48,29 @@ def kiosk_verify(request, event_pk):
     if ticket:
         if success:
             # Print badge for successful verification
-            printing_service = PrintingService()
-
-            print_success = printing_service.print_ticket({
+            from tickets.printing import PrintManager
+            pm = PrintManager(event)
+            result = pm.print_ticket({
                 'qr_code': ticket.qr_code,
                 'name': ticket.name,
                 'company_name': ticket.company_name,
                 'event_name': ticket.event.name if ticket.event else ''
-            }, printer_queue, event=event)
+            }, printer_queue)
 
-            if print_success:
+            if result['status'] == 'printed':
                 response_data['badge_printed'] = True
                 response_data['print_message'] = _('Your badge is printing...')
+                print_success = True
+            elif result['status'] == 'print_required':
+                response_data['print_backend'] = result['backend']
+                response_data['print_data'] = result['data']
+                response_data['print_printer'] = result['printer']
+                print_success = True  # Will be handled client-side
             else:
-                import platform
-                if platform.system() != "Windows":
-                    response_data['print_warning'] = _(
-                        'Badge printing requires Windows. Please see our staff for your badge.'
-                    )
-                else:
-                    response_data['print_warning'] = _(
-                        'Badge printing failed. Please see our staff for assistance.'
-                    )
+                response_data['print_warning'] = result.get(
+                    'message', _('Badge printing failed.')
+                )
+                print_success = False
 
             Log.objects.create(
                 ticket=ticket,

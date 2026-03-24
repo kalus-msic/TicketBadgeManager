@@ -723,3 +723,46 @@ class PrintManagerTest(TestCase):
         self.event.save()
         pm = PrintManager(self.event)
         self.assertEqual(pm.get_printer_name("1"), "TDP-2251")
+
+
+class ScannerPrintBackendTest(TestCase):
+    def setUp(self):
+        from datetime import date
+        self.event = Event.objects.create(
+            name="Test Event", date=date(2026, 1, 1),
+            print_backend="webusb"
+        )
+        self.ticket = Ticket.objects.create(
+            qr_code="SCAN001", name="Test User",
+            company_name="Test Co", event=self.event
+        )
+
+    def test_verify_webusb_returns_print_required(self):
+        self.client.force_login(self._create_staff_user())
+        response = self.client.post(
+            f'/events/{self.event.pk}/verify/',
+            {'qr_code': 'SCAN001', 'print': 'true', 'printer_queue': '1'}
+        )
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data.get('print_backend'), 'webusb')
+        self.assertIn('print_data', data)
+
+    def test_verify_direct_returns_print_result(self):
+        self.event.print_backend = "direct"
+        self.event.save()
+        self.client.force_login(self._create_staff_user())
+        response = self.client.post(
+            f'/events/{self.event.pk}/verify/',
+            {'qr_code': 'SCAN001', 'print': 'true', 'printer_queue': '1'}
+        )
+        data = response.json()
+        self.assertTrue(data['success'])
+        # On non-Windows, direct backend will return error but won't have print_backend key
+        self.assertNotIn('print_backend', data)
+
+    def _create_staff_user(self):
+        from django.contrib.auth.models import User
+        return User.objects.create_user(
+            'staff', 'staff@test.com', 'pass', is_staff=True
+        )

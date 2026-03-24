@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.utils.translation import gettext as _
 from ..forms import SpecialLabelForm
-from ..services.printing_service import PrintingService
 from ..decorators import login_required_ajax
 from ..utils.error_handlers import handle_view_errors, handle_ajax_errors
 from ..models import Log, Event
@@ -38,8 +37,8 @@ def print_special_labels(request, event_pk):
     quantity = form.cleaned_data['quantity']
     printer_name = form.cleaned_data['printer']
 
-    # Initialize printing service
-    printing_service = PrintingService()
+    from tickets.printing import PrintManager
+    pm = PrintManager(event)
 
     success_count = 0
     failed_count = 0
@@ -55,7 +54,8 @@ def print_special_labels(request, event_pk):
             }
 
             # Print the label
-            if printing_service.print_ticket(label_data, event=event):
+            result = pm.print_ticket(label_data)
+            if result['status'] in ('printed', 'print_required'):
                 success_count += 1
             else:
                 failed_count += 1
