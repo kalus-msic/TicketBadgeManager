@@ -4,6 +4,7 @@ import ctypes
 import logging
 
 from .base import AbstractBackend
+from ..profiles.tspl import TSPLProfile
 
 logger = logging.getLogger(__name__)
 
@@ -15,15 +16,15 @@ class DirectBackend(AbstractBackend):
     for binary BITMAP data — matching original PrintingService._send_to_printer.
     """
 
-    # Label configuration (must match TSPLProfile)
-    PWIDTH = 40
-    PHEIGHT = 80
-    DPI = 200
-    DENSITY = 15
-    DOT = DPI // 100 * 4
-    CONTRAST = 128
-    BITMAP_X = 0
-    BITMAP_Y = 65
+    # Label configuration — single source of truth from TSPLProfile
+    PWIDTH = TSPLProfile.PWIDTH
+    PHEIGHT = TSPLProfile.PHEIGHT
+    DPI = TSPLProfile.DPI
+    DENSITY = TSPLProfile.DENSITY
+    DOT = TSPLProfile.DOT
+    CONTRAST = TSPLProfile.CONTRAST
+    BITMAP_X = TSPLProfile.BITMAP_X
+    BITMAP_Y = TSPLProfile.BITMAP_Y
 
     def __init__(self):
         self._tsclibrary = None
@@ -68,23 +69,21 @@ class DirectBackend(AbstractBackend):
                            f'Available: {", ".join(self._printers_available)}'
             }
 
+        self._tsclibrary.openportW(printer_name)
         try:
-            self._tsclibrary.openportW(printer_name)
             self._tsclibrary.sendcommandW(f"DENSITY {self.DENSITY}")
             self._tsclibrary.sendcommandW(f"SIZE {self.PWIDTH} mm, {self.PHEIGHT} mm")
             self._tsclibrary.clearbuffer()
             self._tsclibrary.sendcommandW("CLS")
-
             self._send_bitmap(img, self.BITMAP_X, self.BITMAP_Y)
-
             self._tsclibrary.printlabelW("1", "1")
-            self._tsclibrary.closeport()
-
             logger.info(f"Successfully sent to printer {printer_name}")
             return {'status': 'printed'}
         except Exception as e:
             logger.error(f"Failed to send to printer: {e}")
             return {'status': 'error', 'message': str(e)}
+        finally:
+            self._tsclibrary.closeport()
 
     def _send_bitmap(self, img, x: int, y: int):
         """Convert PIL image to bitmap and send via TSCLIB sendcommand (binary).

@@ -4,11 +4,13 @@ from abc import ABC, abstractmethod
 class AbstractBackend(ABC):
     """Base class for print backends.
 
-    Backends implement either:
-    - print(tspl_bytes, printer_name) — for raw byte stream (WebUSB, Agent)
-    - print_image(img, printer_name) — for PIL Image (DirectBackend via TSCLIB)
+    Backends implement ONE of:
+    - print_image(img, printer_name) -> dict — for PIL Image (DirectBackend via TSCLIB)
+    - print(tspl_bytes, printer_name) -> dict — for raw byte stream (future WebUSB/Agent)
 
-    PrintManager calls the appropriate method based on backend type.
+    The unimplemented method raises NotImplementedError.
+    PrintManager calls the correct method based on the backend type.
+    All backends must implement is_available().
     """
 
     def print(self, tspl_bytes: bytes, printer_name: str) -> dict:
