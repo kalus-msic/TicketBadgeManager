@@ -20,11 +20,10 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            {% with url_name=request.resolver_match.url_name %}
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     {% if active_event %}
-
+                    {# active_event is checked #}
                     <!-- Event switcher dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button"
@@ -132,7 +131,6 @@
                     </li>
                 </ul>
             </div>
-            {% endwith %}
         </div>
     </nav>
 
@@ -155,11 +153,11 @@
 
     <footer class="d-none d-md-block text-center" style="padding: 8px 0;">
         <span style="color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 0.03em;">
-            Vytvořeno pro
-            <a href="https://ms-ic.cz/" target="_blank" rel="noopener"
+            {% trans "Developed for" %}
+            <a href="https://ms-ic.cz/eventy/" target="_blank" rel="noopener"
                style="color: rgba(255,255,255,0.85); text-decoration: none; transition: color 0.2s;"
                onmouseover="this.style.color='#fff'"
-               onmouseout="this.style.color='rgba(255,255,255,0.85)'">MSIC</a>
+               onmouseout="this.style.color='rgba(255,255,255,0.85)'">{% trans "MSIC events" %}</a>
             <span style="color: rgba(255,255,255,0.3); margin: 0 6px;">|</span>
             <a href="https://github.com/kalus-msic/TicketBadgeManager" target="_blank" rel="noopener"
                style="color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s;"
