@@ -1,3 +1,10 @@
+import warnings
+warnings.warn(
+    "PrintingService is deprecated. Use tickets.printing.PrintManager instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
 import os
 import platform
 import ctypes
