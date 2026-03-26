@@ -106,8 +106,12 @@ def print_windows(tspl_bytes, printer_name):
         tsc = ctypes.WinDLL('TSCLIB.dll')
     except OSError as e:
         raise RuntimeError(f'Cannot load TSCLIB.dll: {e}') from e
+    # Declare wide-string argtypes so ctypes marshals Python str correctly
+    tsc.openportW.argtypes = [ctypes.c_wchar_p]
+    tsc.printlabelW.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p]
     tsc.openportW(printer_name)
     try:
+        # sendcommand takes a C string (null-terminated); TSPL bytes must not contain null bytes
         buf = ctypes.create_string_buffer(tspl_bytes)
         tsc.sendcommand(buf)
         tsc.printlabelW('1', '1')

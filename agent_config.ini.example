@@ -8,6 +8,6 @@ poll_interval = 2
 # Queue 1 printer name — must match system printer name exactly
 # Windows: "TSC TDP-225" (as shown in Devices and Printers)
 # macOS/Linux: printer name from `lpstat -p`
-queue_1 = TDP-2251
+queue_1 = TDP-225
 # Leave queue_2 empty if you only have one printer
 queue_2 =
