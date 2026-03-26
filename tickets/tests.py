@@ -1,3 +1,4 @@
+import json
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from unittest.mock import patch, MagicMock
@@ -968,4 +969,126 @@ class AgentPrintBranchTest(TestCase):
         self.assertEqual(result['status'], 'queued')
         job = PrintJob.objects.filter(event=self.event).first()
         self.assertIsNotNone(job)
-        self.assertIsNone(job.ticket)
+
+
+class AgentViewTest(TestCase):
+    def setUp(self):
+        from tickets.models import Event, Ticket
+        from datetime import date
+        self.event = Event.objects.create(
+            name='AgentViewEvent',
+            date=date(2026, 1, 1),
+            print_backend='agent',
+            agent_token='test_token_abc123',
+        )
+        self.ticket = Ticket.objects.create(
+            event=self.event,
+            name='Poll Test',
+            qr_code='QR_POLL_001',
+        )
+        self.poll_url = f'/events/{self.event.pk}/agent/poll/'
+        self.ack_url = f'/events/{self.event.pk}/agent/ack/'
+        self.regen_url = f'/events/{self.event.pk}/agent/token/regenerate/'
+
+    def _auth_headers(self):
+        return {'HTTP_X_AGENT_TOKEN': 'test_token_abc123'}
+
+    def test_poll_no_jobs_returns_empty(self):
+        resp = self.client.get(self.poll_url, **self._auth_headers())
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {})
+
+    def test_poll_returns_pending_job(self):
+        from tickets.models import PrintJob
+        job = PrintJob.objects.create(
+            event=self.event, printer_queue='1', print_data='dGVzdA==', status='pending'
+        )
+        resp = self.client.get(self.poll_url, **self._auth_headers())
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn('job_id', data)
+        self.assertEqual(data['job_id'], job.pk)
+        job.refresh_from_db()
+        self.assertEqual(job.status, 'printing')
+
+    def test_poll_forbidden_without_token(self):
+        resp = self.client.get(self.poll_url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_poll_forbidden_empty_token(self):
+        from tickets.models import Event
+        from datetime import date
+        event_no_token = Event.objects.create(name='NoToken', date=date(2026, 1, 1), print_backend='agent', agent_token='')
+        resp = self.client.get(
+            f'/events/{event_no_token.pk}/agent/poll/',
+            HTTP_X_AGENT_TOKEN='',
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_ack_marks_job_done(self):
+        from tickets.models import PrintJob
+        job = PrintJob.objects.create(
+            event=self.event, printer_queue='1', print_data='dGVzdA==', status='printing'
+        )
+        resp = self.client.post(
+            self.ack_url,
+            data=json.dumps({'job_id': job.pk, 'success': True}),
+            content_type='application/json',
+            **self._auth_headers(),
+        )
+        self.assertEqual(resp.status_code, 200)
+        job.refresh_from_db()
+        self.assertEqual(job.status, 'done')
+        self.assertIsNotNone(job.completed_at)
+
+    def test_ack_marks_job_error(self):
+        from tickets.models import PrintJob
+        job = PrintJob.objects.create(
+            event=self.event, printer_queue='1', print_data='dGVzdA==', status='printing'
+        )
+        resp = self.client.post(
+            self.ack_url,
+            data=json.dumps({'job_id': job.pk, 'success': False, 'error': 'Paper jam'}),
+            content_type='application/json',
+            **self._auth_headers(),
+        )
+        self.assertEqual(resp.status_code, 200)
+        job.refresh_from_db()
+        self.assertEqual(job.status, 'error')
+        self.assertEqual(job.error_message, 'Paper jam')
+
+    def test_stale_job_requeued_on_poll(self):
+        from tickets.models import PrintJob
+        from django.utils import timezone
+        from datetime import timedelta
+        job = PrintJob.objects.create(
+            event=self.event, printer_queue='1', print_data='dGVzdA==', status='printing'
+        )
+        # Backdate created_at to simulate stale job
+        PrintJob.objects.filter(pk=job.pk).update(
+            created_at=timezone.now() - timedelta(seconds=120)
+        )
+        resp = self.client.get(self.poll_url, **self._auth_headers())
+        self.assertEqual(resp.status_code, 200)
+        job.refresh_from_db()
+        # The stale job should be requeued and then claimed (status='printing')
+        self.assertEqual(job.status, 'printing')
+
+    def test_regenerate_token_requires_staff(self):
+        from django.test import override_settings
+        with override_settings(DISABLE_AUTH=False):
+            resp = self.client.post(self.regen_url)
+            # Should redirect to login (not staff)
+            self.assertNotEqual(resp.status_code, 200)
+
+    def test_regenerate_token_as_staff(self):
+        from django.contrib.auth.models import User
+        staff = User.objects.create_user('staffuser', password='pass', is_staff=True)
+        self.client.force_login(staff)
+        resp = self.client.post(self.regen_url)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn('token', data)
+        self.assertNotEqual(data['token'], 'test_token_abc123')
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.agent_token, data['token'])

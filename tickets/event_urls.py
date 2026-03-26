@@ -61,4 +61,9 @@ urlpatterns = [
     # Bulk print
     path('bulk-print/', views.bulk_print, name='bulk_print'),
     path('bulk-print/execute/', views.bulk_print_execute, name='bulk_print_execute'),
+
+    # Agent
+    path('agent/poll/', views.agent_poll, name='agent_poll'),
+    path('agent/ack/', views.agent_ack, name='agent_ack'),
+    path('agent/token/regenerate/', views.regenerate_agent_token, name='regenerate_agent_token'),
 ]

@@ -26,6 +26,7 @@ from .language_views import set_language_custom
 from .bulk_print_views import bulk_print, bulk_print_execute
 from .merge_views import merge_execute
 from .event_views import event_list, event_create, event_edit, event_delete
+from .agent_views import agent_poll, agent_ack, regenerate_agent_token
 
 __all__ = [
     'index',
@@ -48,4 +49,5 @@ __all__ = [
     'bulk_print', 'bulk_print_execute',
     'merge_execute',
     'event_list', 'event_create', 'event_edit', 'event_delete',
+    'agent_poll', 'agent_ack', 'regenerate_agent_token',
 ]
