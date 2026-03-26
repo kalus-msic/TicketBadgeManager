@@ -24,7 +24,14 @@ if "%LOCAL%"=="%REMOTE%" (
 
 REM --- Virtual environment activation and migration ---
 echo Activating virtual environment...
-call venvTBM\Scripts\activate
+if exist venvTBM\Scripts\activate (
+    call venvTBM\Scripts\activate
+) else if exist venv\Scripts\activate (
+    call venv\Scripts\activate
+)
+
+echo Updating dependencies...
+python -m pip install -r requirements.txt
 
 echo Running makemigrations...
 python manage.py makemigrations
@@ -32,6 +39,14 @@ python manage.py makemigrations
 echo Running migrate...
 python manage.py migrate
 
+echo Compiling translations...
+python manage.py compilemessages
+
+echo.
+echo POZNAMKA: Pokud jde o prvni spusteni po aktualizaci na verzi s vice akcemi,
+echo           byla automaticky vytvorena vychozi akce "Vychozi akce".
+echo           Prejmenujte ji v aplikaci dle potreby.
+echo.
 echo Done.
 :end
 pause
