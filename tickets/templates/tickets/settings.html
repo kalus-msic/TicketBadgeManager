@@ -192,6 +192,9 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div id="agent-settings-section">
+                                            {# Agent settings will be populated in Task 5 #}
+                                        </div>
                                         <div class="form-check mb-3">
                                             <input class="form-check-input" type="checkbox"
                                                    id="auto_print_on_scan"
@@ -217,9 +220,8 @@
 
                                         function togglePrinterSections() {
                                             const val = backendSelect.value;
-                                            const isWebusb = val === 'webusb';
-                                            namesSection.style.display = isWebusb ? 'none' : '';
-                                            webusbSection.style.display = isWebusb ? '' : 'none';
+                                            namesSection.style.display = (val !== 'webusb' && val !== 'agent') ? '' : 'none';
+                                            webusbSection.style.display = val === 'webusb' ? '' : 'none';
                                             const agentSection = document.getElementById('agent-settings-section');
                                             if (agentSection) agentSection.style.display = val === 'agent' ? '' : 'none';
                                         }
