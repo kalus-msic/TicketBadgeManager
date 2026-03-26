@@ -934,3 +934,38 @@ class PrintJobModelTest(TestCase):
     def test_event_agent_token_default_empty(self):
         """Event.agent_token defaults to empty string"""
         self.assertEqual(self.event.agent_token, '')
+
+
+class AgentPrintBranchTest(TestCase):
+    def setUp(self):
+        from tickets.models import Event, Ticket
+        from datetime import date
+        self.event = Event.objects.create(name='AgentEvent', date=date(2026, 1, 1), print_backend='agent')
+        self.ticket = Ticket.objects.create(
+            event=self.event,
+            name='Test User',
+            qr_code='QR_AGENT_001',
+        )
+
+    def test_print_ticket_queues_job(self):
+        """PrintManager with agent backend creates a PrintJob with status='pending'"""
+        from tickets.models import PrintJob
+        from tickets.printing.manager import PrintManager
+        pm = PrintManager(self.event)
+        result = pm.print_ticket({'name': 'Test User', 'company_name': '', 'ticket_id': self.ticket.pk}, printer_queue='1')
+        self.assertEqual(result['status'], 'queued')
+        job = PrintJob.objects.filter(event=self.event).first()
+        self.assertIsNotNone(job)
+        self.assertEqual(job.status, 'pending')
+        self.assertEqual(job.printer_queue, '1')
+
+    def test_print_ticket_no_ticket_id(self):
+        """PrintManager with agent backend works even without ticket_id"""
+        from tickets.models import PrintJob
+        from tickets.printing.manager import PrintManager
+        pm = PrintManager(self.event)
+        result = pm.print_ticket({'name': 'Test User', 'company_name': ''}, printer_queue='1')
+        self.assertEqual(result['status'], 'queued')
+        job = PrintJob.objects.filter(event=self.event).first()
+        self.assertIsNotNone(job)
+        self.assertIsNone(job.ticket)

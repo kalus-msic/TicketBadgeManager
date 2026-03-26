@@ -49,7 +49,29 @@ class PrintManager:
                 return {'status': 'error', 'message': str(e)}
             return self._backend.print_image(img, printer_name)
 
-        # WebUSB and Agent — generate raw byte stream for USB transmission
+        # Agent — queue a PrintJob in the database
+        if backend_type == 'agent':
+            try:
+                tspl_bytes = self._profile.generate(ticket_data)
+            except Exception as e:
+                logger.error(f"Profile generation failed: {e}")
+                return {'status': 'error', 'message': str(e)}
+            from ..models import PrintJob
+            ticket_id = ticket_data.get('ticket_id')
+            ticket_obj = None
+            if ticket_id:
+                from ..models import Ticket as TicketModel
+                ticket_obj = TicketModel.objects.filter(pk=ticket_id).first()
+            PrintJob.objects.create(
+                event=self._event,
+                ticket=ticket_obj,
+                printer_queue=printer_queue,
+                print_data=base64.b64encode(tspl_bytes).decode('ascii'),
+                status='pending',
+            )
+            return {'status': 'queued'}
+
+        # WebUSB — generate raw byte stream for USB transmission
         try:
             tspl_bytes = self._profile.generate(ticket_data)
         except Exception as e:
