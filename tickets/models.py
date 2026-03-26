@@ -168,3 +168,6 @@ class PrintJob(models.Model):
 
     class Meta:
         ordering = ['created_at']
+
+    def __str__(self):
+        return f"PrintJob #{self.pk} [{self.status}] queue={self.printer_queue} event={self.event_id}"

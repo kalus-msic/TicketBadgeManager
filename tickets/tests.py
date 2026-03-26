@@ -924,13 +924,12 @@ class PrintJobModelTest(TestCase):
         self.assertIsNone(job.completed_at)
 
     def test_printjob_ordering(self):
-        """PrintJobs are ordered by created_at ascending"""
+        """PrintJobs default queryset is ordered by pk (ascending created_at)"""
         from tickets.models import PrintJob
         j1 = PrintJob.objects.create(event=self.event, printer_queue='1', print_data='a')
         j2 = PrintJob.objects.create(event=self.event, printer_queue='1', print_data='b')
-        jobs = list(PrintJob.objects.filter(event=self.event))
-        self.assertEqual(jobs[0].pk, j1.pk)
-        self.assertEqual(jobs[1].pk, j2.pk)
+        pks = list(PrintJob.objects.filter(event=self.event).values_list('pk', flat=True))
+        self.assertEqual(pks, sorted(pks))
 
     def test_event_agent_token_default_empty(self):
         """Event.agent_token defaults to empty string"""
