@@ -147,17 +147,16 @@ LANGUAGE_COOKIE_SAMESITE = 'Lax'
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise: don't raise ValueError for files missing from manifest
-# (prevents 500 errors when collectstatic was incomplete or a file was added after last run)
-WHITENOISE_MANIFEST_STRICT = False
-
-# WhiteNoise storage for serving static files efficiently
+# WhiteNoise storage: CompressedStaticFilesStorage serves gzip-compressed files
+# without a manifest — no ValueError when a file is missing from the manifest.
+# (CompressedManifestStaticFilesStorage caused 500 errors on template rendering
+#  when any {% static %} file was absent from staticfiles.json)
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
