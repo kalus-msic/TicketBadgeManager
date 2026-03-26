@@ -276,14 +276,14 @@
                                             method: 'POST',
                                             headers: {'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''},
                                         })
-                                        .then(r => r.json())
+                                        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
                                         .then(data => {
                                             if (data.token) {
                                                 document.getElementById('agent-token-display').value = data.token;
                                             }
                                             btn.disabled = false;
                                         })
-                                        .catch(() => { btn.disabled = false; });
+                                        .catch(() => { btn.disabled = false; alert('{% trans "Failed to regenerate token." %}'); });
                                     }
                                     </script>
                                 </div>
