@@ -3,7 +3,12 @@ REM Virtual environment activation
 call venvTBM\Scripts\activate
 
 REM Start server in a new command window (non-blocking execution)
-start cmd /k "python manage.py runserver_plus 0.0.0.0:8000 --cert-file %TEMP%\tbm.crt"
+REM Use ad-hoc if files don't exist, otherwise use the persistent files
+if exist cert.pem (
+    start cmd /k "python manage.py runserver_plus 0.0.0.0:8000 --cert-file cert.pem --key-file key.pem"
+) else (
+    start cmd /k "python manage.py runserver_plus 0.0.0.0:8000 --cert-file ad-hoc"
+)
 
 REM Wait 5 seconds
 timeout /t 5 /nobreak > nul

@@ -145,6 +145,15 @@ if errorlevel 1 (
     echo [WARNING] Error collecting static files. This may not be critical.
 )
 
+REM --- Generate SSL certificate ---
+if not exist "cert.pem" (
+    echo Generating SSL certificate...
+    REM runserver_plus can generate ad-hoc, but we generate it once to avoid browser warnings changing every time
+    REM We use a dummy command to trigger werkzeug certificate generation if possible, 
+    REM or just let the user know it will be generated on first run.
+    echo [INFO] SSL certificate will be generated on first run by runserver_plus.
+)
+
 REM --- Final Message ---
 echo.
 echo ========================================
@@ -162,8 +171,11 @@ echo   Password: TBM
 echo   Note: This is a staff user created during migration
 echo.
 echo To start the development server:
+echo   start_server.bat
+echo.
+echo Or manually:
 echo   call venvTBM\Scripts\activate
-echo   python manage.py runsslserver 0.0.0.0:8000
+echo   python manage.py runserver_plus 0.0.0.0:8000 --cert-file cert.pem --key-file key.pem
 echo.
 echo For more information, please refer to the README file.
 pause

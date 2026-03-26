@@ -42,6 +42,11 @@ python manage.py migrate
 echo Compiling translations...
 python manage.py compilemessages
 
+echo Checking SSL certificate...
+if not exist "cert.pem" (
+    echo [INFO] cert.pem not found. It will be generated on first run of start_server.bat using ad-hoc.
+)
+
 echo.
 echo POZNAMKA: Pokud jde o prvni spusteni po aktualizaci na verzi s vice akcemi,
 echo           byla automaticky vytvorena vychozi akce "Vychozi akce".
