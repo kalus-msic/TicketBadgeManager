@@ -147,6 +147,10 @@ LANGUAGE_COOKIE_SAMESITE = 'Lax'
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# WhiteNoise: don't raise ValueError for files missing from manifest
+# (prevents 500 errors when collectstatic was incomplete or a file was added after last run)
+WHITENOISE_MANIFEST_STRICT = False
+
 # WhiteNoise storage for serving static files efficiently
 STORAGES = {
     "default": {
@@ -225,6 +229,16 @@ LOGGING = {
         },
     },
     'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
         'tickets': {
             'handlers': ['file', 'console'],
             'level': os.getenv('LOG_LEVEL', 'INFO'),
