@@ -1,18 +1,41 @@
 @echo off
 REM --- Check if git repository is up to date ---
 echo Checking for updates in the repository...
-git fetch
+git fetch --all --quiet
 
-REM Get hash of current commit and remote branch
+REM Get current branch name
+for /f "tokens=*" %%i in ('git rev-parse --abbrev-ref HEAD') do set BRANCH=%%i
+echo You are currently on branch: %BRANCH%
+
+REM Get hash of current commit and its upstream
 for /f "tokens=*" %%i in ('git rev-parse HEAD') do set LOCAL=%%i
 for /f "tokens=*" %%i in ('git rev-parse @{u}') do set REMOTE=%%i
 
 if "%LOCAL%"=="%REMOTE%" (
-    echo Repository is up to date.
+    echo Branch %BRANCH% is up to date.
+    
+    if "%BRANCH%"=="main" (
+        echo.
+        echo Checking if a newer development version (beta) is available...
+        for /f "tokens=*" %%i in ('git rev-parse origin/dev') do set DEV_REMOTE=%%i
+        if not "%LOCAL%"=="%%DEV_REMOTE%" (
+            echo [INFO] A newer version was found in the 'dev' branch.
+            choice /m "Do you want to switch to the 'dev' branch and update to the latest beta? (Y/N)"
+            if errorlevel 2 (
+                echo Staying on main.
+                goto :end
+            ) else (
+                echo Switching to dev...
+                git checkout dev
+                git pull origin dev
+                goto :migrations
+            )
+        )
+    )
     goto :end
 ) else (
-    echo New version of repository found.
-    choice /m "Do you want to download updates from Git? (Y/N)"
+    echo New updates found for branch %BRANCH%.
+    choice /m "Do you want to download updates? (Y/N)"
     if errorlevel 2 (
         echo Update was not performed.
         goto :end
@@ -22,6 +45,7 @@ if "%LOCAL%"=="%REMOTE%" (
     )
 )
 
+:migrations
 REM --- Virtual environment activation and migration ---
 echo Activating virtual environment...
 if exist venvTBM\Scripts\activate (
