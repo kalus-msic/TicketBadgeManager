@@ -1,86 +1,140 @@
 @echo off
-REM --- Check if git repository is up to date ---
-echo Checking for updates in the repository...
+setlocal enabledelayedexpansion
+title TicketBadgeManager - Aktualizace
+
+echo ============================================================
+echo  TicketBadgeManager - Aktualizace aplikace
+echo ============================================================
+echo.
+
+REM --- Kontrola aktualizaci v repozitari ---
+echo Kontroluji aktualizace...
 git fetch --all --quiet
+if errorlevel 1 (
+    echo [UPOZORNENI] Git fetch selhal. Zkontrolujte pripojeni k internetu.
+)
 
-REM Get current branch name
+REM Zjisteni aktualni vetve
 for /f "tokens=*" %%i in ('git rev-parse --abbrev-ref HEAD') do set BRANCH=%%i
-echo You are currently on branch: %BRANCH%
+echo Aktualni vetev: %BRANCH%
 
-REM Get hash of current commit and its upstream
+REM Zjisteni hashe lokalniho commitu
 for /f "tokens=*" %%i in ('git rev-parse HEAD') do set LOCAL=%%i
-for /f "tokens=*" %%i in ('git rev-parse @{u}') do set REMOTE=%%i
 
-if "%LOCAL%"=="%REMOTE%" (
-    echo Branch %BRANCH% is up to date.
-    
+REM Zjisteni hashe vzdalene vetve (muze selhat pokud neni nastaven tracking)
+set REMOTE=
+for /f "tokens=*" %%i in ('git rev-parse @{u} 2^>nul') do set REMOTE=%%i
+
+if "!REMOTE!"=="" (
+    echo [UPOZORNENI] Vzdalena vetev neni nastavena. Preskakuji kontrolu aktualizaci.
+    goto :migrations
+)
+
+if "%LOCAL%"=="!REMOTE!" (
+    echo Vetev %BRANCH% je aktualni.
+
     if "%BRANCH%"=="main" (
         echo.
-        echo Checking if a newer development version (beta) is available...
-        for /f "tokens=*" %%i in ('git rev-parse origin/dev') do set DEV_REMOTE=%%i
-        if not "%LOCAL%"=="%%DEV_REMOTE%" (
-            echo [INFO] A newer version was found in the 'dev' branch.
-            choice /m "Do you want to switch to the 'dev' branch and update to the latest beta? (Y/N)"
-            if errorlevel 2 (
-                echo Staying on main.
-                goto :end
-            ) else (
-                echo Switching to dev...
-                git checkout dev
-                git pull origin dev
-                goto :migrations
+        echo Kontroluji, zda je dostupna novejsi vyvojova verze ^(beta^)...
+        set DEV_REMOTE=
+        for /f "tokens=*" %%i in ('git rev-parse origin/dev 2^>nul') do set DEV_REMOTE=%%i
+        if not "!DEV_REMOTE!"=="" (
+            if not "%LOCAL%"=="!DEV_REMOTE!" (
+                echo [INFO] V vetvi 'dev' je dostupna novejsi verze.
+                choice /m "Chcete prepnout na vetev 'dev' a aktualizovat na nejnovejsi beta? (A/N)"
+                if errorlevel 2 (
+                    echo Zustavame na main.
+                    goto :end
+                ) else (
+                    echo Prepinani na dev...
+                    git checkout dev
+                    git pull origin dev
+                    goto :migrations
+                )
             )
         )
     )
     goto :end
 ) else (
-    echo New updates found for branch %BRANCH%.
-    choice /m "Do you want to download updates? (Y/N)"
+    echo Nalezeny aktualizace pro vetev %BRANCH%.
+    choice /m "Chcete stahnout aktualizace? (A/N)"
     if errorlevel 2 (
-        echo Update was not performed.
+        echo Aktualizace nebyla provedena.
         goto :end
     ) else (
-        echo Performing update...
+        echo Stahuji aktualizace...
         git pull
+        if errorlevel 1 (
+            echo [CHYBA] Git pull selhal.
+            goto :end
+        )
     )
 )
 
 :migrations
-REM --- Virtual environment activation and migration ---
-echo Activating virtual environment...
+echo.
+echo --- Aktivace virtualniho prostredi ---
 if exist venvTBM\Scripts\activate.bat (
     call venvTBM\Scripts\activate.bat
 ) else if exist venv\Scripts\activate.bat (
     call venv\Scripts\activate.bat
 ) else if exist venvTBM\Scripts\activate (
     call venvTBM\Scripts\activate
+) else (
+    echo [CHYBA] Virtualni prostredi nenalezeno. Spustte nejdrive install_app.bat.
+    goto :end
 )
 
-echo Updating dependencies...
-python -m pip install -r requirements.txt
+echo.
+echo --- Aktualizace zavislosti ---
+call python -m pip install -r requirements.txt --quiet
+if errorlevel 1 (
+    echo [UPOZORNENI] Aktualizace zavislosti selhala. Zkontrolujte internet nebo pip.
+)
 
-echo Running makemigrations...
-python manage.py makemigrations
+echo.
+echo --- Databazove migrace ---
+call python manage.py makemigrations
+if errorlevel 1 (
+    echo [CHYBA] makemigrations selhal. Aktualizace nebyla dokoncena.
+    goto :end
+)
 
-echo Running migrate...
-python manage.py migrate
+call python manage.py migrate
+if errorlevel 1 (
+    echo [CHYBA] migrate selhal. Aktualizace nebyla dokoncena.
+    goto :end
+)
 
-echo Compiling translations...
-python manage.py compilemessages
+echo.
+echo --- Preklady ---
+call python manage.py compilemessages
+if errorlevel 1 (
+    echo [UPOZORNENI] Kompilace prekladu selhala.
+)
 
-echo Collecting static files...
-python manage.py collectstatic --noinput
+echo.
+echo --- Staticke soubory ---
+call python manage.py collectstatic --noinput
+if errorlevel 1 (
+    echo [UPOZORNENI] collectstatic selhal.
+)
 
-echo Checking SSL certificate...
+echo.
+echo --- SSL certifikat ---
 if not exist "cert.pem" (
-    echo [INFO] cert.pem not found. It will be generated on first run of start_server.bat using ad-hoc.
+    echo [INFO] cert.pem nenalezen. Bude vygenerovan pri prvnim spusteni start_server.bat.
 )
 
+echo.
+echo ============================================================
+echo  Aktualizace dokoncena.
+echo ============================================================
 echo.
 echo POZNAMKA: Pokud jde o prvni spusteni po aktualizaci na verzi s vice akcemi,
 echo           byla automaticky vytvorena vychozi akce "Vychozi akce".
 echo           Prejmenujte ji v aplikaci dle potreby.
-echo.
-echo Done.
+
 :end
+echo.
 pause
