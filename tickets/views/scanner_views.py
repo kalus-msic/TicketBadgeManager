@@ -149,12 +149,12 @@ def verify_ticket(request, event_pk):
                 event_type='PRINT',
                 message=f"Badge sent to {result['backend']} client (Scanner {printer_queue}, Printer: {result['printer']})"
             )
-        elif result.get('status') == 'queued':
+        elif result['status'] == 'queued':
             Log.objects.create(
                 event=ticket.event,
                 ticket=ticket,
                 ticket_qr=ticket.qr_code,
-                event_type='print_queued',
+                event_type='PRINT',
                 message=f"Badge queued for agent — queue {printer_queue}",
             )
             response_data['print_queued'] = True

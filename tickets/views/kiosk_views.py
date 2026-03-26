@@ -73,12 +73,12 @@ def kiosk_verify(request, event_pk):
                 response_data['print_data'] = result['data']
                 response_data['print_printer'] = result['printer']
                 print_dispatched = True  # Will be handled client-side
-            elif result.get('status') == 'queued':
+            elif result['status'] == 'queued':
                 Log.objects.create(
                     event=ticket.event,
                     ticket=ticket,
                     ticket_qr=ticket.qr_code,
-                    event_type='print_queued',
+                    event_type='PRINT',
                     message=f"Badge queued for agent — queue {printer_queue}",
                 )
                 response_data['print_queued'] = True

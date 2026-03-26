@@ -56,19 +56,20 @@ class PrintManager:
             except Exception as e:
                 logger.error(f"Profile generation failed: {e}")
                 return {'status': 'error', 'message': str(e)}
-            from ..models import PrintJob
-            ticket_id = ticket_data.get('ticket_id')
-            ticket_obj = None
-            if ticket_id:
-                from ..models import Ticket as TicketModel
-                ticket_obj = TicketModel.objects.filter(pk=ticket_id).first()
-            PrintJob.objects.create(
-                event=self._event,
-                ticket=ticket_obj,
-                printer_queue=printer_queue,
-                print_data=base64.b64encode(tspl_bytes).decode('ascii'),
-                status='pending',
-            )
+            if not ticket_data.get('_test_print'):
+                from ..models import PrintJob
+                ticket_id = ticket_data.get('ticket_id')
+                ticket_obj = None
+                if ticket_id:
+                    from ..models import Ticket as TicketModel
+                    ticket_obj = TicketModel.objects.filter(pk=ticket_id).first()
+                PrintJob.objects.create(
+                    event=self._event,
+                    ticket=ticket_obj,
+                    printer_queue=printer_queue,
+                    print_data=base64.b64encode(tspl_bytes).decode('ascii'),
+                    status='pending',
+                )
             return {'status': 'queued'}
 
         # WebUSB — generate raw byte stream for USB transmission
@@ -92,4 +93,5 @@ class PrintManager:
             'company_name': 'TicketBadgeManager',
             'qr_code': 'TEST',
             'event_name': self._event.name,
+            '_test_print': True,
         }, printer_queue)
