@@ -102,10 +102,25 @@ def ack(config, job_id, success, error=''):
 def print_windows(tspl_bytes, printer_name):
     """Print raw TSPL bytes via TSCLIB.dll on Windows."""
     import ctypes
+    
+    # Robust DLL loading: check local dir and dev dir before falling back to system path
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    possible_paths = [
+        os.path.join(script_dir, 'TSCLIB.dll'),
+        os.path.join(script_dir, 'tickets', 'libs', 'TSCLIB.dll'),
+    ]
+    
+    dll_path = 'TSCLIB.dll'  # Default fallback to system path
+    for p in possible_paths:
+        if os.path.exists(p):
+            dll_path = p
+            break
+
     try:
-        tsc = ctypes.WinDLL('TSCLIB.dll')
+        tsc = ctypes.WinDLL(dll_path)
     except OSError as e:
-        raise RuntimeError(f'Cannot load TSCLIB.dll: {e}') from e
+        raise RuntimeError(f'Cannot load TSCLIB.dll (tried {dll_path}): {e}') from e
+    
     # Declare wide-string argtypes so ctypes marshals Python str correctly
     tsc.openportW.argtypes = [ctypes.c_wchar_p]
     tsc.printlabelW.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p]
