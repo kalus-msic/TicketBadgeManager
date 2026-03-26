@@ -22,7 +22,7 @@ set /a "seed=%random%"
 REM Generate 50 character key
 for /L %%i in (1,1,50) do (
     set /a "rand=!random! %% 62"
-    call set "char=%%CHARS:~!rand!,1%%"
+    for %%j in (!rand!) do set "char=!CHARS:~%%j,1!"
     set "SECRET_KEY=!SECRET_KEY!!char!"
 )
 
@@ -129,6 +129,12 @@ if errorlevel 1 (
     echo [ERROR] Error performing migrations.
     pause
     exit /b
+)
+
+echo Compiling translations...
+python manage.py compilemessages
+if errorlevel 1 (
+    echo [WARNING] Error compiling translations. Ensure gettext is installed.
 )
 
 
