@@ -2,6 +2,7 @@ import hmac
 import json
 import uuid
 from datetime import timedelta
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -30,18 +31,21 @@ def agent_poll(request, event_pk):
     event = get_object_or_404(Event, pk=event_pk)
     if not _verify_token(request, event):
         return JsonResponse({'error': 'Forbidden'}, status=403)
-    queue = request.GET.get('queue', '1')
-    # Recover stale jobs stuck in 'printing' state (e.g. agent crashed)
+    queue = request.GET.get('queue', '1')[:2]
     stale_cutoff = timezone.now() - timedelta(seconds=STALE_PRINTING_TIMEOUT_SECONDS)
-    PrintJob.objects.filter(
-        event=event, printer_queue=queue, status='printing', created_at__lt=stale_cutoff
-    ).update(status='pending')
-    # Claim the next pending job
-    job = PrintJob.objects.filter(event=event, printer_queue=queue, status='pending').first()
-    if not job:
-        return JsonResponse({})
-    job.status = 'printing'
-    job.save(update_fields=['status'])
+    with transaction.atomic():
+        # Recover stale jobs stuck in 'printing' state (e.g. agent crashed)
+        PrintJob.objects.filter(
+            event=event, printer_queue=queue, status='printing', created_at__lt=stale_cutoff
+        ).update(status='pending')
+        # Atomically claim the next pending job to prevent double-printing
+        job = PrintJob.objects.select_for_update().filter(
+            event=event, printer_queue=queue, status='pending'
+        ).first()
+        if not job:
+            return JsonResponse({})
+        job.status = 'printing'
+        job.save(update_fields=['status'])
     return JsonResponse({
         'job_id': job.pk,
         'print_data': job.print_data,
@@ -61,6 +65,8 @@ def agent_ack(request, event_pk):
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     job = get_object_or_404(PrintJob, pk=data.get('job_id'), event=event)
+    if job.status not in ('printing', 'pending'):
+        return JsonResponse({'error': 'Job already completed'}, status=409)
     job.status = 'done' if data.get('success') else 'error'
     job.error_message = str(data.get('error', ''))[:500]
     job.completed_at = timezone.now()
@@ -68,8 +74,8 @@ def agent_ack(request, event_pk):
     return JsonResponse({'ok': True})
 
 
-@require_http_methods(['POST'])
 @staff_required
+@require_http_methods(['POST'])
 def regenerate_agent_token(request, event_pk):
     """Generate a new agent token for the event. Staff-only."""
     event = get_object_or_404(Event, pk=event_pk)
