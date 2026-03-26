@@ -195,3 +195,9 @@ tickets/image/*
 temp/*
 !temp/.gitkeep
 
+# logy
+logs/*
+!logs/.gitkeep
+
+# Agent config (contains secret token)
+agent_config.ini
