@@ -156,6 +156,11 @@
                                                                 onclick="WebUSBBackend.pairDevice('1').then(d => { document.getElementById('webusb-q1-status').textContent = d.productName; }).catch(() => {})">
                                                             {% trans "Pair Queue 1" %}
                                                         </button>
+                                                        <button type="button" class="btn btn-outline-danger"
+                                                                title="{% trans 'Unpair' %}"
+                                                                onclick="WebUSBBackend.clearPairedInfo('1'); document.getElementById('webusb-q1-status').textContent = '—';">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
@@ -165,6 +170,11 @@
                                                         <button type="button" class="btn btn-outline-primary"
                                                                 onclick="WebUSBBackend.pairDevice('2').then(d => { document.getElementById('webusb-q2-status').textContent = d.productName; }).catch(() => {})">
                                                             {% trans "Pair Queue 2" %}
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger"
+                                                                title="{% trans 'Unpair' %}"
+                                                                onclick="WebUSBBackend.clearPairedInfo('2'); document.getElementById('webusb-q2-status').textContent = '—';">
+                                                            <i class="bi bi-x-lg"></i>
                                                         </button>
                                                     </div>
                                                 </div>

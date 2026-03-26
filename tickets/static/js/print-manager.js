@@ -24,7 +24,7 @@
         };
         const messages = {
             ready:          `${icons.ready} ${printerName} ✅`,
-            unpaired:       `${icons.unpaired} Tiskárna není párována`,
+            unpaired:       printerName ? `${icons.unpaired} ${printerName} — není párováno` : `${icons.unpaired} Tiskárna není párována`,
             disconnected:   `${icons.disconnected} Tiskárna ${printerName} — odpojená`,
             error:          `${icons.error} Tisk selhal: ${detail || ''}`,
             driver_conflict:`${icons.driver_conflict} Tiskárna blokována Windows ovladačem`,
@@ -42,7 +42,7 @@
             <button class="btn btn-sm btn-link ms-auto p-0" onclick="PrintManager.toggleGearPanel()" title="Nastavení tiskárny">⚙️</button>`;
         const gearName = document.getElementById('webusb-gear-printer-name');
         if (gearName) {
-            gearName.textContent = (state === 'unpaired') ? 'Nepárováno' : (printerName || '');
+            gearName.textContent = printerName || (state === 'unpaired' ? 'Nepárováno' : '');
         }
     }
 
