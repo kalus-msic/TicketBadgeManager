@@ -73,6 +73,7 @@
         </div>
         <!-- WebUSB gear panel -->
         <div id="webusb-gear-panel" class="mb-2 py-1 px-2 rounded small bg-light text-start">
+            <span id="webusb-gear-printer-name" class="me-2 fw-semibold text-muted small"></span>
             <button class="btn btn-sm btn-outline-secondary me-1" onclick="PrintManager.showPairButton()">Změnit tiskárnu</button>
             <button class="btn btn-sm btn-outline-danger" onclick="WebUSBBackend.clearPairedInfo(document.getElementById('printer_queue').value); PrintManager.setStatus('unpaired', '')">Odpárovat</button>
         </div>

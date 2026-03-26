@@ -215,24 +215,26 @@
                                         const namesSection = document.getElementById('printer-names-section');
                                         const webusbSection = document.getElementById('webusb-pairing-section');
 
-                                        function togglePrinterNames() {
-                                            const isWebusb = backendSelect.value === 'webusb';
+                                        function togglePrinterSections() {
+                                            const val = backendSelect.value;
+                                            const isWebusb = val === 'webusb';
                                             namesSection.style.display = isWebusb ? 'none' : '';
                                             webusbSection.style.display = isWebusb ? '' : 'none';
+                                            const agentSection = document.getElementById('agent-settings-section');
+                                            if (agentSection) agentSection.style.display = val === 'agent' ? '' : 'none';
                                         }
-                                        backendSelect.addEventListener('change', togglePrinterNames);
-                                        togglePrinterNames();
+                                        backendSelect.addEventListener('change', togglePrinterSections);
+                                        togglePrinterSections();
 
                                         // Populate paired device names from localStorage
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            if (typeof WebUSBBackend === 'undefined') return;
-                                            const q1 = WebUSBBackend.getPairedInfo('1');
-                                            const q2 = WebUSBBackend.getPairedInfo('2');
-                                            const q1el = document.getElementById('webusb-q1-status');
-                                            const q2el = document.getElementById('webusb-q2-status');
-                                            if (q1el && q1) q1el.textContent = q1.name;
-                                            if (q2el && q2) q2el.textContent = q2.name;
-                                        });
+                                        // DOMContentLoaded has already fired when this inline script runs
+                                        if (typeof WebUSBBackend === 'undefined') return;
+                                        const q1 = WebUSBBackend.getPairedInfo('1');
+                                        const q2 = WebUSBBackend.getPairedInfo('2');
+                                        const q1el = document.getElementById('webusb-q1-status');
+                                        const q2el = document.getElementById('webusb-q2-status');
+                                        if (q1el && q1) q1el.textContent = q1.name;
+                                        if (q2el && q2) q2el.textContent = q2.name;
                                     })();
                                     </script>
                                 </div>

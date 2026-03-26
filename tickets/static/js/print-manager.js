@@ -40,6 +40,10 @@
         const action = actions[state] || '';
         bar.innerHTML = `<span>${msg}</span>${action}
             <button class="btn btn-sm btn-link ms-auto p-0" onclick="PrintManager.toggleGearPanel()" title="Nastavení tiskárny">⚙️</button>`;
+        const gearName = document.getElementById('webusb-gear-printer-name');
+        if (gearName) {
+            gearName.textContent = (state === 'unpaired') ? 'Nepárováno' : (printerName || '');
+        }
     }
 
     // --- Gear panel (inline, non-blocking) ---
