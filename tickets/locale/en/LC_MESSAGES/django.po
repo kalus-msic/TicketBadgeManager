@@ -1265,3 +1265,11 @@ msgstr "Successfully printed %(success)s labels"
 #, python-format
 msgid "Error printing labels: %(error)s"
 msgstr "Error printing labels: %(error)s"
+
+#: tickets/templates/base.html:158
+msgid "Developed for"
+msgstr "Developed for"
+
+#: tickets/templates/base.html:162
+msgid "MSIC events"
+msgstr "MSIC events"

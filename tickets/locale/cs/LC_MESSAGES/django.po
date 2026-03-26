@@ -957,6 +957,8 @@ msgid ""
 "This controls only manual ticket creation/editing. Import validation is "
 "fixed according to the settings on the Import page."
 msgstr ""
+"Toto ovládá pouze ruční vytváření/úpravu vstupenek. Validace importu je "
+"pevně daná podle nastavení na stránce Import."
 
 #: tickets/templates/tickets/settings.html:102
 msgid "Save"
@@ -979,6 +981,8 @@ msgid ""
 "When enabled, labels will be printed automatically after each successful "
 "scan. When disabled, only check-in will be performed."
 msgstr ""
+"Při zapnutí budou štítky vytištěny automaticky po každém úspěšném "
+"naskenování. Při vypnutí bude provedeno pouze odbavení."
 
 #: tickets/templates/tickets/settings.html:146
 msgid "Save Settings"
@@ -993,6 +997,8 @@ msgid ""
 "This will delete all tickets and their check-in data. This action cannot be "
 "undone."
 msgstr ""
+"Toto smaže všechny vstupenky a jejich údaje o odbavení. Tuto akci nelze "
+"vrátit zpět."
 
 #: tickets/templates/tickets/settings.html:176
 #: tickets/templates/tickets/settings.html:181
@@ -1004,6 +1010,8 @@ msgid ""
 "This will only delete check-in data and reset all tickets to VALID status. "
 "Tickets will remain in the system."
 msgstr ""
+"Toto pouze smaže data o odbavení a nastaví všechny vstupenky zpět do stavu "
+"PLATNÉ. Vstupenky zůstanou v systému."
 
 #: tickets/templates/tickets/settings.html:194
 #: tickets/templates/tickets/settings.html:199
@@ -1019,6 +1027,8 @@ msgid ""
 "Print all labels in advance for small events. Labels will be printed without "
 "checking in the tickets."
 msgstr ""
+"Vytiskněte všechny štítky předem pro malé události. Štítky budou vytištěny "
+"bez odbavení vstupenek."
 
 #: tickets/templates/tickets/settings.html:215
 msgid "Print All Labels"
@@ -1266,3 +1276,11 @@ msgstr "Úspěšně vytištěno %(success)s štítků"
 #, python-format
 msgid "Error printing labels: %(error)s"
 msgstr "Chyba při tisku štítků: %(error)s"
+
+#: tickets/templates/base.html:158
+msgid "Developed for"
+msgstr "Vyvinuto pro"
+
+#: tickets/templates/base.html:162
+msgid "MSIC events"
+msgstr "MSIC eventy"

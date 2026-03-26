@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: TicketBadgeManager\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-03-23 10:49+0000\n"
-"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-03-23 17:45+0000\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,3 +18,99 @@ msgstr "Angličtina"
 #: ticket_badge_manager/settings.py:125
 msgid "Czech"
 msgstr "Čeština"
+
+# Ticket Details
+msgid "Ticket Details"
+msgstr "Detail vstupenky"
+
+msgid "Edit"
+msgstr "Upravit"
+
+msgid "Delete"
+msgstr "Smazat"
+
+msgid "QR Code"
+msgstr "QR kód"
+
+msgid "Name"
+msgstr "Jméno"
+
+msgid "Company"
+msgstr "Firma"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Invited to Eventee"
+msgstr "Pozván do Eventee"
+
+msgid "Yes"
+msgstr "Ano"
+
+msgid "No"
+msgstr "Ne"
+
+msgid "Status"
+msgstr "Stav"
+
+msgid "Created"
+msgstr "Vytvořeno"
+
+msgid "Logs"
+msgstr "Logy"
+
+msgid "Date/Time"
+msgstr "Datum/Čas"
+
+msgid "Event Type"
+msgstr "Typ události"
+
+msgid "Message"
+msgstr "Zpráva"
+
+msgid "No log entries available"
+msgstr "Nejsou k dispozici žádné záznamy"
+
+msgid "Quick Actions"
+msgstr "Rychlé akce"
+
+msgid "Reset status to default"
+msgstr "Resetovat stav na výchozí"
+
+msgid "Verify Ticket and print label"
+msgstr "Ověřit vstupenku a vytisknout štítek"
+
+msgid "Verify Ticket"
+msgstr "Ověřit vstupenku"
+
+msgid "Print Label"
+msgstr "Vytisknout štítek"
+
+msgid "Back to Tickets"
+msgstr "Zpět na seznam vstupenek"
+
+msgid "Toggle Dropdown"
+msgstr "Otevřít menu"
+
+# Statuses
+msgid "Valid"
+msgstr "Platná"
+
+msgid "Used"
+msgstr "Použitá"
+
+msgid "Cancelled"
+msgstr "Zrušená"
+
+# Delete Event
+msgid "Delete Event"
+msgstr "Smazat událost"
+
+msgid "Are you sure you want to delete the event <strong>%(name)s</strong> (%(date)s)?"
+msgstr "Opravdu chcete smazat událost <strong>%(name)s</strong> (%(date)s)?"
+
+msgid "This will permanently delete the event and all associated tickets, check-ins, and logs."
+msgstr "Tímto trvale smažete událost a všechny související vstupenky, odbavení a logy."
+
+msgid "Cancel"
+msgstr "Zrušit"
