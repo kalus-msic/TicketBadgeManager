@@ -36,6 +36,7 @@ class Event(models.Model):
         max_length=20, choices=PRINT_BACKEND_CHOICES, default='direct',
         verbose_name=_("Print Backend")
     )
+    agent_token = models.CharField(max_length=64, blank=True, default='', verbose_name=_("Agent Token"))
 
     class Meta:
         ordering = ['-date']
@@ -147,3 +148,23 @@ class AppSettings(models.Model):
     
     def __str__(self):
         return "Application Settings"
+
+
+class PrintJob(models.Model):
+    STATUS_CHOICES = [
+        ('pending', _('Pending')),
+        ('printing', _('Printing')),
+        ('done', _('Done')),
+        ('error', _('Error')),
+    ]
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='print_jobs')
+    ticket = models.ForeignKey(Ticket, on_delete=models.SET_NULL, null=True, blank=True, related_name='print_jobs')
+    printer_queue = models.CharField(max_length=2, default='1')
+    print_data = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    error_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['created_at']

@@ -906,3 +906,32 @@ class KioskWebUSBTest(TestCase):
             self.assertIn('ticket', data)
             self.assertIn('id', data['ticket'])
             self.assertEqual(data['ticket']['id'], ticket.id)
+
+
+class PrintJobModelTest(TestCase):
+    def setUp(self):
+        self.event = Event.objects.create(name='TestEvent', date=date(2026, 1, 1), print_backend='direct')
+
+    def test_printjob_creation(self):
+        """PrintJob creates with default status 'pending'"""
+        from tickets.models import PrintJob
+        job = PrintJob.objects.create(
+            event=self.event,
+            printer_queue='1',
+            print_data='dGVzdA==',
+        )
+        self.assertEqual(job.status, 'pending')
+        self.assertIsNone(job.completed_at)
+
+    def test_printjob_ordering(self):
+        """PrintJobs are ordered by created_at ascending"""
+        from tickets.models import PrintJob
+        j1 = PrintJob.objects.create(event=self.event, printer_queue='1', print_data='a')
+        j2 = PrintJob.objects.create(event=self.event, printer_queue='1', print_data='b')
+        jobs = list(PrintJob.objects.filter(event=self.event))
+        self.assertEqual(jobs[0].pk, j1.pk)
+        self.assertEqual(jobs[1].pk, j2.pk)
+
+    def test_event_agent_token_default_empty(self):
+        """Event.agent_token defaults to empty string"""
+        self.assertEqual(self.event.agent_token, '')
