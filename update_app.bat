@@ -48,10 +48,12 @@ if "%LOCAL%"=="%REMOTE%" (
 :migrations
 REM --- Virtual environment activation and migration ---
 echo Activating virtual environment...
-if exist venvTBM\Scripts\activate (
+if exist venvTBM\Scripts\activate.bat (
+    call venvTBM\Scripts\activate.bat
+) else if exist venv\Scripts\activate.bat (
+    call venv\Scripts\activate.bat
+) else if exist venvTBM\Scripts\activate (
     call venvTBM\Scripts\activate
-) else if exist venv\Scripts\activate (
-    call venv\Scripts\activate
 )
 
 echo Updating dependencies...
@@ -65,6 +67,9 @@ python manage.py migrate
 
 echo Compiling translations...
 python manage.py compilemessages
+
+echo Collecting static files...
+python manage.py collectstatic --noinput
 
 echo Checking SSL certificate...
 if not exist "cert.pem" (
