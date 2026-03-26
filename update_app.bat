@@ -16,54 +16,68 @@ if errorlevel 1 (
 
 REM Zjisteni aktualni vetve
 for /f "tokens=*" %%i in ('git rev-parse --abbrev-ref HEAD') do set BRANCH=%%i
-echo Aktualni vetev: %BRANCH%
 
-REM Zjisteni hashe lokalniho commitu
+REM Pokud uzivatel neni na main, nabidni prepnuti
+if not "%BRANCH%"=="main" (
+    echo [UPOZORNENI] Jste na vetvi '%BRANCH%', nikoliv na 'main'.
+    choice /m "Prepnout na stabilni vetev 'main' a aktualizovat? (A/N)"
+    if errorlevel 2 (
+        echo Aktualizace zrusena.
+        goto :end
+    ) else (
+        echo Prepinani na main...
+        git checkout main
+        if errorlevel 1 (
+            echo [CHYBA] Prepnuti na main selhalo.
+            goto :end
+        )
+        set BRANCH=main
+    )
+)
+
+echo Aktualni vetev: main
+
+REM Zjisteni hashe lokalniho commitu a vzdalene vetve
 for /f "tokens=*" %%i in ('git rev-parse HEAD') do set LOCAL=%%i
 
-REM Zjisteni hashe vzdalene vetve (muze selhat pokud neni nastaven tracking)
 set REMOTE=
-for /f "tokens=*" %%i in ('git rev-parse @{u} 2^>nul') do set REMOTE=%%i
+for /f "tokens=*" %%i in ('git rev-parse origin/main 2^>nul') do set REMOTE=%%i
 
 if "!REMOTE!"=="" (
-    echo [UPOZORNENI] Vzdalena vetev neni nastavena. Preskakuji kontrolu aktualizaci.
+    echo [UPOZORNENI] Vzdalena vetev origin/main nenalezena. Preskakuji kontrolu aktualizaci.
     goto :migrations
 )
 
 if "%LOCAL%"=="!REMOTE!" (
-    echo Vetev %BRANCH% je aktualni.
+    echo Aplikace je aktualni. Zadne aktualizace nejsou dostupne.
 
-    if "%BRANCH%"=="main" (
-        echo.
-        echo Kontroluji, zda je dostupna novejsi vyvojova verze ^(beta^)...
-        set DEV_REMOTE=
-        for /f "tokens=*" %%i in ('git rev-parse origin/dev 2^>nul') do set DEV_REMOTE=%%i
-        if not "!DEV_REMOTE!"=="" (
-            if not "%LOCAL%"=="!DEV_REMOTE!" (
-                echo [INFO] V vetvi 'dev' je dostupna novejsi verze.
-                choice /m "Chcete prepnout na vetev 'dev' a aktualizovat na nejnovejsi beta? (A/N)"
-                if errorlevel 2 (
-                    echo Zustavame na main.
-                    goto :end
-                ) else (
-                    echo Prepinani na dev...
-                    git checkout dev
-                    git pull origin dev
-                    goto :migrations
-                )
+    REM Zkontroluj, zda dev obsahuje novejsi verzi (beta)
+    set DEV_REMOTE=
+    for /f "tokens=*" %%i in ('git rev-parse origin/dev 2^>nul') do set DEV_REMOTE=%%i
+    if not "!DEV_REMOTE!"=="" (
+        if not "!LOCAL!"=="!DEV_REMOTE!" (
+            echo.
+            echo [BETA] Je dostupna novejsi vyvojova verze ^(vetev 'dev'^).
+            choice /m "Chcete prepnout na beta verzi? Pozor: muze obsahovat chyby. (A/N)"
+            if errorlevel 2 (
+                echo Zustavame na stabilni verzi main.
+            ) else (
+                echo Prepinani na dev...
+                git checkout dev
+                git pull origin dev
             )
         )
     )
-    goto :end
+    goto :migrations
 ) else (
-    echo Nalezeny aktualizace pro vetev %BRANCH%.
+    echo Nalezeny aktualizace.
     choice /m "Chcete stahnout aktualizace? (A/N)"
     if errorlevel 2 (
         echo Aktualizace nebyla provedena.
         goto :end
     ) else (
         echo Stahuji aktualizace...
-        git pull
+        git pull origin main
         if errorlevel 1 (
             echo [CHYBA] Git pull selhal.
             goto :end
