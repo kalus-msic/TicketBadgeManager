@@ -193,7 +193,36 @@
                                             </div>
                                         </div>
                                         <div id="agent-settings-section">
-                                            {# Agent settings will be populated in Task 5 #}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">{% trans "Agent Token" %}</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control font-monospace"
+                                                           id="agent-token-display"
+                                                           value="{{ active_event.agent_token|default:'' }}"
+                                                           readonly>
+                                                    <button type="button" class="btn btn-outline-secondary"
+                                                            onclick="navigator.clipboard.writeText(document.getElementById('agent-token-display').value)"
+                                                            title="{% trans 'Copy token' %}">
+                                                        <i class="bi bi-clipboard"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-warning"
+                                                            id="regen-token-btn"
+                                                            data-url="{% url 'tickets:regenerate_agent_token' event_pk=active_event.pk %}"
+                                                            onclick="regenerateToken(this)">
+                                                        <i class="bi bi-arrow-clockwise"></i> {% trans "Regenerate" %}
+                                                    </button>
+                                                </div>
+                                                <div class="form-text">
+                                                    {% trans "The agent authenticates with this token via X-Agent-Token header. Keep it secret." %}
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">{% trans "Agent URL" %}</label>
+                                                <div class="form-text">
+                                                    {% trans "Configure in agent_config.ini on the PC with the printer:" %}
+                                                    <code>url = https://{{ request.get_host }}</code>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-check mb-3">
                                             <input class="form-check-input" type="checkbox"
@@ -238,6 +267,24 @@
                                         if (q1el && q1) q1el.textContent = q1.name;
                                         if (q2el && q2) q2el.textContent = q2.name;
                                     })();
+                                    </script>
+                                    <script>
+                                    function regenerateToken(btn) {
+                                        if (!confirm('{% trans "Generate a new agent token? The old token will stop working immediately." %}')) return;
+                                        btn.disabled = true;
+                                        fetch(btn.dataset.url, {
+                                            method: 'POST',
+                                            headers: {'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''},
+                                        })
+                                        .then(r => r.json())
+                                        .then(data => {
+                                            if (data.token) {
+                                                document.getElementById('agent-token-display').value = data.token;
+                                            }
+                                            btn.disabled = false;
+                                        })
+                                        .catch(() => { btn.disabled = false; });
+                                    }
                                     </script>
                                 </div>
                             </div>

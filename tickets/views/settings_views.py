@@ -1,4 +1,5 @@
 import json
+import uuid
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
@@ -204,6 +205,9 @@ def update_printer_settings(request, event_pk):
     valid_backends = [c[0] for c in Event.PRINT_BACKEND_CHOICES]
     if print_backend not in valid_backends:
         print_backend = 'direct'
+
+    if print_backend == 'agent' and not event.agent_token:
+        event.agent_token = uuid.uuid4().hex
 
     event.auto_print_on_scan = auto_print
     event.printer_1_name = printer_1_name
