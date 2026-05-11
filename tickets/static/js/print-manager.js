@@ -114,12 +114,16 @@
         const queue = _getQueue();
         const ticketId = data.ticket ? data.ticket.id : null;
         const eventPk = _getEventPk();
+        const copies = Math.max(1, Math.min(10, parseInt(data.print_copies, 10) || 1));
 
         savePending({ base64Data, printerName, queue, ticketId, eventPk, attempt: 0 });
         if (!window.WebUSBBackend) { setStatus('error', printerName, 'WebUSB backend not loaded'); return; }
-        await window.WebUSBBackend.print(base64Data, printerName, queue, ticketId, eventPk).catch(e => {
-            console.error('PrintManager: print delegation failed', e);
-        });
+        for (let i = 0; i < copies; i++) {
+            if (i > 0) await new Promise(r => setTimeout(r, 500));
+            await window.WebUSBBackend.print(base64Data, printerName, queue, ticketId, eventPk).catch(e => {
+                console.error('PrintManager: print delegation failed (copy ' + (i + 1) + '/' + copies + ')', e);
+            });
+        }
     }
 
     // --- Init on page load ---

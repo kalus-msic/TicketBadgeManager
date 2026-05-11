@@ -19,6 +19,19 @@ msgstr "English"
 msgid "Czech"
 msgstr "Czech"
 
+# Label copies (badge printing)
+msgid "Label copies per print"
+msgstr "Label copies per print"
+
+msgid "Number of label copies printed per badge (e.g. 2 for double-sided business cards). Applies to both automatic and manual prints."
+msgstr "Number of label copies printed per badge (e.g. 2 for double-sided business cards). Applies to both automatic and manual prints."
+
+msgid "Label Copies"
+msgstr "Label Copies"
+
+msgid "Number of label copies to print per badge (1 = single, 2 = double-sided, etc.)"
+msgstr "Number of label copies to print per badge (1 = single, 2 = double-sided, etc.)"
+
 # Common terms
 #~ msgid "TicketBadgeManager"
 #~ msgstr "TicketBadgeManager"

@@ -246,6 +246,17 @@
                                                 {% trans "When enabled, labels will be printed automatically after each successful scan. When disabled, only check-in will be performed." %}
                                             </div>
                                         </div>
+                                        <div class="mb-3">
+                                            <label for="label_copies" class="form-label">{% trans "Label copies per print" %}</label>
+                                            <input type="number" class="form-control form-control-sm"
+                                                   id="label_copies" name="label_copies"
+                                                   min="1" max="10"
+                                                   value="{{ eventee_settings.label_copies|default:1 }}"
+                                                   style="max-width: 120px;">
+                                            <div class="form-text">
+                                                {% trans "Number of label copies printed per badge (e.g. 2 for double-sided business cards). Applies to both automatic and manual prints." %}
+                                            </div>
+                                        </div>
                                         <button type="submit" class="btn btn-primary">
                                             {% trans "Save Settings" %}
                                         </button>

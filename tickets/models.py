@@ -38,6 +38,12 @@ class Event(models.Model):
     )
     agent_token = models.CharField(max_length=64, blank=True, default='', verbose_name=_("Agent Token"))
 
+    label_copies = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name=_("Label Copies"),
+        help_text=_("Number of label copies to print per badge (1 = single, 2 = double-sided, etc.)"),
+    )
+
     class Meta:
         ordering = ['-date']
         verbose_name = _("Event")

@@ -121,41 +121,50 @@ def verify_ticket(request, event_pk):
                 response_data['print_warning'] = "Cannot print label for cancelled ticket"
 
     if should_print:
+        import time
         from tickets.printing import PrintManager
         pm = PrintManager(event)
-        result = pm.print_ticket({
+        copies = max(1, min(10, event.label_copies or 1))
+        payload = {
             'qr_code': ticket.qr_code,
             'name': ticket.name,
             'company_name': ticket.company_name,
             'event_name': ticket.event.name if ticket.event else '',
             'ticket_id': ticket.id,
-        }, printer_queue)
+        }
+        result = pm.print_ticket(payload, printer_queue)
 
         if result['status'] == 'printed':
+            for i in range(1, copies):
+                time.sleep(0.5)
+                pm.print_ticket(payload, printer_queue)
             Log.objects.create(
                 ticket=ticket, ticket_qr=ticket.qr_code, event=event,
                 event_type='PRINT',
-                message=f"Label printed on Scanner {printer_queue} "
+                message=f"Label printed ×{copies} on Scanner {printer_queue} "
                         f"(Printer: {pm.get_printer_name(printer_queue)})"
             )
             response_data['print_success'] = True
         elif result['status'] == 'print_required':
-            # Client-side printing — send data to JS
+            # Client-side printing — send data to JS, client loops `copies` times
             response_data['print_backend'] = result['backend']
             response_data['print_data'] = result['data']
             response_data['print_printer'] = result['printer']
+            response_data['print_copies'] = copies
             Log.objects.create(
                 ticket=ticket, ticket_qr=ticket.qr_code, event=event,
                 event_type='PRINT',
-                message=f"Badge sent to {result['backend']} client (Scanner {printer_queue}, Printer: {result['printer']})"
+                message=f"Badge ×{copies} sent to {result['backend']} client (Scanner {printer_queue}, Printer: {result['printer']})"
             )
         elif result['status'] == 'queued':
+            for _i in range(1, copies):
+                pm.print_ticket(payload, printer_queue)
             Log.objects.create(
                 event=ticket.event,
                 ticket=ticket,
                 ticket_qr=ticket.qr_code,
                 event_type='PRINT',
-                message=f"Badge queued for agent — queue {printer_queue}",
+                message=f"Badge ×{copies} queued for agent — queue {printer_queue}",
             )
             response_data['print_queued'] = True
         else:

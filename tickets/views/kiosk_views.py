@@ -54,17 +54,23 @@ def kiosk_verify(request, event_pk):
             # Print badge for successful verification
             print_success = False
             print_dispatched = False
+            import time
             from tickets.printing import PrintManager
             pm = PrintManager(event)
-            result = pm.print_ticket({
+            copies = max(1, min(10, event.label_copies or 1))
+            payload = {
                 'qr_code': ticket.qr_code,
                 'name': ticket.name,
                 'company_name': ticket.company_name,
                 'event_name': ticket.event.name if ticket.event else '',
                 'ticket_id': ticket.id,
-            }, printer_queue)
+            }
+            result = pm.print_ticket(payload, printer_queue)
 
             if result['status'] == 'printed':
+                for i in range(1, copies):
+                    time.sleep(0.5)
+                    pm.print_ticket(payload, printer_queue)
                 response_data['badge_printed'] = True
                 response_data['print_message'] = _('Your badge is printing...')
                 print_success = True
@@ -72,14 +78,17 @@ def kiosk_verify(request, event_pk):
                 response_data['print_backend'] = result['backend']
                 response_data['print_data'] = result['data']
                 response_data['print_printer'] = result['printer']
+                response_data['print_copies'] = copies
                 print_dispatched = True  # Will be handled client-side
             elif result['status'] == 'queued':
+                for _i in range(1, copies):
+                    pm.print_ticket(payload, printer_queue)
                 Log.objects.create(
                     event=ticket.event,
                     ticket=ticket,
                     ticket_qr=ticket.qr_code,
                     event_type='PRINT',
-                    message=f"Badge queued for agent — queue {printer_queue}",
+                    message=f"Badge ×{copies} queued for agent — queue {printer_queue}",
                 )
                 response_data['print_queued'] = True
                 print_dispatched = True

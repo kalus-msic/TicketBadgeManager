@@ -201,6 +201,12 @@ def update_printer_settings(request, event_pk):
     printer_1_name = request.POST.get('printer_1_name', 'TDP-2251').strip() or 'TDP-2251'
     printer_2_name = request.POST.get('printer_2_name', 'TDP-2252').strip() or 'TDP-2252'
 
+    try:
+        label_copies = int(request.POST.get('label_copies', 1))
+    except (ValueError, TypeError):
+        label_copies = event.label_copies
+    label_copies = max(1, min(10, label_copies))
+
     print_backend = request.POST.get('print_backend', 'direct')
     valid_backends = [c[0] for c in Event.PRINT_BACKEND_CHOICES]
     if print_backend not in valid_backends:
@@ -213,6 +219,7 @@ def update_printer_settings(request, event_pk):
     event.printer_1_name = printer_1_name
     event.printer_2_name = printer_2_name
     event.print_backend = print_backend
+    event.label_copies = label_copies
     event.save()
 
     Log.objects.create(
@@ -220,7 +227,7 @@ def update_printer_settings(request, event_pk):
         event_type='SYSTEM',
         message=f'Printer settings updated by {get_username_for_log(request)}: '
                 f'Auto print = {auto_print}, Printer 1 = {printer_1_name}, Printer 2 = {printer_2_name}, '
-                f'Backend = {print_backend}'
+                f'Backend = {print_backend}, Copies = {label_copies}'
     )
 
     messages.success(request, 'Printer settings updated successfully')

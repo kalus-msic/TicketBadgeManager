@@ -114,3 +114,16 @@ msgstr "Tímto trvale smažete událost a všechny související vstupenky, odba
 
 msgid "Cancel"
 msgstr "Zrušit"
+
+# Label copies (badge printing)
+msgid "Label copies per print"
+msgstr "Počet kopií štítku"
+
+msgid "Number of label copies printed per badge (e.g. 2 for double-sided business cards). Applies to both automatic and manual prints."
+msgstr "Počet kopií štítku tištěných při odbavení (např. 2 pro oboustranné vizitky). Platí pro automatický i ruční tisk."
+
+msgid "Label Copies"
+msgstr "Počet kopií štítku"
+
+msgid "Number of label copies to print per badge (1 = single, 2 = double-sided, etc.)"
+msgstr "Počet kopií štítku tištěných při odbavení (1 = jeden, 2 = oboustranně, atd.)"
