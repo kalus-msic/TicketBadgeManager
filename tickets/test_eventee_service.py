@@ -35,12 +35,37 @@ class BuilderTests(TestCase):
         self.assertEqual(user["company"], "ACME")
         self.assertEqual(user["tickets"], [{"number": "GUEST-AAAA1111", "title": "", "type": "qr"}])
 
-    def test_send_email_from_event_flag(self):
+    def _svc_send_email_on(self):
         self.event.eventee_send_email = True
         self.event.save(update_fields=["eventee_send_email"])
-        svc = EventeeService(event=self.event)
-        user = svc.build_invite_user(self._ticket(email="j2@x.cz"))
-        self.assertTrue(user["send_email"])
+        return EventeeService(event=self.event)
+
+    def test_should_send_email_toggle_off(self):
+        # Prepinac vypnuty -> nikdy neposilat e-mail, ani u nove pozvanky.
+        t = self._ticket(email="j@x.cz", invited=False)
+        self.assertFalse(self.svc.should_send_email(t, "j@x.cz"))
+
+    def test_should_send_email_first_invite(self):
+        svc = self._svc_send_email_on()
+        t = self._ticket(email="j@x.cz", invited=False)
+        self.assertTrue(svc.should_send_email(t, "j@x.cz"))
+
+    def test_should_send_email_already_invited_same_email(self):
+        # Uz pozvano + stejny e-mail -> jen datova aktualizace, zadny e-mail.
+        svc = self._svc_send_email_on()
+        t = self._ticket(email="j@x.cz", invited=True, eventee_email="j@x.cz")
+        self.assertFalse(svc.should_send_email(t, "j@x.cz"))
+
+    def test_should_send_email_email_changed(self):
+        # Uz pozvano, ale zmena e-mailu -> poslat pozvanku na novy e-mail.
+        svc = self._svc_send_email_on()
+        t = self._ticket(email="new@x.cz", invited=True, eventee_email="old@x.cz")
+        self.assertTrue(svc.should_send_email(t, "new@x.cz"))
+
+    def test_build_user_send_email_param(self):
+        t = self._ticket(email="j@x.cz")
+        self.assertTrue(self.svc.build_invite_user(t, send_email=True)["send_email"])
+        self.assertFalse(self.svc.build_invite_user(t, send_email=False)["send_email"])
 
     def test_plan_normal(self):
         t = self._ticket(email="jan@x.cz")

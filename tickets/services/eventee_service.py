@@ -41,14 +41,14 @@ class EventeeService:
             return ticket.email.strip()
         return f"vstupenka-{ticket.qr_code}@{settings.EVENTEE_PLACEHOLDER_DOMAIN}"
 
-    def build_invite_user(self, ticket):
+    def build_invite_user(self, ticket, send_email=False):
         """Overeny payload tvar (Flask app). Cislo vstupenky = qr_code.
-        send_email dle per-event nastaveni (self.send_email). Snake_case -
+        send_email predava volajici (viz should_send_email). Snake_case -
         camelCase Eventee ignoruje (pak chybi jmeno)."""
         first, _, last = (ticket.name or "").partition(" ")
         user = {
             "email": self.eventee_email_for(ticket),
-            "send_email": self.send_email,
+            "send_email": send_email,
             "tickets": [{"number": ticket.qr_code, "title": "", "type": "qr"}],
         }
         if first:
@@ -59,15 +59,31 @@ class EventeeService:
             user["company"] = ticket.company_name
         return user
 
+    def should_send_email(self, ticket, target_email):
+        """Pozvankovy e-mail poslat jen kdyz je per-event prepinac zapnuty A
+        zaroven (pozvanka jeste neodesla NEBO se zmenil e-mail). Aktualizace
+        udaju (jmeno/firma) tak nespamuje ucastnika opakovanym e-mailem."""
+        if not self.send_email:
+            return False
+        if not ticket.invited:
+            return True
+        old = (ticket.eventee_email or "").strip().lower()
+        if old and old != (target_email or "").strip().lower():
+            return True
+        return False
+
     def plan_ticket_sync(self, ticket):
         """Rozhodne operace pro jednu vstupenku. Vraci dict s klici
-        invite_email, delete_email, user."""
+        invite_email, delete_email, user, send_email."""
         target = self.eventee_email_for(ticket)
         old = (ticket.eventee_email or "").strip() or None
         if ticket.status == "CANCELLED":
-            return {"invite_email": None, "delete_email": old, "user": None}
+            return {"invite_email": None, "delete_email": old,
+                    "user": None, "send_email": False}
+        send_email = self.should_send_email(ticket, target)
         plan = {"invite_email": target, "delete_email": None,
-                "user": self.build_invite_user(ticket)}
+                "user": self.build_invite_user(ticket, send_email=send_email),
+                "send_email": send_email}
         if old and old.lower() != target.lower():
             plan["delete_email"] = old
         return plan
@@ -125,7 +141,9 @@ class EventeeService:
             ticket.sync_log = log_text
             if plan["invite_email"]:
                 ticket.eventee_email = plan["invite_email"]
-                ticket.invited = True
+                # invited = "pozvankovy e-mail odeslan" - jen kdyz se mail poslal.
+                if plan["send_email"]:
+                    ticket.invited = True
             elif plan["delete_email"]:
                 ticket.eventee_email = None
             ticket.save(update_fields=[
