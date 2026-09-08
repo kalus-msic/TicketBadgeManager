@@ -345,10 +345,8 @@ def import_execute(request, event_pk):
         if mapping_value:
             field_mapping[fieldname] = mapping_value
 
-    # Validate required fields
-    if 'qr_code' not in field_mapping.values():
-        messages.error(request, "QR Code field mapping is required")
-        return redirect('tickets:import_page', event_pk=event_pk)
+    # QR sloupec neni povinny - kdyz chybi, generuji se GUEST kody.
+    guest_mode = 'qr_code' not in field_mapping.values()
 
     if 'name' not in field_mapping.values():
         messages.error(request, "Name field mapping is required")
@@ -360,6 +358,9 @@ def import_execute(request, event_pk):
     duplicates = 0
     updated = 0
     error_details = []  # Store error details for logging
+
+    from ..utils.guest_codes import generate_guest_code, existing_qr_codes
+    used_qr = existing_qr_codes()
 
     # Handle replace mode first (outside of row processing)
     if import_mode == 'replace':
@@ -389,14 +390,23 @@ def import_execute(request, event_pk):
                 # Check if ticket exists (by QR code)
                 qr_code = ticket_data.get('qr_code')
                 if not qr_code:
-                    if force_import:
-                        # Generate a placeholder QR code
-                        from django.utils import timezone
-                        qr_code = f"MISSING_QR_{timezone.now().strftime('%Y%m%d%H%M%S')}_{row_num}"
-                        ticket_data['qr_code'] = qr_code
-                    else:
-                        errors += 1
-                        error_details.append(f"Row {row_num}: Missing QR code")
+                    qr_code = generate_guest_code(used_qr)
+                    ticket_data['qr_code'] = qr_code
+
+                # Guest rezim: dedup dle e-mailu v ramci eventu (append/update).
+                email_val = ticket_data.get('email')
+                if guest_mode and email_val and import_mode in ('append', 'update'):
+                    existing_by_email = Ticket.objects.filter(
+                        event=event, email__iexact=email_val).first()
+                    if existing_by_email:
+                        if import_mode == 'append':
+                            duplicates += 1
+                            continue
+                        for field, value in ticket_data.items():
+                            if field != 'qr_code':
+                                setattr(existing_by_email, field, value)
+                        existing_by_email.save()
+                        updated += 1
                         continue
 
                 # Check if name exists

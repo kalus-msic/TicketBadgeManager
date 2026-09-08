@@ -54,22 +54,9 @@ class TicketForm(forms.ModelForm):
             self.fields['qr_code'].initial = self._generate_qr_code()
     
     def _generate_qr_code(self):
-        """Generate QR code in format YYYYMMDDxxxx"""
-        from django.utils import timezone
-        from django.db.models import Count
-        
-        today = timezone.now()
-        date_prefix = today.strftime('%Y%m%d')
-        
-        # Count tickets created today
-        today_count = Ticket.objects.filter(
-            qr_code__startswith=date_prefix
-        ).count()
-        
-        # Generate new number with zero padding
-        new_number = str(today_count).zfill(4)
-        
-        return f"{date_prefix}{new_number}"
+        """Generate a guest QR code (GUEST-XXXXXXXX)."""
+        from .utils.guest_codes import generate_guest_code, existing_qr_codes
+        return generate_guest_code(existing_qr_codes())
 
 
 class SpecialLabelForm(forms.Form):
