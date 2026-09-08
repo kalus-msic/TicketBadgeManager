@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<h1>{% trans "Eventee kontrola" %} - {{ event.name }}</h1>
+
+{% if not result.ok %}
+  <div class="alert alert-danger">{% trans "Chyba nacteni z Eventee" %}: {{ result.detail }}</div>
+{% else %}
+<form method="post" action="{% url 'tickets:reconcile_apply' event_pk=event.pk %}">
+  {% csrf_token %}
+
+  <h2>{% trans "Jen v Eventee" %} ({{ result.only_in_eventee|length }})</h2>
+  <ul>
+    {% for p in result.only_in_eventee %}
+      <li>
+        <label>
+          <input type="checkbox" name="import_email" value="{{ p.email }}">
+          <input type="hidden" name="name_{{ p.email }}" value="{{ p.name }}">
+          {{ p.email }} - {{ p.name }} {{ p.company }}
+        </label>
+      </li>
+    {% empty %}<li>{% trans "Nic" %}</li>{% endfor %}
+  </ul>
+
+  <h2>{% trans "Chybi v Eventee" %} ({{ result.missing_in_eventee|length }})</h2>
+  <ul>
+    {% for m in result.missing_in_eventee %}
+      <li>
+        <label>
+          <input type="checkbox" name="repush_qr" value="{{ m.qr_code }}">
+          {{ m.qr_code }} - {{ m.email }}
+        </label>
+      </li>
+    {% empty %}<li>{% trans "Nic" %}</li>{% endfor %}
+  </ul>
+
+  <h2>{% trans "Zrusene, ale stale v Eventee" %} ({{ result.cancelled_present|length }})</h2>
+  <ul>
+    {% for c in result.cancelled_present %}
+      <li>{{ c.qr_code }} - {{ c.email }}</li>
+    {% empty %}<li>{% trans "Nic" %}</li>{% endfor %}
+  </ul>
+
+  <button type="submit" class="btn btn-primary">{% trans "Provest vybrane akce" %}</button>
+</form>
+{% endif %}
+{% endblock %}

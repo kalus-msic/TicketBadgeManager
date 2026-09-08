@@ -92,6 +92,7 @@
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-primary">{% trans "Odeslat vse do Eventee" %}</button>
                                     </form>
+                                    <a href="{% url 'tickets:reconcile_eventee' event_pk=active_event.pk %}" class="btn btn-secondary mt-2">{% trans "Zkontrolovat Eventee" %}</a>
                                 </div>
                             </div>
                         </div>
