@@ -68,7 +68,29 @@
                                                 <small class="text-danger">{{ api_message }}</small>
                                             {% endif %}
                                         </div>
+                                        <div class="form-check" style="margin:0.5rem 0;">
+                                            <input type="checkbox" class="form-check-input" id="eventee_send_email"
+                                                   name="eventee_send_email" {% if active_event.eventee_send_email %}checked{% endif %}>
+                                            <label class="form-check-label" for="eventee_send_email">
+                                                {% trans "Aktivovat pozvani do Eventee (rozeslat e-maily ucastnikum)" %}
+                                            </label>
+                                        </div>
                                         <button type="submit" class="btn btn-primary">{% trans "Save API Token" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eventee bulk sync -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title">{% trans "Eventee sync" %}</h5>
+                                    <form method="post" action="{% url 'tickets:sync_eventee' event_pk=active_event.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary">{% trans "Odeslat vse do Eventee" %}</button>
                                     </form>
                                 </div>
                             </div>

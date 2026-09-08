@@ -44,6 +44,7 @@ urlpatterns = [
     path('settings/delete-all/', views.delete_all_data, name='delete_all_data'),
     path('settings/delete-checkins/', views.delete_checkins, name='delete_checkins'),
     path('settings/update-token/', views.update_eventee_token, name='update_eventee_token'),
+    path('settings/sync-eventee/', views.sync_eventee, name='sync_eventee'),
     path('settings/required-fields', views.update_required_fields, name='update_required_fields'),
     path('settings/printer-settings', views.update_printer_settings, name='update_printer_settings'),
 
