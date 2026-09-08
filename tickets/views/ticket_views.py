@@ -170,7 +170,12 @@ def ticket_edit(request, event_pk, pk):
             # Track changes
             changes = []
             for field, original_value in original_values.items():
-                new_value = getattr(ticket, field)
+                # 'event_name' is a derived value (ticket.event.name), not a
+                # model attribute - getattr(ticket, 'event_name') would raise.
+                if field == 'event_name':
+                    new_value = ticket.event.name if ticket.event else ''
+                else:
+                    new_value = getattr(ticket, field)
                 if str(original_value or '') != str(new_value or ''):
                     changes.append(f'{field}: "{original_value}" → "{new_value}"')
 
