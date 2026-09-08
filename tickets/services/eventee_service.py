@@ -150,6 +150,77 @@ class EventeeService:
                 failed += 1
         return {"total": total, "done": done, "failed": failed}
 
+    def get_participants(self):
+        """GET /participants -> (ok, list) nebo (False, detail)."""
+        if not self.api_token:
+            return False, "No API token configured"
+        try:
+            resp = requests.get(
+                f"{self.API_BASE_URL}/participants",
+                headers=self.headers, timeout=self.TIMEOUT,
+            )
+        except requests.exceptions.RequestException as e:
+            return False, f"Request error: {e}"
+        if resp.status_code != 200:
+            return False, f"HTTP {resp.status_code}"
+        try:
+            data = resp.json()
+        except ValueError:
+            return False, "Invalid response body"
+        if not isinstance(data, list):
+            return False, "Unexpected response (not a list)"
+        return True, data
+
+    def reconcile(self, event):
+        """Porovna Eventee ucastniky s lokalni DB (jen tento event).
+        Vraci dict s kategoriemi rozdilu."""
+        ok, data = self.get_participants()
+        if not ok:
+            return {"ok": False, "detail": data,
+                    "only_in_eventee": [], "missing_in_eventee": [],
+                    "cancelled_present": []}
+
+        ev = {}
+        for p in data:
+            email = (p.get("email") or "").strip().lower()
+            if email:
+                ev[email] = p
+
+        app_all = set()
+        synced = {}
+        for t in event.tickets.all():
+            if t.eventee_email:
+                e = t.eventee_email.strip().lower()
+                app_all.add(e)
+                synced[e] = t
+            if t.email:
+                app_all.add(t.email.strip().lower())
+            if t.status != "CANCELLED":
+                app_all.add(self.eventee_email_for(t).lower())
+
+        only_in_eventee = [
+            {"email": e,
+             "name": ev[e].get("name") or "",
+             "first_name": ev[e].get("first_name") or "",
+             "last_name": ev[e].get("last_name") or "",
+             "company": ev[e].get("company") or "",
+             "checked_at": ev[e].get("checked_at")}
+            for e in ev if e not in app_all
+        ]
+        missing_in_eventee = [
+            {"qr_code": t.qr_code, "email": e}
+            for e, t in synced.items() if e not in ev and t.status != "CANCELLED"
+        ]
+        cancelled_present = [
+            {"qr_code": t.qr_code, "email": e}
+            for e, t in synced.items() if e in ev and t.status == "CANCELLED"
+        ]
+        return {"ok": True,
+                "eventee_total": len(ev), "app_synced_total": len(synced),
+                "only_in_eventee": only_in_eventee,
+                "missing_in_eventee": missing_in_eventee,
+                "cancelled_present": cancelled_present}
+
     def test_connection(self) -> Tuple[bool, str]:
         """Test API connection and token validity."""
         if not self.api_token:
