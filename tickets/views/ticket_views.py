@@ -179,8 +179,11 @@ def ticket_edit(request, event_pk, pk):
                 if str(original_value or '') != str(new_value or ''):
                     changes.append(f'{field}: "{original_value}" → "{new_value}"')
 
-            # Handle Eventee invitation
-            if form.cleaned_data.get('invite_to_eventee') and ticket.email and not ticket.invited:
+            # Handle Eventee invitation. No `not ticket.invited` guard: a
+            # checked box means "sync to Eventee now", so re-inviting an already
+            # invited attendee is allowed (e.g. to re-send after enabling
+            # send_email). sync_ticket is an idempotent PUT upsert.
+            if form.cleaned_data.get('invite_to_eventee') and ticket.email:
                 ok, message = EventeeService(event=event).sync_ticket(ticket)
                 if ok:
                     changes.append('Invited to Eventee')

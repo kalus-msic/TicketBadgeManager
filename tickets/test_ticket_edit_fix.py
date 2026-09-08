@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -35,3 +37,23 @@ class TicketEditChangeTrackingTests(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.name, "New Name")
+
+    @patch("tickets.views.ticket_views.EventeeService")
+    def test_edit_reinvites_already_invited_ticket(self, Svc):
+        """Editing an already-invited ticket with the invite checkbox checked
+        must re-sync it (so a re-send / send_email change reaches Eventee)."""
+        Svc.return_value.sync_ticket.return_value = (True, "ok")
+        self.ticket.invited = True
+        self.ticket.save(update_fields=["invited"])
+        url = reverse("tickets:ticket_edit",
+                      kwargs={"event_pk": self.event.pk, "pk": self.ticket.pk})
+        resp = self.client.post(url, {
+            "qr_code": "GUEST-AAAA1111",
+            "name": "Old Name",
+            "company_name": "ACME",
+            "email": "a@a.cz",
+            "status": "VALID",
+            "invite_to_eventee": "on",
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Svc.return_value.sync_ticket.called)
