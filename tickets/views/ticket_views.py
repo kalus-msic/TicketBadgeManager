@@ -116,17 +116,9 @@ def ticket_create(request, event_pk):
 
             # Handle Eventee invitation
             if form.cleaned_data.get('invite_to_eventee') and ticket.email:
-                eventee_service = EventeeService(event=event)
-                success, message = eventee_service.invite_attendee(
-                    email=ticket.email,
-                    name=ticket.name,
-                    company=ticket.company_name
-                )
-
-                if success:
-                    ticket.invited = True
-                    ticket.save()
-                    messages.success(request, f'Ticket created and {message}')
+                ok, message = EventeeService(event=event).sync_ticket(ticket)
+                if ok:
+                    messages.success(request, 'Ticket created and invited to Eventee')
                 else:
                     messages.warning(request, f'Ticket created but Eventee invitation failed: {message}')
             else:
@@ -184,18 +176,10 @@ def ticket_edit(request, event_pk, pk):
 
             # Handle Eventee invitation
             if form.cleaned_data.get('invite_to_eventee') and ticket.email and not ticket.invited:
-                eventee_service = EventeeService(event=event)
-                success, message = eventee_service.invite_attendee(
-                    email=ticket.email,
-                    name=ticket.name,
-                    company=ticket.company_name
-                )
-
-                if success:
-                    ticket.invited = True
-                    ticket.save()
+                ok, message = EventeeService(event=event).sync_ticket(ticket)
+                if ok:
                     changes.append('Invited to Eventee')
-                    messages.success(request, f'Ticket updated and {message}')
+                    messages.success(request, 'Ticket updated and invited to Eventee')
                 else:
                     messages.warning(request, f'Ticket updated but Eventee invitation failed: {message}')
             else:

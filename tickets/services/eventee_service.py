@@ -2,6 +2,7 @@ import logging
 import requests
 from typing import Dict, Optional, Tuple
 from django.conf import settings
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,84 @@ class EventeeService:
             plan["delete_email"] = old
         return plan
 
+    def _put_invite(self, users):
+        """Vraci (status, ok, detail). ok = HTTP 200 A telo je JSON dict."""
+        resp = requests.put(
+            f"{self.API_BASE_URL}/attendee/invite",
+            json={"users": users}, headers=self.headers, timeout=self.TIMEOUT,
+        )
+        try:
+            body = resp.json()
+        except ValueError:
+            body = None
+        ok = resp.status_code == 200 and isinstance(body, dict)
+        detail = body if isinstance(body, dict) else "non-json body"
+        return resp.status_code, ok, detail
+
+    def _delete_attendee(self, email):
+        """Vraci (status, ok). ok = HTTP 200 nebo 204."""
+        resp = requests.delete(
+            f"{self.API_BASE_URL}/attendee",
+            json={"email": email}, headers=self.headers, timeout=self.TIMEOUT,
+        )
+        return resp.status_code, resp.status_code in (200, 204)
+
+    def sync_ticket(self, ticket):
+        """Synchronizuje jednu vstupenku dle planu. Vraci (ok, log_text)."""
+        if not self.api_token:
+            return False, "No API token configured"
+        plan = self.plan_ticket_sync(ticket)
+        logs = []
+        ok = True
+        try:
+            if plan["user"] is not None:
+                status, put_ok, detail = self._put_invite([plan["user"]])
+                if put_ok:
+                    logs.append(f"PUT invite {plan['invite_email']}: OK")
+                else:
+                    ok = False
+                    logs.append(f"PUT invite {plan['invite_email']}: HTTP {status} {detail}")
+            if plan["delete_email"] and ok:
+                dstatus, dok = self._delete_attendee(plan["delete_email"])
+                logs.append(f"DELETE {plan['delete_email']}: {'OK' if dok else 'HTTP ' + str(dstatus)}")
+                if not dok:
+                    ok = False
+        except requests.exceptions.RequestException as e:
+            ok = False
+            logs.append(f"Request error: {e}")
+
+        log_text = "\n".join(logs)
+        if ok:
+            ticket.needs_sync = False
+            ticket.synced_at = timezone.now()
+            ticket.sync_log = log_text
+            if plan["invite_email"]:
+                ticket.eventee_email = plan["invite_email"]
+                ticket.invited = True
+            elif plan["delete_email"]:
+                ticket.eventee_email = None
+            ticket.save(update_fields=[
+                "needs_sync", "synced_at", "sync_log", "eventee_email", "invited",
+            ])
+        else:
+            ticket.sync_log = log_text
+            ticket.save(update_fields=["sync_log"])
+        return ok, log_text
+
+    def sync_event(self, event):
+        """Posle vsechny needs_sync vstupenky eventu (per-ticket). Vraci
+        {total, done, failed}."""
+        tickets = event.tickets.filter(needs_sync=True)
+        total = tickets.count()
+        done = failed = 0
+        for ticket in tickets:
+            ok, _ = self.sync_ticket(ticket)
+            if ok:
+                done += 1
+            else:
+                failed += 1
+        return {"total": total, "done": done, "failed": failed}
+
     def test_connection(self) -> Tuple[bool, str]:
         """Test API connection and token validity."""
         if not self.api_token:
@@ -105,92 +184,6 @@ class EventeeService:
         except requests.exceptions.RequestException as e:
             logger.error(f"Eventee API connection error: {e}")
             return False, f"Connection error: {str(e)}"
-    
-    def invite_attendee(self, email: str, name: str, company: str = '') -> Tuple[bool, str]:
-        """Invite an attendee to Eventee."""
-        if not self.api_token:
-            return False, "No API token configured"
-        
-        if not email:
-            return False, "Email is required"
-        
-        try:
-            # Split name into first and last name
-            name_parts = name.split(" ", 1)
-            first_name = name_parts[0]
-            last_name = name_parts[1] if len(name_parts) > 1 else ''
-            
-            # Use the exact payload structure that worked before
-            data = {
-                "users": [
-                    {
-                        "firstName": first_name,
-                        "lastName": last_name,
-                        "email": email,
-                        "send_email": True,
-                    }
-                ]
-            }
-            
-            # Add company if provided
-            if company:
-                data["users"][0]["company"] = company
-            
-            # Log the request for debugging
-            logger.info(f"Sending invite request to: {self.API_BASE_URL}/attendee/invite")
-            logger.info(f"Request data: {data}")
-            
-            # Use PUT method as in the working example
-            response = requests.put(
-                f"{self.API_BASE_URL}/attendee/invite",
-                json=data,
-                headers=self.headers,
-                timeout=self.TIMEOUT
-            )
-            
-            # Log the response for debugging
-            logger.info(f"Response status: {response.status_code}")
-            logger.info(f"Response headers: {response.headers}")
-            try:
-                logger.info(f"Response body: {response.text}")
-            except:
-                pass
-            
-            if response.ok:  # This checks for any 2xx status code
-                return True, f"Invitation sent successfully: {response.text}"
-            elif response.status_code == 409:
-                return False, "Attendee already exists"
-            elif response.status_code == 401:
-                return False, "Invalid API token - authentication failed"
-            elif response.status_code == 403:
-                return False, "Access forbidden - check API token permissions"
-            elif response.status_code == 404:
-                # If we get 404, the endpoint might be wrong or need event ID
-                return False, "API endpoint not found. The API might require event ID in the URL or request body."
-            elif response.status_code == 400:
-                # Bad request - missing required fields
-                try:
-                    error_data = response.json()
-                    error_msg = error_data.get('message', error_data.get('error', 'Bad request'))
-                    return False, f"Bad request: {error_msg}"
-                except:
-                    return False, f"Bad request: {response.text}"
-            else:
-                try:
-                    error_data = response.json()
-                    error_msg = error_data.get('message', error_data.get('error', response.text))
-                except:
-                    error_msg = response.text
-                return False, f"API error {response.status_code}: {error_msg}"
-                
-        except requests.exceptions.Timeout:
-            return False, "Request timeout"
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Eventee invite error: {e}")
-            return False, f"Request error: {str(e)}"
-        except Exception as e:
-            logger.error(f"Unexpected error inviting to Eventee: {e}")
-            return False, "Unexpected error"
     
     def update_api_token(self, token: str) -> bool:
         """Update API token in settings."""
