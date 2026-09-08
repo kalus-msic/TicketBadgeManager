@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class EventeeService:
     """Service for handling Eventee API interactions."""
 
-    API_BASE_URL = "https://api.eventee.co/public/v1"
+    API_BASE_URL = settings.EVENTEE_BASE_URL
     TIMEOUT = 30  # seconds
 
     def __init__(self, event=None):
@@ -20,18 +20,57 @@ class EventeeService:
             from ..models import AppSettings
             settings_obj = AppSettings.objects.first()
             self.api_token = settings_obj.eventee_api_token if settings_obj else None
-    
+        self.send_email = bool(getattr(event, "eventee_send_email", False))
+
     @property
     def headers(self) -> Dict[str, str]:
         """Get API headers with authentication."""
         if not self.api_token:
             return {}
-        
+
         return {
             'Authorization': f'Bearer {self.api_token}',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'User-Agent': settings.EVENTEE_USER_AGENT,
         }
-    
+
+    def eventee_email_for(self, ticket):
+        """Realny e-mail vstupenky, jinak placeholder vstupenka-<qr>@<domena>."""
+        if ticket.email and ticket.email.strip():
+            return ticket.email.strip()
+        return f"vstupenka-{ticket.qr_code}@{settings.EVENTEE_PLACEHOLDER_DOMAIN}"
+
+    def build_invite_user(self, ticket):
+        """Overeny payload tvar (Flask app). Cislo vstupenky = qr_code.
+        send_email dle per-event nastaveni (self.send_email). Snake_case -
+        camelCase Eventee ignoruje (pak chybi jmeno)."""
+        first, _, last = (ticket.name or "").partition(" ")
+        user = {
+            "email": self.eventee_email_for(ticket),
+            "send_email": self.send_email,
+            "tickets": [{"number": ticket.qr_code, "title": "", "type": "qr"}],
+        }
+        if first:
+            user["first_name"] = first
+        if last:
+            user["last_name"] = last
+        if ticket.company_name:
+            user["company"] = ticket.company_name
+        return user
+
+    def plan_ticket_sync(self, ticket):
+        """Rozhodne operace pro jednu vstupenku. Vraci dict s klici
+        invite_email, delete_email, user."""
+        target = self.eventee_email_for(ticket)
+        old = (ticket.eventee_email or "").strip() or None
+        if ticket.status == "CANCELLED":
+            return {"invite_email": None, "delete_email": old, "user": None}
+        plan = {"invite_email": target, "delete_email": None,
+                "user": self.build_invite_user(ticket)}
+        if old and old.lower() != target.lower():
+            plan["delete_email"] = old
+        return plan
+
     def test_connection(self) -> Tuple[bool, str]:
         """Test API connection and token validity."""
         if not self.api_token:
