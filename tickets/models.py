@@ -44,6 +44,11 @@ class Event(models.Model):
         help_text=_("Number of label copies to print per badge (1 = single, 2 = double-sided, etc.)"),
     )
 
+    eventee_send_email = models.BooleanField(
+        default=False,
+        verbose_name=_("Send Eventee invitation e-mails"),
+    )
+
     class Meta:
         ordering = ['-date']
         verbose_name = _("Event")
@@ -78,7 +83,38 @@ class Ticket(models.Model):
     
     # Invited to Eventee via API
     invited = models.BooleanField(default=False)
-    
+
+    # Eventee sync tracking
+    eventee_email = models.CharField(max_length=255, blank=True, null=True)
+    needs_sync = models.BooleanField(default=True)
+    synced_at = models.DateTimeField(blank=True, null=True)
+    sync_log = models.TextField(blank=True, default="")
+
+    # Pole, jejichz zmena znamena, ze vstupenku je treba znovu synchronizovat.
+    SYNC_RELEVANT_FIELDS = ("qr_code", "name", "company_name", "email", "status")
+
+    def save(self, *args, **kwargs):
+        # Auto-dirty: pokud se meni sync-relevantni pole, nastav needs_sync=True.
+        # Respektuj update_fields - kdyz sync service uklada jen bookkeeping
+        # (needs_sync/synced_at/eventee_email/sync_log/invited), dirty check
+        # preskoc, aby neprepsal needs_sync zpet na True.
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and not any(
+            f in update_fields for f in self.SYNC_RELEVANT_FIELDS
+        ):
+            return super().save(*args, **kwargs)
+
+        if self.pk:
+            old = Ticket.objects.filter(pk=self.pk).first()
+            if old is not None:
+                for f in self.SYNC_RELEVANT_FIELDS:
+                    if getattr(old, f) != getattr(self, f):
+                        self.needs_sync = True
+                        if update_fields is not None and "needs_sync" not in update_fields:
+                            kwargs["update_fields"] = list(update_fields) + ["needs_sync"]
+                        break
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.name} - {self.company_name}"
 
