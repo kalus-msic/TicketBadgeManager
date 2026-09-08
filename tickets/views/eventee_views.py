@@ -15,6 +15,12 @@ def sync_eventee(request, event_pk):
     event = get_object_or_404(Event, pk=event_pk)
     if request.method != "POST":
         return redirect("tickets:settings", event_pk=event_pk)
+    if not (event.eventee_api_token and event.eventee_api_token.strip()):
+        messages.warning(
+            request,
+            "Eventee API token neni nastaven - nejprve ho ulozte v nastaveni.",
+        )
+        return redirect("tickets:settings", event_pk=event_pk)
     result = EventeeService(event=event).sync_event(event)
     Log.objects.create(
         event=event, event_type="SYSTEM",

@@ -72,8 +72,13 @@
                                             <input type="checkbox" class="form-check-input" id="eventee_send_email"
                                                    name="eventee_send_email" {% if active_event.eventee_send_email %}checked{% endif %}>
                                             <label class="form-check-label" for="eventee_send_email">
-                                                {% trans "Aktivovat pozvani do Eventee (rozeslat e-maily ucastnikum)" %}
+                                                {% trans "Rozeslat ucastnikum pozvankovy e-mail z Eventee" %}
                                             </label>
+                                            <div class="form-text">
+                                                {% trans "Vstupenky se do Eventee nahraji vzdy (ucastnik je pridan)." %}<br>
+                                                {% trans "Zapnuto = Eventee navic rozesle ucastnikum pozvankovy e-mail." %}<br>
+                                                {% trans "Vypnuto = ucastnici se do Eventee jen pridaji, bez e-mailu." %}
+                                            </div>
                                         </div>
                                         <button type="submit" class="btn btn-primary">{% trans "Save API Token" %}</button>
                                     </form>
