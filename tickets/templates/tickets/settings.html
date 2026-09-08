@@ -68,8 +68,43 @@
                                                 <small class="text-danger">{{ api_message }}</small>
                                             {% endif %}
                                         </div>
+                                        <div class="form-check" style="margin:0.5rem 0;">
+                                            <input type="checkbox" class="form-check-input" id="eventee_send_email"
+                                                   name="eventee_send_email" {% if active_event.eventee_send_email %}checked{% endif %}>
+                                            <label class="form-check-label" for="eventee_send_email">
+                                                {% trans "Rozeslat ucastnikum pozvankovy e-mail z Eventee" %}
+                                            </label>
+                                            <div class="form-text">
+                                                {% trans "Vstupenky se do Eventee nahraji vzdy (ucastnik je pridan)." %}<br>
+                                                {% trans "Zapnuto = Eventee navic rozesle ucastnikum pozvankovy e-mail." %}<br>
+                                                {% trans "Vypnuto = ucastnici se do Eventee jen pridaji, bez e-mailu." %}
+                                            </div>
+                                        </div>
+                                        <div class="form-check" style="margin:0.5rem 0;">
+                                            <input type="checkbox" class="form-check-input" id="eventee_invite_default"
+                                                   name="eventee_invite_default" {% if active_event.eventee_invite_default %}checked{% endif %}>
+                                            <label class="form-check-label" for="eventee_invite_default">
+                                                {% trans "U novych vstupenek predvyplnit 'Synchronizovat do Eventee'" %}
+                                            </label>
+                                        </div>
                                         <button type="submit" class="btn btn-primary">{% trans "Save API Token" %}</button>
                                     </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eventee bulk sync -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title">{% trans "Eventee sync" %}</h5>
+                                    <form method="post" action="{% url 'tickets:sync_eventee' event_pk=active_event.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary">{% trans "Odeslat vse do Eventee" %}</button>
+                                    </form>
+                                    <a href="{% url 'tickets:reconcile_eventee' event_pk=active_event.pk %}" class="btn btn-secondary mt-2">{% trans "Zkontrolovat Eventee" %}</a>
                                 </div>
                             </div>
                         </div>

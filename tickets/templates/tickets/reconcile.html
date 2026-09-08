@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<div class="container mt-4 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">{% trans "Eventee kontrola" %} &ndash; {{ event.name }}</h2>
+        <a href="{% url 'tickets:settings' event_pk=event.pk %}" class="btn btn-outline-secondary btn-sm">
+          &larr; {% trans "Zpet do nastaveni" %}
+        </a>
+      </div>
+
+      {% if not result.ok %}
+        <div class="alert alert-danger">
+          {% trans "Chyba nacteni z Eventee" %}: {{ result.detail }}
+        </div>
+      {% else %}
+      <form method="post" action="{% url 'tickets:reconcile_apply' event_pk=event.pk %}">
+        {% csrf_token %}
+
+        {# Jen v Eventee #}
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>{% trans "Jen v Eventee" %}</span>
+            <span class="badge bg-secondary">{{ result.only_in_eventee|length }}</span>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small">{% trans "Ucastnici pridani rucne v Eventee. Vyberte, ktere naimportovat jako lokalni vstupenky." %}
+            {% trans "Pri importu se navic zapise nas QR kod zpet do Eventee (bez e-mailu), aby obe strany sdilely stejne cislo vstupenky." %}</p>
+            {% if result.only_in_eventee %}
+              <ul class="list-group">
+                {% for p in result.only_in_eventee %}
+                  <li class="list-group-item">
+                    <div class="form-check mb-0">
+                      <input type="checkbox" class="form-check-input" id="imp_{{ forloop.counter }}"
+                             name="import_email" value="{{ p.email }}">
+                      <input type="hidden" name="name_{{ p.email }}" value="{{ p.name }}">
+                      <label class="form-check-label" for="imp_{{ forloop.counter }}">
+                        <strong>{{ p.email }}</strong>
+                        {% if p.name %}&ndash; {{ p.name }}{% endif %}
+                        {% if p.company %}<span class="text-muted">({{ p.company }})</span>{% endif %}
+                      </label>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">{% trans "Nic" %}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        {# Chybi v Eventee #}
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>{% trans "Chybi v Eventee" %}</span>
+            <span class="badge bg-warning text-dark">{{ result.missing_in_eventee|length }}</span>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small">{% trans "Vstupenky, ktere by mely byt v Eventee, ale nejsou. Vyberte pro znovu-odeslani." %}</p>
+            {% if result.missing_in_eventee %}
+              <ul class="list-group">
+                {% for m in result.missing_in_eventee %}
+                  <li class="list-group-item">
+                    <div class="form-check mb-0">
+                      <input type="checkbox" class="form-check-input" id="rep_{{ forloop.counter }}"
+                             name="repush_qr" value="{{ m.qr_code }}">
+                      <label class="form-check-label" for="rep_{{ forloop.counter }}">
+                        <code>{{ m.qr_code }}</code> &ndash; {{ m.email }}
+                      </label>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">{% trans "Nic" %}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        {# Zrusene, ale stale v Eventee #}
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>{% trans "Zrusene, ale stale v Eventee" %}</span>
+            <span class="badge bg-danger">{{ result.cancelled_present|length }}</span>
+          </div>
+          <div class="card-body">
+            {% if result.cancelled_present %}
+              <ul class="list-group">
+                {% for c in result.cancelled_present %}
+                  <li class="list-group-item">
+                    <code>{{ c.qr_code }}</code> &ndash; {{ c.email }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">{% trans "Nic" %}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">{% trans "Provest vybrane akce" %}</button>
+      </form>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

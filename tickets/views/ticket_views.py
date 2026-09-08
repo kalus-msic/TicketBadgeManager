@@ -116,17 +116,9 @@ def ticket_create(request, event_pk):
 
             # Handle Eventee invitation
             if form.cleaned_data.get('invite_to_eventee') and ticket.email:
-                eventee_service = EventeeService(event=event)
-                success, message = eventee_service.invite_attendee(
-                    email=ticket.email,
-                    name=ticket.name,
-                    company=ticket.company_name
-                )
-
-                if success:
-                    ticket.invited = True
-                    ticket.save()
-                    messages.success(request, f'Ticket created and {message}')
+                ok, message = EventeeService(event=event).sync_ticket(ticket)
+                if ok:
+                    messages.success(request, 'Ticket created and invited to Eventee')
                 else:
                     messages.warning(request, f'Ticket created but Eventee invitation failed: {message}')
             else:
@@ -142,6 +134,8 @@ def ticket_create(request, event_pk):
             return redirect('tickets:ticket_detail', event_pk=event_pk, pk=ticket.pk)
     else:
         form = TicketForm()
+        # Per-event default for the Eventee sync checkbox on new tickets.
+        form.fields['invite_to_eventee'].initial = event.eventee_invite_default
 
     return render(request, 'tickets/ticket_form.html', {
         'event': event,
@@ -178,24 +172,24 @@ def ticket_edit(request, event_pk, pk):
             # Track changes
             changes = []
             for field, original_value in original_values.items():
-                new_value = getattr(ticket, field)
+                # 'event_name' is a derived value (ticket.event.name), not a
+                # model attribute - getattr(ticket, 'event_name') would raise.
+                if field == 'event_name':
+                    new_value = ticket.event.name if ticket.event else ''
+                else:
+                    new_value = getattr(ticket, field)
                 if str(original_value or '') != str(new_value or ''):
                     changes.append(f'{field}: "{original_value}" → "{new_value}"')
 
-            # Handle Eventee invitation
-            if form.cleaned_data.get('invite_to_eventee') and ticket.email and not ticket.invited:
-                eventee_service = EventeeService(event=event)
-                success, message = eventee_service.invite_attendee(
-                    email=ticket.email,
-                    name=ticket.name,
-                    company=ticket.company_name
-                )
-
-                if success:
-                    ticket.invited = True
-                    ticket.save()
+            # Handle Eventee invitation. No `not ticket.invited` guard: a
+            # checked box means "sync to Eventee now", so re-inviting an already
+            # invited attendee is allowed (e.g. to re-send after enabling
+            # send_email). sync_ticket is an idempotent PUT upsert.
+            if form.cleaned_data.get('invite_to_eventee') and ticket.email:
+                ok, message = EventeeService(event=event).sync_ticket(ticket)
+                if ok:
                     changes.append('Invited to Eventee')
-                    messages.success(request, f'Ticket updated and {message}')
+                    messages.success(request, 'Ticket updated and invited to Eventee')
                 else:
                     messages.warning(request, f'Ticket updated but Eventee invitation failed: {message}')
             else:

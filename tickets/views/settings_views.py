@@ -142,6 +142,8 @@ def update_eventee_token(request, event_pk):
     api_token = request.POST.get('api_token', '').strip()
 
     event.eventee_api_token = api_token
+    event.eventee_send_email = request.POST.get('eventee_send_email') == 'on'
+    event.eventee_invite_default = request.POST.get('eventee_invite_default') == 'on'
     event.save()
 
     # Test the new token

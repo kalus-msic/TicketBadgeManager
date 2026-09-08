@@ -19,6 +19,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-CHANGE-THIS-IN-PRODUCTION')
 
+# Eventee API
+EVENTEE_BASE_URL = os.getenv("EVENTEE_BASE_URL", "https://api.eventee.com/public/v1")
+EVENTEE_PLACEHOLDER_DOMAIN = os.getenv("EVENTEE_PLACEHOLDER_DOMAIN", "vstupenka.local")
+EVENTEE_USER_AGENT = os.getenv("EVENTEE_USER_AGENT", "curl/8.7.1")
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 

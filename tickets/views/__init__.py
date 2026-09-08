@@ -16,6 +16,7 @@ from .settings_views import (
     settings, delete_all_data, delete_checkins,
     update_eventee_token, update_required_fields, update_printer_settings
 )
+from .eventee_views import sync_eventee, reconcile_eventee, reconcile_apply
 from .log_views import ticket_log_list, delete_logs
 from .management_views import ticket_management_dashboard
 from .special_label_views import special_labels, print_special_labels
@@ -39,6 +40,7 @@ __all__ = [
     'check_server_status', 'print_confirm',
     'settings', 'delete_all_data', 'delete_checkins',
     'update_eventee_token', 'update_required_fields', 'update_printer_settings',
+    'sync_eventee', 'reconcile_eventee', 'reconcile_apply',
     'ticket_log_list', 'delete_logs',
     'ticket_management_dashboard',
     'special_labels', 'print_special_labels',
