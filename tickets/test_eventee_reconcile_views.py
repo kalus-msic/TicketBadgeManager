@@ -35,3 +35,13 @@ class ReconcileViewTests(TestCase):
         self.assertTrue(t.qr_code.startswith("EV-"))
         self.assertFalse(t.needs_sync)
         self.assertEqual(t.eventee_email, "ghost@x.cz")
+
+    @patch("tickets.views.eventee_views.EventeeService")
+    def test_apply_import_pushes_our_qr_back_to_eventee(self, Svc):
+        """Import must push our QR code back to Eventee (sync_ticket) so both
+        sides share the same ticket number."""
+        url = reverse("tickets:reconcile_apply", kwargs={"event_pk": self.event.pk})
+        self.client.post(url, {"import_email": ["ghost@x.cz"]})
+        t = Ticket.objects.get(event=self.event, email="ghost@x.cz")
+        # sync_ticket called with the freshly-created ticket (carries our number).
+        Svc.return_value.sync_ticket.assert_called_once_with(t)

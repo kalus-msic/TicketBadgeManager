@@ -27,7 +27,8 @@
             <span class="badge bg-secondary">{{ result.only_in_eventee|length }}</span>
           </div>
           <div class="card-body">
-            <p class="text-muted small">{% trans "Ucastnici pridani rucne v Eventee. Vyberte, ktere naimportovat jako lokalni vstupenky." %}</p>
+            <p class="text-muted small">{% trans "Ucastnici pridani rucne v Eventee. Vyberte, ktere naimportovat jako lokalni vstupenky." %}
+            {% trans "Pri importu se navic zapise nas QR kod zpet do Eventee (bez e-mailu), aby obe strany sdilely stejne cislo vstupenky." %}</p>
             {% if result.only_in_eventee %}
               <ul class="list-group">
                 {% for p in result.only_in_eventee %}

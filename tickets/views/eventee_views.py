@@ -52,10 +52,16 @@ def reconcile_apply(request, event_pk):
     import_emails = request.POST.getlist("import_email")
     repush_qrs = request.POST.getlist("repush_qr")
 
-    # 1) Import Eventee-only people as local tickets (prefix EV, already synced).
+    # 1) Import Eventee-only people as local tickets (prefix EV) AND write our QR
+    #    code back to Eventee, so both sides share the same ticket number.
+    #    Eventee /participants does not return the ticket number, so pushing ours
+    #    is the only way to make the two databases match on a scannable code.
+    #    invited=True -> the push carries send_email=False (they are already in
+    #    Eventee, we must not re-email them).
     imported = 0
     if import_emails:
         used = existing_qr_codes()
+        svc = EventeeService(event=event)
         for email in import_emails:
             email = email.strip()
             if not email:
@@ -63,7 +69,7 @@ def reconcile_apply(request, event_pk):
             exists = Ticket.objects.filter(event=event, email__iexact=email).exists()
             if exists:
                 continue
-            Ticket.objects.create(
+            ticket = Ticket.objects.create(
                 event=event,
                 qr_code=generate_guest_code(used, prefix="EV"),
                 name=request.POST.get(f"name_{email}", "") or email,
@@ -74,6 +80,8 @@ def reconcile_apply(request, event_pk):
                 synced_at=timezone.now(),
                 invited=True,
             )
+            # Push our QR code (ticket.number) back to Eventee for a shared id.
+            svc.sync_ticket(ticket)
             imported += 1
 
     # 2) Re-push missing ones - mark needs_sync and run sync.
