@@ -134,6 +134,8 @@ def ticket_create(request, event_pk):
             return redirect('tickets:ticket_detail', event_pk=event_pk, pk=ticket.pk)
     else:
         form = TicketForm()
+        # Per-event default for the Eventee sync checkbox on new tickets.
+        form.fields['invite_to_eventee'].initial = event.eventee_invite_default
 
     return render(request, 'tickets/ticket_form.html', {
         'event': event,

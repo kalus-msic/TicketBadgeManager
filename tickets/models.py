@@ -48,6 +48,10 @@ class Event(models.Model):
         default=False,
         verbose_name=_("Send Eventee invitation e-mails"),
     )
+    eventee_invite_default = models.BooleanField(
+        default=True,
+        verbose_name=_("Eventee sync checked by default on new tickets"),
+    )
 
     class Meta:
         ordering = ['-date']

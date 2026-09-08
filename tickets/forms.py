@@ -6,10 +6,10 @@ class CsvImportForm(forms.Form):
     csv_file = forms.FileField(label=_("CSV File"))
 
 class TicketForm(forms.ModelForm):
-    # Checkbox „Invite to Eventee“ zůstává vždy nepovinný
+    # Checkbox pro synchronizaci do Eventee (pozvat/aktualizovat) - vzdy nepovinny
     invite_to_eventee = forms.BooleanField(
         required=False,
-        label=_("Invite to Eventee"),
+        label=_("Sync to Eventee (invite / update)"),
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
 
@@ -46,9 +46,13 @@ class TicketForm(forms.ModelForm):
             else:
                 field.widget.attrs.pop('required', None)
 
-        # 3) Pre-fill checkbox for editing existing ticket
+        # 3) Pre-fill checkbox for editing existing ticket. Keep it checked when
+        #    the ticket is already in Eventee (invited OR eventee_email set), so
+        #    saving re-syncs updated data by default.
         if self.instance and self.instance.pk:
-            self.fields['invite_to_eventee'].initial = self.instance.invited
+            self.fields['invite_to_eventee'].initial = bool(
+                self.instance.invited or self.instance.eventee_email
+            )
         else:
             # 4) Generate QR code for new tickets
             self.fields['qr_code'].initial = self._generate_qr_code()
