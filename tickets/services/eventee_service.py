@@ -99,7 +99,12 @@ class EventeeService:
         except ValueError:
             body = None
         ok = resp.status_code == 200 and isinstance(body, dict)
-        detail = body if isinstance(body, dict) else "non-json body"
+        if isinstance(body, dict):
+            detail = body
+        elif body is not None:
+            detail = "unexpected non-dict JSON body"
+        else:
+            detail = "non-json body (HTML/redirect?)"
         return resp.status_code, ok, detail
 
     def _delete_attendee(self, email):

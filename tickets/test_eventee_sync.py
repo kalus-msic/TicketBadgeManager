@@ -77,6 +77,19 @@ class SyncTicketTests(TestCase):
         self.assertTrue(self._sent_send_email(req))  # novy e-mail dostane pozvanku
 
     @patch("tickets.services.eventee_service.requests")
+    def test_put_ok_delete_fail_keeps_needs_sync(self, req):
+        # PUT projde, ale DELETE stareho ucastnika selze -> cela operace neuspech:
+        # needs_sync zustava True a eventee_email se neposune.
+        req.put.return_value = _resp(200, {"ok": True})
+        req.delete.return_value = _resp(500, {"err": "x"})
+        t = self._ticket(email="new@x.cz", eventee_email="old@x.cz")
+        ok, _ = self.svc.sync_ticket(t)
+        t.refresh_from_db()
+        self.assertFalse(ok)
+        self.assertTrue(t.needs_sync)
+        self.assertEqual(t.eventee_email, "old@x.cz")
+
+    @patch("tickets.services.eventee_service.requests")
     def test_html_body_is_failure(self, req):
         r = _resp(200)
         r.json.side_effect = ValueError("no json")

@@ -32,3 +32,17 @@ class TicketSyncModelTests(TestCase):
 
     def test_event_send_email_default_false(self):
         self.assertFalse(self.event.eventee_send_email)
+
+    def test_update_fields_with_sync_field_persists_needs_sync(self):
+        # save(update_fields=[sync-field]) must append needs_sync so the flag
+        # actually gets written (the trickiest branch of the override).
+        t = Ticket.objects.create(qr_code="GUEST-AAAA4444", name="A", event=self.event)
+        t.needs_sync = False
+        t.save(update_fields=["needs_sync"])
+        t.refresh_from_db()
+        self.assertFalse(t.needs_sync)
+        t.name = "B"
+        t.save(update_fields=["name"])
+        t.refresh_from_db()
+        self.assertEqual(t.name, "B")
+        self.assertTrue(t.needs_sync)
