@@ -1191,8 +1191,8 @@ msgid ""
 msgstr ""
 
 #: tickets/templates/tickets/ticket_list.html:46
-msgid "Missing QR codes will be generated as: MISSING_QR_[timestamp]_[row]"
-msgstr "Chybějící QR kódy budou generovány jako: MISSING_QR_[timestamp]_[row]"
+msgid "Missing QR codes will be generated as: GUEST-XXXXXXXX"
+msgstr "Chybějící QR kódy budou vygenerovány jako: GUEST-XXXXXXXX"
 
 #: tickets/templates/tickets/ticket_list.html:47
 msgid "Missing names will be set as: Missing Name (Row X)"

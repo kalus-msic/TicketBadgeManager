@@ -41,6 +41,7 @@
                         <strong>{{ p.email }}</strong>
                         {% if p.name %}&ndash; {{ p.name }}{% endif %}
                         {% if p.company %}<span class="text-muted">({{ p.company }})</span>{% endif %}
+                        {% if p.checked_at %}<span class="badge bg-info text-dark ms-1">{% trans "odbaven" %}: {{ p.checked_at }}</span>{% endif %}
                       </label>
                     </div>
                   </li>

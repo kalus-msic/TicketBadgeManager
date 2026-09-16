@@ -91,5 +91,11 @@ def reconcile_apply(request, event_pk):
         EventeeService(event=event).sync_event(event)
         repushed = len(repush_qrs)
 
+    if imported or repushed:
+        Log.objects.create(
+            event=event, event_type="SYSTEM",
+            message=(f"Eventee reconcile by {get_username_for_log(request)}: "
+                     f"imported={imported} re-push={repushed}"),
+        )
     messages.success(request, f"Reconcile: imported {imported}, re-push {repushed}")
     return redirect("tickets:reconcile_eventee", event_pk=event_pk)

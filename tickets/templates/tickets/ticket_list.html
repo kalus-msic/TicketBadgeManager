@@ -43,7 +43,7 @@
         <hr>
         <p class="mb-2">{% trans "You can try to import these rows anyway. Missing values will be filled with placeholders:" %}</p>
         <ul class="small mb-3">
-            <li>{% trans "Missing QR codes will be generated as: MISSING_QR_[timestamp]_[row]" %}</li>
+            <li>{% trans "Missing QR codes will be generated as: GUEST-XXXXXXXX" %}</li>
             <li>{% trans "Missing names will be set as: Missing Name (Row X)" %}</li>
         </ul>
         {% if import_session_key %}
