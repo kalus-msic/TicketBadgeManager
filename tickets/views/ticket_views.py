@@ -356,7 +356,7 @@ def export_tickets_csv(request, event_pk):
     event = get_object_or_404(Event, pk=event_pk)
 
     response = HttpResponse(content_type='text/csv; charset=utf-8')
-    filename = f'event_checkins_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    filename = f'event_checkins_{timezone.localtime().strftime("%Y%m%d_%H%M%S")}.csv'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     # Add BOM for Excel UTF-8 compatibility
@@ -382,7 +382,7 @@ def export_tickets_csv(request, event_pk):
 
         if checkin:
             stats['checked_in'] += 1
-            checkin_time = checkin.check_in_time.strftime('%Y-%m-%d %H:%M:%S')
+            checkin_time = timezone.localtime(checkin.check_in_time).strftime('%Y-%m-%d %H:%M:%S')
         else:
             stats['not_checked_in'] += 1
             checkin_time = ''
@@ -450,7 +450,7 @@ def export_tickets_xlsx(request, event_pk):
         checkin = checkins[0] if checkins else None
         if checkin:
             stats['checked_in'] += 1
-            checkin_time = checkin.check_in_time.strftime('%Y-%m-%d %H:%M:%S')
+            checkin_time = timezone.localtime(checkin.check_in_time).strftime('%Y-%m-%d %H:%M:%S')
         else:
             stats['not_checked_in'] += 1
             checkin_time = ''
@@ -486,7 +486,7 @@ def export_tickets_xlsx(request, event_pk):
         )
     )
 
-    filename = f'event_checkins_{timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    filename = f'event_checkins_{timezone.localtime().strftime("%Y%m%d_%H%M%S")}.xlsx'
     response = HttpResponse(
         buffer.read(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
