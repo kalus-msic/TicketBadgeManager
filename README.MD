@@ -40,7 +40,11 @@
 - ✅ **Badge Printing** - Print badges on TSC thermal printers (40x80mm labels)
 - ✅ **Bulk Print** - Print all event badges in advance for small events
 - ✅ **Special Label Printing** - Print custom labels for Press, Host, VIP, Staff, etc.
-- ✅ **Eventee Integration** - Automatically invite attendees to Eventee platform
+- ✅ **Multi-event** - Separate tickets, settings and logs per event (`/events/<id>/`)
+- ✅ **Eventee Sync** - Two-way sync with Eventee: one-click bulk push, reverse check (import / re-push), optional invitation e-mails
+- ✅ **Import without QR codes** - Missing QR codes are generated as `GUEST-XXXXXXXX`
+- ✅ **Three print backends** - Direct (TSCLIB, Windows), WebUSB (browser) and print Agent (another PC)
+- ✅ **GoOut merge import & XLSX export**
 - ✅ **Multi-printer Support** - Support for multiple TSC printers
 - ✅ **Kiosk Mode** - Self-service check-in station with automatic badge printing
 - ✅ **Bilingual Support** - English and Czech language interface
@@ -213,8 +217,11 @@ ALLOWED_HOSTS=127.0.0.1,localhost,192.168.1.100
 # Authentication
 DISABLE_AUTH=True  # Set to False to enable login requirement
 
-# Eventee API
-EVENTEE_API_TOKEN=your-eventee-api-token
+# Eventee API (optional - defaults shown). The API token itself is set per event
+# in Settings -> Eventee API Token, not in .env.
+EVENTEE_BASE_URL=https://api.eventee.com/public/v1
+EVENTEE_PLACEHOLDER_DOMAIN=vstupenka.local
+EVENTEE_USER_AGENT=curl/8.7.1
 
 # Logging
 LOG_LEVEL=INFO
@@ -326,7 +333,8 @@ The application supports English and Czech languages:
    - Quick templates for common label types
 
 6. **Settings** (`/settings/`)
-   - Configure Eventee API token
+   - Configure Eventee API token (per event), invitation e-mail toggle and default sync checkbox
+   - **Send all to Eventee** (bulk sync) and **Check Eventee** (reverse check with import / re-push)
    - Set required ticket fields
    - **Printer Settings** - Enable/disable automatic printing when scanning
    - Delete all data or check-ins

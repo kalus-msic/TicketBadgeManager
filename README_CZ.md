@@ -32,7 +32,11 @@ Aplikace umožňuje:
 - ✅ **Tisk visaček** - Tisk jmen a firem na štítky 40x80mm
 - ✅ **Hromadný tisk** - Tisk všech visaček předem pro malé akce
 - ✅ **Speciální štítky** - Tisk štítků pro Press, Host, VIP, Staff
-- ✅ **Eventee integrace** - Automatické pozvánky do aplikace Eventee
+- ✅ **Více akcí (multi-event)** - Oddělené vstupenky, nastavení a logy pro každou akci
+- ✅ **Eventee synchronizace** - Hromadné odeslání jedním klikem, zpětná kontrola (import / znovu-odeslání), volitelné pozvánky e-mailem
+- ✅ **Import bez QR kódů** - Chybějící kódy se vygenerují jako `GUEST-XXXXXXXX`
+- ✅ **Tři způsoby tisku** - Direct (TSCLIB, Windows), WebUSB (prohlížeč) a tiskový Agent (jiné PC)
+- ✅ **Import GoOut (spojení dvou souborů) a export do XLSX**
 - ✅ **Kiosk mód** - Samoobslužná check-in stanice s tiskem
 - ✅ **Dvojjazyčnost** - Česká a anglická verze
 - ✅ **Sledování statistik** - Přehled o odbavených vstupenkách
@@ -273,7 +277,8 @@ Skener 2: TDP-2252
 - Zvuková zpětná vazba
 
 ### 6. **Nastavení** (`/settings/`)
-- Konfigurace Eventee API tokenu
+- Konfigurace Eventee API tokenu (pro každou akci), přepínač pozvánkových e-mailů a výchozí zaškrtnutí synchronizace
+- **Odeslat vše do Eventee** (hromadná synchronizace) a **Zkontrolovat Eventee** (zpětná kontrola s importem / znovu-odesláním)
 - Nastavení povinných polí
 - **Nastavení tiskárny** - Zapnout/vypnout automatický tisk při skenování
 - Smazání dat nebo odbavení
@@ -345,6 +350,9 @@ Pro standardní formáty jsou názvy sloupců automaticky rozpoznány:
 - [x] Lepší logování změn
 - [ ] Přidat info o možnosti využití ngrok – odpadá potřeba vlastní lokální sítě; pomalejší odezva, ale možnost napojit aplikace prodejců vstupenek (ti.to).
 - [x] Napojení na Eventee – při manuálním vytvoření vstupenky v TBM přidat i do Eventee.
+- [x] Obousměrná synchronizace s Eventee (hromadné odeslání, zpětná kontrola, pozvánky e-mailem).
+- [x] Import bez QR kódů (automatické GUEST kódy).
+- [x] Více akcí (multi-event) a tiskové backendy WebUSB / Agent.
 - [x] Dvoujazyčná podpora - aplikace je nyní plně dvojjazyčná (CZ/EN).
 - [x] Ošetřit některé chyby.
 - [x] Zlepšit výpis stavů – místo využití příkazu print zobrazovat informace přímo v aplikaci.
