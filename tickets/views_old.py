@@ -966,7 +966,7 @@ def printPic(imName, x, y, mode):
         return -1
 
     im = im.convert("L")
-    data = list(im.getdata())
+    data = list(im.get_flattened_data())
     im1 = [1 if d >= CONTRAST else 0 for d in data]
     bitmap = [0 for _ in range(width * height // 8)]
     offset = [255 for _ in range(width * height // 8)]

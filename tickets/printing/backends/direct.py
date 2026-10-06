@@ -101,7 +101,7 @@ class DirectBackend(AbstractBackend):
             raise ValueError(f"Image too small after thumbnail: {width}x{height}")
 
         img = img.convert("L")
-        data = list(img.getdata())
+        data = list(img.get_flattened_data())
 
         im1 = [1 if d >= self.CONTRAST else 0 for d in data]
         bitmap = [0] * (width * height // 8)

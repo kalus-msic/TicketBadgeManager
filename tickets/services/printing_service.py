@@ -361,7 +361,7 @@ class PrintingService:
         
         # Convert to grayscale
         im = im.convert("L")
-        data = list(im.getdata())
+        data = list(im.get_flattened_data())
         
         # Convert to binary bitmap exactly like original
         im1 = [1 if d >= self.CONTRAST else 0 for d in data]

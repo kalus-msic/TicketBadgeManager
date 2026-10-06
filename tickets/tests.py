@@ -602,6 +602,49 @@ class TSPLProfileTest(TestCase):
         self.assertIsInstance(result, bytes)
         self.assertIn(b'BITMAP', result)
 
+    RENDER_CASES = [
+        {'name': 'Jan Novak', 'company_name': 'MSIC'},
+        {'name': '\u0158eho\u0159 \u017dlu\u0165ou\u010dk\xfd', 'company_name': '\xda\u0159ad pr\xe1ce \u010cR'},
+        {'name': 'Maximilian Alexander von Hohenzollern-Sigmaringen',
+         'company_name': 'Very Long International Corporation Holding Group Limited'},
+        {'name': 'Anna Svobodova', 'company_name': ''},
+    ]
+
+    def test_render_layout_stays_within_margins(self):
+        """Text is centered, shrunk/wrapped to fit inside the label margins."""
+        profile = TSPLProfile()
+        m = profile.MARGIN
+        for data in self.RENDER_CASES:
+            with self.subTest(name=data['name']):
+                img = profile._create_label_image(data)
+                self.assertEqual(img.size, (profile.LABEL_WIDTH, profile.LABEL_HEIGHT))
+                bbox = img.point(lambda v: 255 if v < profile.CONTRAST else 0).getbbox()
+                self.assertIsNotNone(bbox, 'label has no ink')
+                left, top, right, bottom = bbox
+                self.assertGreaterEqual(left, m)
+                self.assertLessEqual(right, img.width - m)
+                self.assertLessEqual(bottom, img.height)
+                # Horizontally centered (tolerance for glyph side bearings)
+                self.assertLess(abs((left + right) / 2 - img.width / 2), 20)
+
+    def test_tspl_bitmap_stream_structure(self):
+        """TSPL stream has fixed header and bitmap geometry (40 bytes x 529 rows, 2 layers)."""
+        import warnings
+        profile = TSPLProfile()
+        header = b'DENSITY 15\r\nSIZE 40 mm, 80 mm\r\nCLS\r\n'
+        bitmap_cmd = b'BITMAP 0,65,40,529,1,'
+        footer = b'PRINT 1,1\r\n'
+        expected_len = len(header) + 2 * (len(bitmap_cmd) + 40 * 529 + 1) + len(footer)
+        for data in self.RENDER_CASES:
+            with self.subTest(name=data['name']):
+                with warnings.catch_warnings():
+                    warnings.simplefilter('error', DeprecationWarning)
+                    result = profile.generate(data)
+                self.assertTrue(result.startswith(header))
+                self.assertTrue(result.endswith(footer))
+                self.assertEqual(result.count(bitmap_cmd), 2)
+                self.assertEqual(len(result), expected_len)
+
 
 from tickets.services.ticket_service import TicketService
 

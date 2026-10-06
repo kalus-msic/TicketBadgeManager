@@ -176,7 +176,7 @@ class TSPLProfile(AbstractPrinterProfile):
             raise ValueError(f"Generated image too small: {width}x{height}")
 
         img = img.convert("L")
-        data = list(img.getdata())
+        data = list(img.get_flattened_data())
 
         # Convert to binary bitmap (replaces eval("0b...") from original)
         im1 = [1 if d >= self.CONTRAST else 0 for d in data]
